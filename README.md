@@ -1,1 +1,1 @@
-# film_catalog
+# film-catalog
