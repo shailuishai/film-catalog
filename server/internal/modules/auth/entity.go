@@ -5,10 +5,11 @@ import (
 )
 
 type UserAuth struct {
-	UserId         int64   `json:"user_id"`
+	UserId         uint    `json:"user_id"`
 	HashedPassword *string `json:"hashed_password"`
 	Login          string  `json:"login"`
-	IsAdmin        string  `json:"is_admin"`
+	Email          string  `json:"email"`
+	IsAdmin        bool    `json:"is_admin"`
 }
 
 type Controller interface {
@@ -17,7 +18,7 @@ type Controller interface {
 	Oauth(w http.ResponseWriter, r *http.Request)
 	OauthCallback(w http.ResponseWriter, r *http.Request)
 	RefreshToken(w http.ResponseWriter, r *http.Request)
-	LogoutHandler(w http.ResponseWriter, r *http.Request)
+	Logout(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
@@ -29,8 +30,7 @@ type UseCase interface {
 }
 
 type Repo interface {
-	CreateUser(email string, hashedPassword string) (int64, error)
-	CreateOauthUser(user *UserAuth) (int64, error)
+	CreateUser(user *UserAuth) error
 	GetUserByEmail(email string) (*UserAuth, error)
 	SaveStateCode(state string) error
 	VerifyStateCode(state string) (bool, error)

@@ -1,11 +1,11 @@
-package handlers
+package controller
 
 import (
 	"errors"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"server/internal/modules/user"
+	"server/internal/modules/auth"
 	resp "server/pkg/lib/response"
 )
 
@@ -15,14 +15,14 @@ import (
 // @Description Registers a new user with the provided email and password.
 // @Accept json
 // @Produce json
-// @Param user body handlers.UserSignUpRequest true "User registration details"
+// @Param user body controller.UserSignUpRequest true "User registration details"
 // @Success 201 {object} response.Response "User successfully created"
 // @Failure 400 {object} response.Response "Validation error or invalid request payload"
 // @Failure 409 {object} response.Response "Conflict - User with this email already exists"
 // @Failure 500 {object} response.Response "Internal server error"
 // @Router /auth/sign-up [post]
-func (uc *UserClient) SignUp(w http.ResponseWriter, r *http.Request) {
-	log := uc.log.With(slog.String("op", "SignUpHandler"))
+func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With(slog.String("op", "SignUpHandler"))
 
 	var req UserSignUpRequest
 
@@ -33,19 +33,19 @@ func (uc *UserClient) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := uc.validate.Struct(req); err != nil {
+	if err := c.validate.Struct(req); err != nil {
 		log.Error("failed to validate request", err)
 		w.WriteHeader(http.StatusBadRequest)
 		render.JSON(w, r, resp.ValidationError(err))
 		return
 	}
 
-	if err := uc.us.SignUp(req.Email, req.Password); err != nil {
+	if err := c.uc.SignUp(req.Email, req.Password); err != nil {
 		switch {
-		case errors.Is(err, user.ErrEmailExists):
+		case errors.Is(err, auth.ErrEmailExists):
 			log.Info("email already exists", slog.String("email", req.Email))
 			w.WriteHeader(http.StatusConflict)
-			render.JSON(w, r, resp.Error("user with this email already exists"))
+			render.JSON(w, r, resp.Error(err.Error()))
 		default:
 			log.Error("failed to sign up user", err)
 			w.WriteHeader(http.StatusInternalServerError)

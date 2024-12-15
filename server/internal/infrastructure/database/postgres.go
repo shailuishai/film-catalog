@@ -74,7 +74,6 @@ func (m *Migrator) ApplyMigrations(db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("unable to create migrator: %w", err)
 	}
-	defer migrator.Close()
 
 	if err := migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("unable to apply migrations: %w", err)

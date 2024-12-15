@@ -22,7 +22,7 @@ jwt:
     access_expire: 7m
     refresh_expire: 360h
 s3:
-    endpoint: "database-173.s3hoster.by"
+    endpoint: "storage-173.s3hoster.by"
     region: "BTC"
     buckets:
       - name: "useravatar"

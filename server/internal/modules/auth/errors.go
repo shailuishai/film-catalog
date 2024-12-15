@@ -10,4 +10,5 @@ var (
 	ErrExpiredToken        = errors.New("token expired")
 	ErrInvalidToken        = errors.New("invalid token")
 	ErrUnsupportedProvider = errors.New("unsupported provider")
+	ErrEmailExists         = errors.New("user with this email already exists")
 )

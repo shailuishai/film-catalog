@@ -6,24 +6,22 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"server/config"
-	"server/internal/infrastructure/cache"
-	"server/internal/infrastructure/database"
-	"server/internal/infrastructure/s3"
-	jwt2 "server/pkg/lib/jwt"
-
-	"github.com/go-chi/httprate"
 	swag "github.com/swaggo/http-swagger/v2"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"server/config"
 	_ "server/docs"
-	"server/internal/modules/user/data"
-	"server/internal/modules/user/handlers"
-	"server/internal/modules/user/services"
+	"server/internal/infrastructure/cache"
+	"server/internal/infrastructure/database"
+	"server/internal/infrastructure/s3"
+	authC "server/internal/modules/auth/controller"
+	authRp "server/internal/modules/auth/repo"
+	authCh "server/internal/modules/auth/repo/cache"
+	authDb "server/internal/modules/auth/repo/database"
+	authUC "server/internal/modules/auth/usecase"
 	"server/pkg/lib/emailsender"
-	middleJWT "server/pkg/middleware/jwt"
 	middlelog "server/pkg/middleware/logger"
 	"syscall"
 	"time"
@@ -46,16 +44,12 @@ func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
 		return nil, fmt.Errorf("db init failed: %w", err)
 	}
 
-	if err := Storage.ApplyMigrations(cfg.DbConfig); err != nil {
-		return nil, fmt.Errorf("apply migrations failed: %w", err)
-	}
-
 	Cache, err := cache.NewCache(cfg.CacheConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cache init failed: %w", err)
 	}
 
-	s3, err := s3.NewS3Storage(cfg.S3Config)
+	s3s, err := s3.NewS3Storage(cfg.S3Config)
 	if err != nil {
 		return nil, fmt.Errorf("s3 init failed: %w", err)
 	}
@@ -66,7 +60,7 @@ func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
 	}
 
 	router := chi.NewRouter()
-	return &App{Storage: Storage, Cache: Cache, S3: s3, EmailSender: eSender, Router: router, Log: log, Cfg: cfg}, nil
+	return &App{Storage: Storage, Cache: Cache, S3: s3s, EmailSender: eSender, Router: router, Log: log, Cfg: cfg}, nil
 }
 
 func (app *App) Start() error {
@@ -112,7 +106,7 @@ func (app *App) SetupRoutes() {
 		middleware.URLFormat,
 	)
 
-	var jwtMiddleware = middleJWT.New(app.Log, jwt2.NewJWTHandler(&app.Cfg.JWTConfig))
+	// var jwtMiddleware = middleJWT.New(app.Log)
 
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
@@ -122,37 +116,36 @@ func (app *App) SetupRoutes() {
 	apiVersion := "/v1"
 
 	// Группа для аунтификации
-	UserDB := data.NewUserDB(app.Storage.Db)
-	UserCache := data.NewUserCache(app.Cache)
-	UserS3 := data.NewUserS3(app.S3)
-	UserData := data.NewUserQuery(UserDB, UserCache, UserS3)
-	UserService := services.NewUserUseCase(UserData, jwt2.NewJWTHandler(&app.Cfg.JWTConfig), app.Log, app.EmailSender)
-	UserHandler := handlers.NewUserClient(app.Log, UserService)
+	AuthDB := authDb.NewAuthDatabase(app.Storage.Db, app.Log)
+	AuthCh := authCh.NewAuthCache(app.Cache)
+	AuthRp := authRp.NewRepo(AuthDB, AuthCh)
+	AuthUC := authUC.NewAuthUsecase(app.Log, AuthRp)
+	AuthC := authC.NewAuthController(app.Log, AuthUC)
 
 	app.Router.Route(apiVersion+"/auth", func(r chi.Router) {
-		r.Post("/sign-up", UserHandler.SignUp)
-		r.Post("/sign-in", UserHandler.SignIn)
-		r.Post("/refresh-token", UserHandler.RefreshToken)
-		r.Get("/{provider}", UserHandler.Oauth)
-		r.Get("/{provider}/callback", UserHandler.OauthCallback)
-		r.Post("/logout", UserHandler.LogoutHandler)
+		r.Post("/sign-up", AuthC.SignUp)
+		//r.Post("/sign-in", UserHandler.SignIn)
+		//r.Post("/refresh-token", UserHandler.RefreshToken)
+		//r.Get("/{provider}", UserHandler.Oauth)
+		//r.Get("/{provider}/callback", UserHandler.OauthCallback)
+		//r.Post("/logout", UserHandler.LogoutHandler)
 	})
 
-	app.Router.Route(apiVersion+"/confirm", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			r.Use(httprate.Limit(1, 1*time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP)))
-			r.Post("/send-email-code", UserHandler.SendConfirmedEmailCode)
-		})
-		r.Put("/email", UserHandler.EmailConfirmed)
-	})
-
-	// Группа для пользовательских маршрутов (требует авторизации)
-	app.Router.Route(apiVersion+"/user", func(r chi.Router) {
-		r.Use(jwtMiddleware)
-		r.Put("/edit", UserHandler.UpdateUserHandler)
-		r.Get("/me", UserHandler.GetUserHandler)
-		r.Delete("/delete", UserHandler.DeleteUserHandler)
-	})
+	//app.Router.Route(apiVersion+"/confirm", func(r chi.Router) {
+	//	r.Group(func(r chi.Router) {
+	//		r.Use(httprate.Limit(1, 1*time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP)))
+	//		r.Post("/send-email-code", UserHandler.SendConfirmedEmailCode)
+	//	})
+	//	r.Put("/email", UserHandler.EmailConfirmed)
+	//})
+	//
+	//// Группа для пользовательских маршрутов (требует авторизации)
+	//app.Router.Route(apiVersion+"/user", func(r chi.Router) {
+	//	r.Use(jwtMiddleware)
+	//	r.Put("/edit", UserHandler.UpdateUserHandler)
+	//	r.Get("/me", UserHandler.GetUserHandler)
+	//	r.Delete("/delete", UserHandler.DeleteUserHandler)
+	//})
 
 	//// Группа для административных маршрутов
 	//app.Router.Route("/admin", func(r chi.Router) {

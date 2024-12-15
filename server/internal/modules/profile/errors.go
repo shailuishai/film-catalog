@@ -3,6 +3,7 @@ package profile
 import "errors"
 
 var (
+	ErrInternal                = errors.New("internal server error")
 	ErrInvalidResolutionAvatar = errors.New("invalid resolution avatar(must be 1x1)")
 	ErrInvalidTypeAvatar       = errors.New("invalid type avatar")
 	ErrSizeAvatar              = errors.New("size of avatar image is large(required <1MB)")

@@ -8,6 +8,23 @@ CREATE TABLE Users (
     avatar_url TEXT DEFAULT 'https://useravatar.database-173.s3hoster.by/default/'
 );
 
+CREATE OR REPLACE FUNCTION set_default_login()
+    RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.login IS NULL OR NEW.login = '' THEN
+        UPDATE users
+        SET login = 'USER' || NEW.user_id
+        WHERE user_id = NEW.user_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER after_insert_user
+    AFTER INSERT ON users
+    FOR EACH ROW
+EXECUTE FUNCTION set_default_login();
+
 CREATE TABLE Film (
     film_id SERIAL PRIMARY KEY,
     poster_image TEXT DEFAULT 'https://filmposter.database-173.s3hoster.by/default/',

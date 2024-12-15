@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	u "server/internal/modules/user"
+	"server/internal/modules/profile"
 	"strings"
 )
 
@@ -31,12 +31,10 @@ type UserProfileData struct {
 	AvatarUrl *string `json:"avatar_url"`
 }
 
-func UserProfile(user *u.User) Response {
+func UserProfile(user *profile.UserProfile) Response {
 	return Response{
 		Status: StatusOK,
 		Data: UserProfileData{
-			Email:     user.Email,
-			Login:     user.Login,
 			AvatarUrl: user.AvatarUrl,
 		},
 	}

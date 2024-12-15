@@ -11,7 +11,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	u "server/internal/modules/user"
+	u "server/internal/modules/profile"
 	"sync"
 )
 
