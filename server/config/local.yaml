@@ -1,0 +1,44 @@
+env: "local"
+db:
+    username: "postgres"
+    host: "localhost"
+    port: "5432"
+    dbname: "film"
+    sslmode: "disable"
+http_server:
+    address: "localhost:8079"
+    timeout: 4s
+    idle_timeout: 60s
+cache:
+    address: "localhost:6379"
+    db: 0
+    state_expiration: 7m
+    email_confirmed_code_expiration: 3m
+smtp:
+    host: "smtp.yandex.ru"
+    port: 465
+    username: "OfflinerMen@yandex.by"
+jwt:
+    access_expire: 7m
+    refresh_expire: 360h
+s3:
+    endpoint: "database-173.s3hoster.by"
+    region: "BTC"
+    buckets:
+      - name: "useravatar"
+        default_file:
+          path: "./server/default_avatar.webp"
+          keys:
+            - "default/512x512.webp"
+            - "default/52x52.webp"
+      - name: "filmposter"
+        default_file:
+          path: "./server/default_film.webp"
+          keys:
+            - "default/600x900.webp"
+      - name: "actoravatar"
+        default_file:
+          path: "./server/default_actor.webp"
+          keys:
+            - "default/512x512.webp"
+            - "default/52x52.webp"
