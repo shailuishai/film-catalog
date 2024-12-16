@@ -18,6 +18,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/logout": {
+            "post": {
+                "description": "Logs out the user by clearing the refresh token cookie. If the cookie is not found, returns success without any action.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "responses": {
+                    "200": {
+                        "description": "User successfully logged out or no refresh token found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "204": {
+                        "description": "No content, token was successfully invalidated",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Create access and refresh token and return them to the user",
@@ -115,6 +144,115 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict - User with this email or login already exists",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/{provider}": {
+            "get": {
+                "description": "Redirects the user to the OAuth provider for authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User SignWithOauth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"google\" or \"yandex\"",
+                        "description": "OAuth provider DON'T WORK IN SWAGGER!!!",
+                        "name": "provider",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirecting to provider"
+                    },
+                    "400": {
+                        "description": "Provider not supported",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/{provider}/callback": {
+            "get": {
+                "description": "Handles the callback from the OAuth provider after the user has authorized the app. THIS ENDPOINT IS CALLED BY THE OAUTH PROVIDER, NOT THE FRONTEND!!!",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "OAuth2 Callback Handler",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"google\" or \"yandex\"",
+                        "description": "OAuth provider",
+                        "name": "provider",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"randomstate123\"",
+                        "description": "State parameter sent during OAuth authorization",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"authorizationcode123\"",
+                        "description": "Authorization code returned by OAuth provider",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User already exists, successfully authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "201": {
+                        "description": "New user created and successfully authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Provider not supported or invalid state",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }

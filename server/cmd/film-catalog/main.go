@@ -119,16 +119,16 @@ func (app *App) SetupRoutes() {
 	AuthDB := authDb.NewAuthDatabase(app.Storage.Db, app.Log)
 	AuthCh := authCh.NewAuthCache(app.Cache)
 	AuthRp := authRp.NewRepo(AuthDB, AuthCh)
-	AuthUC := authUC.NewAuthUsecase(app.Log, AuthRp)
+	AuthUC := authUC.NewAuthUseCase(app.Log, AuthRp)
 	AuthC := authC.NewAuthController(app.Log, AuthUC)
 
 	app.Router.Route(apiVersion+"/auth", func(r chi.Router) {
 		r.Post("/sign-up", AuthC.SignUp)
 		r.Post("/sign-in", AuthC.SignIn)
-		//r.Post("/refresh-token", UserHandler.RefreshToken)
-		//r.Get("/{provider}", UserHandler.Oauth)
-		//r.Get("/{provider}/callback", UserHandler.OauthCallback)
-		//r.Post("/logout", UserHandler.LogoutHandler)
+		r.Post("/refresh-token", AuthC.RefreshToken)
+		r.Get("/{provider}", AuthC.Oauth)
+		r.Get("/{provider}/callback", AuthC.OauthCallback)
+		r.Post("/logout", AuthC.Logout)
 	})
 
 	//app.Router.Route(apiVersion+"/confirm", func(r chi.Router) {

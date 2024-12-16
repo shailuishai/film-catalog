@@ -11,6 +11,7 @@ type UserAuth struct {
 	Email          string  `json:"email"`
 	IsAdmin        bool    `json:"is_admin"`
 	VerifiedEmail  bool    `json:"version"`
+	AvatarUrl      *string `json:"avatar_url"`
 }
 
 type Controller interface {
@@ -31,9 +32,10 @@ type UseCase interface {
 }
 
 type Repo interface {
-	CreateUser(user *UserAuth) error
+	CreateUser(user *UserAuth) (uint, error)
 	GetUserByEmail(email string) (*UserAuth, error)
 	GetUserByLogin(login string) (*UserAuth, error)
+	GetUserById(id uint) (*UserAuth, error)
 	SaveStateCode(state string) error
 	VerifyStateCode(state string) (bool, error)
 }

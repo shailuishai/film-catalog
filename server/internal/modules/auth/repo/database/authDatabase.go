@@ -14,27 +14,27 @@ type AuthDatabase struct {
 }
 
 func NewAuthDatabase(db *gorm.DB, log *slog.Logger) *AuthDatabase {
-	log = log.With("op", "repoLayer")
+	log = log.With("op", "db")
 	return &AuthDatabase{
 		db:  db,
 		log: log,
 	}
 }
 
-func (db *AuthDatabase) CreateUser(user *auth.UserAuth) error {
+func (db *AuthDatabase) CreateUser(user *auth.UserAuth) (uint, error) {
 	userModel := ToModel(user)
 
 	if err := db.db.Create(userModel).Error; err != nil {
 		db.log.Error(err.Error())
 		if strings.Contains(err.Error(), "login") {
-			return auth.ErrLoginExists
+			return 0, auth.ErrLoginExists
 		} else if strings.Contains(err.Error(), "email") {
-			return auth.ErrEmailExists
+			return 0, auth.ErrEmailExists
 		}
-		return auth.ErrInternal
+		return 0, auth.ErrInternal
 	}
 
-	return nil
+	return userModel.UserId, nil
 }
 
 func (db *AuthDatabase) GetUserByEmail(email string) (*auth.UserAuth, error) {
@@ -55,6 +55,19 @@ func (db *AuthDatabase) GetUserByLogin(login string) (*auth.UserAuth, error) {
 	var user User
 
 	if err := db.db.Where("login = ?", login).First(&user).Error; err != nil {
+		db.log.Error(err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, auth.ErrUserNotFound
+		}
+		return nil, auth.ErrInternal
+	}
+
+	return ToEntity(&user), nil
+}
+
+func (db *AuthDatabase) GetUserById(id uint) (*auth.UserAuth, error) {
+	var user User
+	if err := db.db.Where("id = ?", id).First(&user).Error; err != nil {
 		db.log.Error(err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, auth.ErrUserNotFound
