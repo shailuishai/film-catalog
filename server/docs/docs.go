@@ -28,7 +28,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auth"
                 ],
                 "summary": "Logout user",
                 "responses": {
@@ -47,6 +47,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/refresh-token": {
+            "post": {
+                "description": "Refreshes the access token using the provided refresh token from cookies.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh Access Token",
+                "responses": {
+                    "200": {
+                        "description": "Successfully refreshed access token",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid, missing or expired refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Create access and refresh token and return them to the user",
@@ -57,7 +92,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auth"
                 ],
                 "summary": "User SignIn",
                 "parameters": [
@@ -115,7 +150,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auth"
                 ],
                 "summary": "User SignUp",
                 "parameters": [
@@ -167,7 +202,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auth"
                 ],
                 "summary": "User SignWithOauth",
                 "parameters": [
@@ -209,7 +244,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auth"
                 ],
                 "summary": "OAuth2 Callback Handler",
                 "parameters": [
@@ -265,9 +300,130 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/email/confirm": {
+            "put": {
+                "description": "Validate confirmed code and is it confirmed update email_status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email"
+                ],
+                "summary": "Confirmation email address",
+                "parameters": [
+                    {
+                        "description": "data for confirmed email",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.EmailConfirmedRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success email confirmation",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Error email confirmation",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/send-code": {
+            "post": {
+                "description": "Generate code for confirmation email and send this to email. This endpoint have rate 1 req in 1 min",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email"
+                ],
+                "summary": "Send code for confirmation email",
+                "parameters": [
+                    {
+                        "description": "Email пользователя для подтверждения",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.SendConfirmedEmailCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Код подтверждения успешно отправлен",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации или неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "controller.EmailConfirmedRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "email"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "54JK64"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jon.doe@gmail.com"
+                }
+            }
+        },
+        "controller.SendConfirmedEmailCodeRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "jon.doe@gmail.com"
+                }
+            }
+        },
         "controller.UserSignInRequest": {
             "type": "object",
             "required": [

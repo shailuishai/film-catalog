@@ -4,7 +4,8 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"log/slog"
-	"server/internal/modules/auth"
+	"server/internal/modules/user"
+	"server/internal/modules/user/auth"
 	"strings"
 )
 
@@ -21,59 +22,59 @@ func NewAuthDatabase(db *gorm.DB, log *slog.Logger) *AuthDatabase {
 	}
 }
 
-func (db *AuthDatabase) CreateUser(user *auth.UserAuth) (uint, error) {
-	userModel := ToModel(user)
+func (db *AuthDatabase) CreateUser(User *auth.UserAuth) (uint, error) {
+	userModel := user.FromAuthUser(User)
 
 	if err := db.db.Create(userModel).Error; err != nil {
 		db.log.Error(err.Error())
 		if strings.Contains(err.Error(), "login") {
-			return 0, auth.ErrLoginExists
+			return 0, user.ErrLoginExists
 		} else if strings.Contains(err.Error(), "email") {
-			return 0, auth.ErrEmailExists
+			return 0, user.ErrEmailExists
 		}
-		return 0, auth.ErrInternal
+		return 0, user.ErrInternal
 	}
 
 	return userModel.UserId, nil
 }
 
 func (db *AuthDatabase) GetUserByEmail(email string) (*auth.UserAuth, error) {
-	var user User
+	var User user.User
 
-	if err := db.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := db.db.Where("email = ?", email).First(&User).Error; err != nil {
 		db.log.Error(err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, auth.ErrUserNotFound
+			return nil, user.ErrUserNotFound
 		}
-		return nil, auth.ErrInternal
+		return nil, user.ErrInternal
 	}
 
-	return ToEntity(&user), nil
+	return user.ToAuthUser(&User), nil
 }
 
 func (db *AuthDatabase) GetUserByLogin(login string) (*auth.UserAuth, error) {
-	var user User
+	var User user.User
 
-	if err := db.db.Where("login = ?", login).First(&user).Error; err != nil {
+	if err := db.db.Where("login = ?", login).First(&User).Error; err != nil {
 		db.log.Error(err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, auth.ErrUserNotFound
+			return nil, user.ErrUserNotFound
 		}
-		return nil, auth.ErrInternal
+		return nil, user.ErrInternal
 	}
 
-	return ToEntity(&user), nil
+	return user.ToAuthUser(&User), nil
 }
 
 func (db *AuthDatabase) GetUserById(id uint) (*auth.UserAuth, error) {
-	var user User
-	if err := db.db.Where("id = ?", id).First(&user).Error; err != nil {
+	var User user.User
+	if err := db.db.Where("id = ?", id).First(&User).Error; err != nil {
 		db.log.Error(err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, auth.ErrUserNotFound
+			return nil, user.ErrUserNotFound
 		}
-		return nil, auth.ErrInternal
+		return nil, user.ErrInternal
 	}
 
-	return ToEntity(&user), nil
+	return user.ToAuthUser(&User), nil
 }

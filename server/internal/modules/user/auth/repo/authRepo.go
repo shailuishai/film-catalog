@@ -1,6 +1,6 @@
 package repo
 
-import "server/internal/modules/auth"
+import "server/internal/modules/user/auth"
 
 type AuthCache interface {
 	SaveStateCode(state string) error

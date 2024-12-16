@@ -5,7 +5,7 @@ CREATE TABLE Users (
     login VARCHAR(100) UNIQUE,
     email VARCHAR(100) UNIQUE NOT NULL,
     verified_email  BOOLEAN NOT NULL DEFAULT false,
-    avatar_url TEXT DEFAULT 'https://useravatar.database-173.s3hoster.by/default/'
+    avatar_url TEXT DEFAULT 'https://useravatar.storage-173.s3hoster.by/default/'
 );
 
 CREATE OR REPLACE FUNCTION set_default_login()

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"server/internal/modules/profile"
+	"server/internal/modules/user/profile"
 	"strings"
 )
 

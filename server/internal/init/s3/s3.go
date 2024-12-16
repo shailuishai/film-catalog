@@ -154,7 +154,7 @@ func uploadDefaultAvatar(client *s3.Client, bucket config.BucketConfig) error {
 	keys := make(map[string][]byte)
 
 	if strings.Contains(bucket.Name, "avatar") {
-		buf512, buf52, err := avatarManager.ParsingAvatarImage(&multipartFile)
+		buf52, buf512, err := avatarManager.ParsingAvatarImage(&multipartFile)
 		if err != nil {
 			return fmt.Errorf("failed to process default avatar image: %v", err)
 		}

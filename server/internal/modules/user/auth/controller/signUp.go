@@ -5,13 +5,13 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"server/internal/modules/auth"
+	u "server/internal/modules/user"
 	resp "server/pkg/lib/response"
 )
 
 // SignUp
 // @Summary User SignUp
-// @Tags Authentication
+// @Tags auth
 // @Description Registers a new user with the provided email and password.
 // @Accept json
 // @Produce json
@@ -42,11 +42,11 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.uc.SignUp(req.Email, req.Password); err != nil {
 		switch {
-		case errors.Is(err, auth.ErrEmailExists):
+		case errors.Is(err, u.ErrEmailExists):
 			log.Info("email already exists", slog.String("email", req.Email))
 			w.WriteHeader(http.StatusConflict)
 			render.JSON(w, r, resp.Error(err.Error()))
-		case errors.Is(err, auth.ErrLoginExists):
+		case errors.Is(err, u.ErrLoginExists):
 			log.Info("login already exists", slog.String("login", req.Login))
 			w.WriteHeader(http.StatusConflict)
 			render.JSON(w, r, resp.Error("login already exists"))

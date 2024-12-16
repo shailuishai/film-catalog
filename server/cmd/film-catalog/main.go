@@ -1,11 +1,13 @@
 package main
 
+import "C"
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	swag "github.com/swaggo/http-swagger/v2"
 	"log/slog"
 	"net/http"
@@ -16,11 +18,16 @@ import (
 	"server/internal/init/cache"
 	"server/internal/init/database"
 	"server/internal/init/s3"
-	authC "server/internal/modules/auth/controller"
-	authRp "server/internal/modules/auth/repo"
-	authCh "server/internal/modules/auth/repo/cache"
-	authDb "server/internal/modules/auth/repo/database"
-	authUC "server/internal/modules/auth/usecase"
+	authC "server/internal/modules/user/auth/controller"
+	authRp "server/internal/modules/user/auth/repo"
+	authCh "server/internal/modules/user/auth/repo/cache"
+	authDb "server/internal/modules/user/auth/repo/database"
+	authUC "server/internal/modules/user/auth/usecase"
+	emailC "server/internal/modules/user/email/controller"
+	emailRp "server/internal/modules/user/email/repo"
+	emailCh "server/internal/modules/user/email/repo/cache"
+	emailDb "server/internal/modules/user/email/repo/database"
+	emailUC "server/internal/modules/user/email/usecase"
 	"server/pkg/lib/emailsender"
 	middlelog "server/pkg/middleware/logger"
 	"syscall"
@@ -131,14 +138,20 @@ func (app *App) SetupRoutes() {
 		r.Post("/logout", AuthC.Logout)
 	})
 
-	//app.Router.Route(apiVersion+"/confirm", func(r chi.Router) {
-	//	r.Group(func(r chi.Router) {
-	//		r.Use(httprate.Limit(1, 1*time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP)))
-	//		r.Post("/send-email-code", UserHandler.SendConfirmedEmailCode)
-	//	})
-	//	r.Put("/email", UserHandler.EmailConfirmed)
-	//})
-	//
+	EmailDB := emailDb.NewEmailDatabase(app.Storage.Db, app.Log)
+	EmailCh := emailCh.NewEmailCache(app.Cache)
+	EmailRp := emailRp.NewRepo(EmailDB, EmailCh)
+	EmailUC := emailUC.NewEmailUseCase(app.Log, EmailRp, app.EmailSender)
+	EmailC := emailC.NewEmailController(app.Log, EmailUC)
+
+	app.Router.Route(apiVersion+"/email", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(httprate.Limit(1, 1*time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP)))
+			r.Post("/send-code", EmailC.SendConfirmedEmailCode)
+		})
+		r.Put("/confirm", EmailC.EmailConfirmed)
+	})
+
 	//// Группа для пользовательских маршрутов (требует авторизации)
 	//app.Router.Route(apiVersion+"/user", func(r chi.Router) {
 	//	r.Use(jwtMiddleware)
