@@ -10,6 +10,7 @@ type UserAuth struct {
 	Login          string  `json:"login"`
 	Email          string  `json:"email"`
 	IsAdmin        bool    `json:"is_admin"`
+	VerifiedEmail  bool    `json:"version"`
 }
 
 type Controller interface {
@@ -23,7 +24,7 @@ type Controller interface {
 
 type UseCase interface {
 	SignUp(email string, password string) error
-	SignIn(email string, password string) (string, string, error)
+	SignIn(email string, login string, password string) (string, string, error)
 	GetAuthURL(provider string) (string, error)
 	Callback(provider, state, code string) (bool, string, string, error)
 	RefreshToken(r *http.Request) (string, error)
@@ -32,6 +33,7 @@ type UseCase interface {
 type Repo interface {
 	CreateUser(user *UserAuth) error
 	GetUserByEmail(email string) (*UserAuth, error)
+	GetUserByLogin(login string) (*UserAuth, error)
 	SaveStateCode(state string) error
 	VerifyStateCode(state string) (bool, error)
 }

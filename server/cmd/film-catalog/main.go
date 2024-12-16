@@ -13,9 +13,9 @@ import (
 	"os/signal"
 	"server/config"
 	_ "server/docs"
-	"server/internal/infrastructure/cache"
-	"server/internal/infrastructure/database"
-	"server/internal/infrastructure/s3"
+	"server/internal/init/cache"
+	"server/internal/init/database"
+	"server/internal/init/s3"
 	authC "server/internal/modules/auth/controller"
 	authRp "server/internal/modules/auth/repo"
 	authCh "server/internal/modules/auth/repo/cache"
@@ -124,7 +124,7 @@ func (app *App) SetupRoutes() {
 
 	app.Router.Route(apiVersion+"/auth", func(r chi.Router) {
 		r.Post("/sign-up", AuthC.SignUp)
-		//r.Post("/sign-in", UserHandler.SignIn)
+		r.Post("/sign-in", AuthC.SignIn)
 		//r.Post("/refresh-token", UserHandler.RefreshToken)
 		//r.Get("/{provider}", UserHandler.Oauth)
 		//r.Get("/{provider}/callback", UserHandler.OauthCallback)

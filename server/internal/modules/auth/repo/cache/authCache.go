@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"server/internal/infrastructure/cache"
+	"server/internal/init/cache"
 	u "server/internal/modules/auth"
 )
 

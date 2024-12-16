@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"server/config"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,9 +17,9 @@ var (
 	ErrNoAccessToken = errors.New("no access token")
 )
 
-func GenerateAccessToken(userId int64) (string, error) {
+func GenerateAccessToken(userId uint) (string, error) {
 	claims := &jwt.RegisteredClaims{
-		Subject:   string(userId),
+		Subject:   strconv.Itoa(int(userId)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.JwtConfig.AccessExpire)),
 	}
@@ -27,9 +28,9 @@ func GenerateAccessToken(userId int64) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
-func GenerateRefreshToken(userId int64) (string, error) {
+func GenerateRefreshToken(userId uint) (string, error) {
 	claims := &jwt.RegisteredClaims{
-		Subject:   string(userId),
+		Subject:   strconv.Itoa(int(userId)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.JwtConfig.RefreshExpire)),
 	}

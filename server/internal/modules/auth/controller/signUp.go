@@ -18,7 +18,7 @@ import (
 // @Param user body controller.UserSignUpRequest true "User registration details"
 // @Success 201 {object} response.Response "User successfully created"
 // @Failure 400 {object} response.Response "Validation error or invalid request payload"
-// @Failure 409 {object} response.Response "Conflict - User with this email already exists"
+// @Failure 409 {object} response.Response "Conflict - User with this email or login already exists"
 // @Failure 500 {object} response.Response "Internal server error"
 // @Router /auth/sign-up [post]
 func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +46,10 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 			log.Info("email already exists", slog.String("email", req.Email))
 			w.WriteHeader(http.StatusConflict)
 			render.JSON(w, r, resp.Error(err.Error()))
+		case errors.Is(err, auth.ErrLoginExists):
+			log.Info("login already exists", slog.String("login", req.Login))
+			w.WriteHeader(http.StatusConflict)
+			render.JSON(w, r, resp.Error("login already exists"))
 		default:
 			log.Error("failed to sign up user", err)
 			w.WriteHeader(http.StatusInternalServerError)

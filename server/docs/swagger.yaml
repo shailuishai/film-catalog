@@ -1,5 +1,21 @@
 basePath: /v1
 definitions:
+  controller.UserSignInRequest:
+    properties:
+      email:
+        example: jon.doe@gmail.com
+        type: string
+      login:
+        example: user1
+        maxLength: 50
+        minLength: 1
+        type: string
+      password:
+        example: SuperPassword123
+        type: string
+    required:
+    - password
+    type: object
   controller.UserSignUpRequest:
     properties:
       email:
@@ -36,6 +52,44 @@ info:
   title: Film-catalog API
   version: 1.0.0
 paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Create access and refresh token and return them to the user
+      parameters:
+      - description: User login details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UserSignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully signed in
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Invalid Password or Email
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: User email is not confirmed
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: User SignIn
+      tags:
+      - Authentication
   /auth/sign-up:
     post:
       consumes:
@@ -60,7 +114,7 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "409":
-          description: Conflict - User with this email already exists
+          description: Conflict - User with this email or login already exists
           schema:
             $ref: '#/definitions/response.Response'
         "500":

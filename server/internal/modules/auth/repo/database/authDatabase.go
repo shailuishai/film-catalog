@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"log/slog"
 	"server/internal/modules/auth"
+	"strings"
 )
 
 type AuthDatabase struct {
@@ -25,7 +26,9 @@ func (db *AuthDatabase) CreateUser(user *auth.UserAuth) error {
 
 	if err := db.db.Create(userModel).Error; err != nil {
 		db.log.Error(err.Error())
-		if !errors.Is(err, gorm.ErrDuplicatedKey) {
+		if strings.Contains(err.Error(), "login") {
+			return auth.ErrLoginExists
+		} else if strings.Contains(err.Error(), "email") {
 			return auth.ErrEmailExists
 		}
 		return auth.ErrInternal
@@ -38,7 +41,25 @@ func (db *AuthDatabase) GetUserByEmail(email string) (*auth.UserAuth, error) {
 	var user User
 
 	if err := db.db.Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, err
+		db.log.Error(err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, auth.ErrUserNotFound
+		}
+		return nil, auth.ErrInternal
+	}
+
+	return ToEntity(&user), nil
+}
+
+func (db *AuthDatabase) GetUserByLogin(login string) (*auth.UserAuth, error) {
+	var user User
+
+	if err := db.db.Where("login = ?", login).First(&user).Error; err != nil {
+		db.log.Error(err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, auth.ErrUserNotFound
+		}
+		return nil, auth.ErrInternal
 	}
 
 	return ToEntity(&user), nil

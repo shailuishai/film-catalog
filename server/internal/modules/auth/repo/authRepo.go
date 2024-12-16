@@ -10,6 +10,7 @@ type AuthCache interface {
 type AuthDb interface {
 	CreateUser(user *auth.UserAuth) error
 	GetUserByEmail(email string) (*auth.UserAuth, error)
+	GetUserByLogin(login string) (*auth.UserAuth, error)
 }
 
 type Repo struct {
@@ -30,6 +31,10 @@ func (r *Repo) CreateUser(user *auth.UserAuth) error {
 
 func (r *Repo) GetUserByEmail(email string) (*auth.UserAuth, error) {
 	return r.db.GetUserByEmail(email)
+}
+
+func (r *Repo) GetUserByLogin(login string) (*auth.UserAuth, error) {
+	return r.db.GetUserByLogin(login)
 }
 
 func (r *Repo) SaveStateCode(state string) error {

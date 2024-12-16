@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"server/internal/modules/auth"
+	"server/pkg/lib/jwt"
 )
 
 type AuthUsecase struct {
@@ -36,11 +37,41 @@ func (uc *AuthUsecase) SignUp(email string, password string) error {
 	return err
 }
 
-func (uc *AuthUsecase) SignIn(email string, password string) (string, string, error) {
-	if email == "test@example.com" && password == "password" {
-		return "access_token_stub", "refresh_token_stub", nil
+func (uc *AuthUsecase) SignIn(email string, login string, password string) (string, string, error) {
+	var user *auth.UserAuth
+	if email != "" {
+		var err error
+		user, err = uc.rp.GetUserByEmail(email)
+		if err != nil {
+			return "", "", err
+		}
+	} else if login != "" {
+		var err error
+		user, err = uc.rp.GetUserByLogin(login)
+		if err != nil {
+			return "", "", err
+		}
 	}
-	return "", "", errors.New("invalid email or password")
+
+	if err := bcrypt.CompareHashAndPassword([]byte(*user.HashedPassword), []byte(password)); err != nil {
+		return "", "", auth.ErrUserNotFound
+	}
+
+	if !user.VerifiedEmail {
+		return "", "", auth.ErrEmailNotConfirmed
+	}
+
+	accessToken, err := jwt.GenerateAccessToken(user.UserId)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := jwt.GenerateRefreshToken(user.UserId)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (uc *AuthUsecase) GetAuthURL(provider string) (string, error) {

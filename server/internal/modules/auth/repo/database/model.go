@@ -21,6 +21,7 @@ func ToEntity(user *User) *auth.UserAuth {
 		Login:          user.Login,
 		Email:          user.Email,
 		IsAdmin:        user.IsAdmin,
+		VerifiedEmail:  user.VerifiedEmail,
 	}
 }
 
@@ -31,5 +32,6 @@ func ToModel(user *auth.UserAuth) *User {
 		IsAdmin:        user.IsAdmin,
 		Email:          user.Email,
 		Login:          user.Login,
+		VerifiedEmail:  user.VerifiedEmail,
 	}
 }

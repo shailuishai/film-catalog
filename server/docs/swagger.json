@@ -11,6 +11,64 @@
     },
     "basePath": "/v1",
     "paths": {
+        "/auth/sign-in": {
+            "post": {
+                "description": "Create access and refresh token and return them to the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User SignIn",
+                "parameters": [
+                    {
+                        "description": "User login details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UserSignInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully signed in",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid Password or Email",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "User email is not confirmed",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-up": {
             "post": {
                 "description": "Registers a new user with the provided email and password.",
@@ -49,7 +107,7 @@
                         }
                     },
                     "409": {
-                        "description": "Conflict - User with this email already exists",
+                        "description": "Conflict - User with this email or login already exists",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -65,6 +123,28 @@
         }
     },
     "definitions": {
+        "controller.UserSignInRequest": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "jon.doe@gmail.com"
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1,
+                    "example": "user1"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "SuperPassword123"
+                }
+            }
+        },
         "controller.UserSignUpRequest": {
             "type": "object",
             "required": [
