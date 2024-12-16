@@ -30,7 +30,7 @@ s3:
           path: "./server/default_avatar.webp"
           keys:
             - "default/512x512.webp"
-            - "default/52x52.webp"
+            - "default/64x64.webp"
       - name: "filmposter"
         default_file:
           path: "./server/default_film.webp"
@@ -41,4 +41,4 @@ s3:
           path: "./server/default_actor.webp"
           keys:
             - "default/512x512.webp"
-            - "default/52x52.webp"
+            - "default/64x64.webp"

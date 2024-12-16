@@ -11,7 +11,7 @@ import (
 //
 // @Summary      Logout user
 // @Description  Logs out the user by clearing the refresh token cookie. If the cookie is not found, returns success without any action.
-// @Tags         Authentication
+// @Tags         auth
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  response.Response    "User successfully logged out or no refresh token found"

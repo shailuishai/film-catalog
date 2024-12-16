@@ -5,14 +5,14 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"server/internal/modules/auth"
+	u "server/internal/modules/user"
 	resp "server/pkg/lib/response"
 	"time"
 )
 
 // SignIn
 // @Summary User SignIn
-// @Tags Authentication
+// @Tags auth
 // @Description Create access and refresh token and return them to the user
 // @Accept json
 // @Produce json
@@ -45,10 +45,10 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	AccessToken, RefreshToken, err := c.uc.SignIn(req.Email, req.Login, req.Password)
 	if err != nil {
 		switch {
-		case errors.Is(err, auth.ErrUserNotFound):
+		case errors.Is(err, u.ErrUserNotFound):
 			w.WriteHeader(http.StatusUnauthorized)
 			render.JSON(w, r, resp.Error("failed email or password"))
-		case errors.Is(err, auth.ErrEmailNotConfirmed):
+		case errors.Is(err, u.ErrEmailNotConfirmed):
 			w.WriteHeader(http.StatusForbidden)
 			render.JSON(w, r, resp.Error("email not confirmed"))
 		default:

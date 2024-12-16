@@ -11,7 +11,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	u "server/internal/modules/profile"
+	u "server/internal/modules/user"
 	"sync"
 )
 
@@ -55,8 +55,8 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	}
 
 	var wg sync.WaitGroup
-	var buf512, buf52 []byte
-	var err512, err52 error
+	var buf512, buf64 []byte
+	var err512, err64 error
 
 	// Обработка 512x512
 	wg.Add(1)
@@ -75,13 +75,13 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		resized := resize.Resize(52, 52, img, resize.Lanczos3)
+		resized := resize.Resize(64, 64, img, resize.Lanczos3)
 		buffer := new(bytes.Buffer)
 		if err := webp.Encode(buffer, resized, &webp.Options{Quality: 80}); err != nil {
-			err52 = u.ErrInternal
+			err64 = u.ErrInternal
 			return
 		}
-		buf52 = buffer.Bytes()
+		buf64 = buffer.Bytes()
 	}()
 
 	// Ожидание завершения всех горутин
@@ -91,11 +91,11 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	if err512 != nil {
 		return nil, nil, err512
 	}
-	if err52 != nil {
-		return nil, nil, err52
+	if err64 != nil {
+		return nil, nil, err64
 	}
 
-	return buf52, buf512, nil
+	return buf64, buf512, nil
 }
 
 func isNonAnimatedGIF(reader io.Reader) (bool, error) {

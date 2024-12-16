@@ -1,7 +1,7 @@
-package database
+package user
 
 import (
-	"server/internal/modules/auth"
+	"server/internal/modules/user/auth"
 )
 
 type User struct {
@@ -11,10 +11,10 @@ type User struct {
 	Login          string  `gorm:"unique;size:100;not null;column:login"`
 	Email          string  `gorm:"unique;size:100;not null;column:email"`
 	VerifiedEmail  bool    `gorm:"default:false;column:verified_email"`
-	AvatarURL      string  `gorm:"default:'https://useravatar.database-173.s3hoster.by/default/';column:avatar_url"`
+	AvatarURL      string  `gorm:"default:'https://useravatar.storage-173.s3hoster.by/default/';column:avatar_url"`
 }
 
-func ToEntity(user *User) *auth.UserAuth {
+func ToAuthUser(user *User) *auth.UserAuth {
 	return &auth.UserAuth{
 		UserId:         user.UserId,
 		HashedPassword: user.HashedPassword,
@@ -25,7 +25,7 @@ func ToEntity(user *User) *auth.UserAuth {
 	}
 }
 
-func ToModel(user *auth.UserAuth) *User {
+func FromAuthUser(user *auth.UserAuth) *User {
 	return &User{
 		UserId:         user.UserId,
 		HashedPassword: user.HashedPassword,

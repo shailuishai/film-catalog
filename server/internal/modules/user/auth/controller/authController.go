@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/go-playground/validator/v10"
 	"log/slog"
-	"server/internal/modules/auth"
+	"server/internal/modules/user/auth"
 )
 
 type AuthController struct {

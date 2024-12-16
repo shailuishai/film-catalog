@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"server/internal/init/cache"
-	u "server/internal/modules/auth"
+	"server/internal/modules/user"
 )
 
 type AuthCache struct {
@@ -18,7 +18,7 @@ func NewAuthCache(ch *cache.Cache) *AuthCache {
 
 func (c *AuthCache) SaveStateCode(state string) error {
 	if err := c.ch.Db.Set(context.Background(), state, "true", c.ch.StateExpiration).Err(); err != nil {
-		return u.ErrInternal
+		return user.ErrInternal
 	}
 	return nil
 }
@@ -26,12 +26,12 @@ func (c *AuthCache) SaveStateCode(state string) error {
 func (c *AuthCache) VerifyStateCode(state string) (bool, error) {
 	state, err := c.ch.Db.Get(context.Background(), state).Result()
 	if err != nil {
-		return false, u.ErrInvalidState
+		return false, user.ErrInvalidState
 	}
 
 	if state == "true" {
 		if err := c.ch.Db.Del(context.Background(), state).Err(); err != nil {
-			return false, u.ErrInternal
+			return false, user.ErrInternal
 		}
 		return true, nil
 	}

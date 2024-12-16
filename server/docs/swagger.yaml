@@ -1,5 +1,25 @@
 basePath: /v1
 definitions:
+  controller.EmailConfirmedRequest:
+    properties:
+      code:
+        example: 54JK64
+        type: string
+      email:
+        example: jon.doe@gmail.com
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  controller.SendConfirmedEmailCodeRequest:
+    properties:
+      email:
+        example: jon.doe@gmail.com
+        type: string
+    required:
+    - email
+    type: object
   controller.UserSignInRequest:
     properties:
       email:
@@ -79,7 +99,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: User SignWithOauth
       tags:
-      - Authentication
+      - auth
   /auth/{provider}/callback:
     get:
       consumes:
@@ -127,7 +147,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: OAuth2 Callback Handler
       tags:
-      - Authentication
+      - auth
   /auth/logout:
     post:
       consumes:
@@ -147,7 +167,31 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Logout user
       tags:
-      - Authentication
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the access token using the provided refresh token from
+        cookies.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully refreshed access token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Invalid, missing or expired refresh token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Refresh Access Token
+      tags:
+      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -185,7 +229,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: User SignIn
       tags:
-      - Authentication
+      - auth
   /auth/sign-up:
     post:
       consumes:
@@ -219,7 +263,68 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: User SignUp
       tags:
-      - Authentication
+      - auth
+  /email/confirm:
+    put:
+      consumes:
+      - application/json
+      description: Validate confirmed code and is it confirmed update email_status
+      parameters:
+      - description: data for confirmed email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.EmailConfirmedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success email confirmation
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Error email confirmation
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Confirmation email address
+      tags:
+      - email
+  /email/send-code:
+    post:
+      consumes:
+      - application/json
+      description: Generate code for confirmation email and send this to email. This
+        endpoint have rate 1 req in 1 min
+      parameters:
+      - description: Email пользователя для подтверждения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.SendConfirmedEmailCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Код подтверждения успешно отправлен
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Ошибка валидации или неверный запрос
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Send code for confirmation email
+      tags:
+      - email
 securityDefinitions:
   ApiKeyAuth:
     in: header

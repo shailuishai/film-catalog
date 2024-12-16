@@ -7,10 +7,6 @@ import (
 	"server/config"
 )
 
-type EmailSenderService interface {
-	SendConfirmEmail(code string, email string) error
-}
-
 type EmailSender struct {
 	SmtpServer *gomail.Dialer
 }

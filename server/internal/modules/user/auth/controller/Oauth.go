@@ -6,14 +6,14 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	u "server/internal/modules/auth"
+	u "server/internal/modules/user"
 	resp "server/pkg/lib/response"
 	"time"
 )
 
 // Oauth
 // @Summary User SignWithOauth
-// @Tags Authentication
+// @Tags auth
 // @Description Redirects the user to the OAuth provider for authentication.
 // @Accept json
 // @Produce json
@@ -45,7 +45,7 @@ func (c *AuthController) Oauth(w http.ResponseWriter, r *http.Request) {
 
 // OauthCallback
 // @Summary OAuth2 Callback Handler
-// @Tags Authentication
+// @Tags auth
 // @Description Handles the callback from the OAuth provider after the user has authorized the app. THIS ENDPOINT IS CALLED BY THE OAUTH PROVIDER, NOT THE FRONTEND!!!
 // @Accept json
 // @Produce json

@@ -12,7 +12,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"server/internal/modules/auth"
+	u "server/internal/modules/user"
+	"server/internal/modules/user/auth"
 	"server/pkg/lib/jwt"
 	"strconv"
 )
@@ -32,7 +33,7 @@ func NewAuthUseCase(log *slog.Logger, rp auth.Repo) *AuthUseCase {
 func (uc *AuthUseCase) SignUp(email string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return auth.ErrInternal
+		return u.ErrInternal
 	}
 	hashPassword := string(hashedPassword)
 
@@ -62,11 +63,11 @@ func (uc *AuthUseCase) SignIn(email string, login string, password string) (stri
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(*user.HashedPassword), []byte(password)); err != nil {
-		return "", "", auth.ErrUserNotFound
+		return "", "", u.ErrUserNotFound
 	}
 
 	if !user.VerifiedEmail {
-		return "", "", auth.ErrEmailNotConfirmed
+		return "", "", u.ErrEmailNotConfirmed
 	}
 
 	accessToken, err := jwt.GenerateAccessToken(user.UserId)
@@ -85,7 +86,7 @@ func (uc *AuthUseCase) SignIn(email string, login string, password string) (stri
 func (uc *AuthUseCase) RefreshToken(r *http.Request) (string, error) {
 	refreshToken, err := r.Cookie("refresh_token")
 	if err != nil {
-		return "", auth.ErrNoRefreshToken
+		return "", u.ErrNoRefreshToken
 	}
 
 	claims, err := jwt.ValidateJWT(refreshToken.Value)
@@ -95,7 +96,7 @@ func (uc *AuthUseCase) RefreshToken(r *http.Request) (string, error) {
 
 	userId, err := strconv.ParseUint(claims.Subject, 10, 0)
 	if err != nil {
-		return "", auth.ErrInternal
+		return "", u.ErrInternal
 	}
 
 	user, err := uc.rp.GetUserById(uint(userId))
@@ -141,7 +142,7 @@ type YandexUserData struct {
 func (uc *AuthUseCase) GetAuthURL(provider string) (string, error) {
 	config, ok := oauthConfigs[provider]
 	if !ok {
-		return "", auth.ErrUnsupportedProvider
+		return "", u.ErrUnsupportedProvider
 	}
 
 	state := uuid.NewString()
@@ -156,7 +157,7 @@ func (uc *AuthUseCase) GetAuthURL(provider string) (string, error) {
 func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, string, error) {
 	config, ok := oauthConfigs[provider]
 	if !ok {
-		return false, "", "", auth.ErrUnsupportedProvider
+		return false, "", "", u.ErrUnsupportedProvider
 	}
 
 	isValidState, err := uc.rp.VerifyStateCode(state)
@@ -176,10 +177,10 @@ func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, str
 	}
 
 	existingUser, err := uc.rp.GetUserByEmail(user.Email)
-	if errors.Is(err, auth.ErrUserNotFound) {
+	if errors.Is(err, u.ErrUserNotFound) {
 		userId, err := uc.rp.CreateUser(user)
 		if err != nil {
-			if errors.Is(err, auth.ErrLoginExists) {
+			if errors.Is(err, u.ErrLoginExists) {
 				user.Login = ""
 				userId, err = uc.rp.CreateUser(user)
 				if err != nil {
@@ -225,7 +226,7 @@ func fetchUserInfo(client *http.Client, provider string) (*auth.UserAuth, error)
 	case "yandex":
 		url = "https://login.yandex.ru/info?format=json"
 	default:
-		return nil, auth.ErrUnsupportedProvider
+		return nil, u.ErrUnsupportedProvider
 	}
 
 	resp, err := client.Get(url)
@@ -248,7 +249,7 @@ func fetchUserInfo(client *http.Client, provider string) (*auth.UserAuth, error)
 		}
 		return YandexToUser(&user), nil
 	default:
-		return nil, auth.ErrUnsupportedProvider
+		return nil, u.ErrUnsupportedProvider
 	}
 }
 
