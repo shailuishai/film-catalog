@@ -26,8 +26,8 @@ type AccessTokenData struct {
 }
 
 type UserProfileData struct {
-	Email     string  `json:"email"`
-	Login     string  `json:"login"`
+	Email     *string `json:"email,omitempty"`
+	Login     *string `json:"login,omitempty"`
 	AvatarUrl *string `json:"avatar_url"`
 }
 
@@ -35,6 +35,8 @@ func UserProfile(user *profile.UserProfile) Response {
 	return Response{
 		Status: StatusOK,
 		Data: UserProfileData{
+			Email:     user.Email,
+			Login:     user.Login,
 			AvatarUrl: user.AvatarUrl,
 		},
 	}
@@ -46,6 +48,12 @@ func AccessToken(token string) Response {
 		Data: AccessTokenData{
 			AccessToken: token,
 		},
+	}
+}
+
+func OK() Response {
+	return Response{
+		Status: StatusOK,
 	}
 }
 
@@ -80,11 +88,5 @@ func ValidationError(err error) Response {
 	return Response{
 		Status: StatusError,
 		Error:  strings.Join(errMsgs, ", "),
-	}
-}
-
-func OK() Response {
-	return Response{
-		Status: StatusOK,
 	}
 }

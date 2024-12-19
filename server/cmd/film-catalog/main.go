@@ -28,7 +28,13 @@ import (
 	emailCh "server/internal/modules/user/email/repo/cache"
 	emailDb "server/internal/modules/user/email/repo/database"
 	emailUC "server/internal/modules/user/email/usecase"
+	profileC "server/internal/modules/user/profile/controller"
+	profileRp "server/internal/modules/user/profile/repo"
+	profileDb "server/internal/modules/user/profile/repo/database"
+	profileS3 "server/internal/modules/user/profile/repo/s3"
+	profileUC "server/internal/modules/user/profile/usecase"
 	"server/pkg/lib/emailsender"
+	middleAuth "server/pkg/middleware/jwt"
 	middlelog "server/pkg/middleware/logger"
 	"syscall"
 	"time"
@@ -113,8 +119,6 @@ func (app *App) SetupRoutes() {
 		middleware.URLFormat,
 	)
 
-	// var jwtMiddleware = middleJWT.New(app.Log)
-
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
 		swag.URL("http://localhost:8079/swagger/doc.json"),
@@ -122,7 +126,6 @@ func (app *App) SetupRoutes() {
 
 	apiVersion := "/v1"
 
-	// Группа для аунтификации
 	AuthDB := authDb.NewAuthDatabase(app.Storage.Db, app.Log)
 	AuthCh := authCh.NewAuthCache(app.Cache)
 	AuthRp := authRp.NewRepo(AuthDB, AuthCh)
@@ -140,7 +143,7 @@ func (app *App) SetupRoutes() {
 
 	EmailDB := emailDb.NewEmailDatabase(app.Storage.Db, app.Log)
 	EmailCh := emailCh.NewEmailCache(app.Cache)
-	EmailRp := emailRp.NewRepo(EmailDB, EmailCh)
+	EmailRp := emailRp.NewEmailRepo(EmailDB, EmailCh)
 	EmailUC := emailUC.NewEmailUseCase(app.Log, EmailRp, app.EmailSender)
 	EmailC := emailC.NewEmailController(app.Log, EmailUC)
 
@@ -152,27 +155,20 @@ func (app *App) SetupRoutes() {
 		r.Put("/confirm", EmailC.EmailConfirmed)
 	})
 
-	//// Группа для пользовательских маршрутов (требует авторизации)
-	//app.Router.Route(apiVersion+"/user", func(r chi.Router) {
-	//	r.Use(jwtMiddleware)
-	//	r.Put("/edit", UserHandler.UpdateUserHandler)
-	//	r.Get("/me", UserHandler.GetUserHandler)
-	//	r.Delete("/delete", UserHandler.DeleteUserHandler)
-	//})
+	ProfileDB := profileDb.NewProfileDatabase(app.Storage.Db, app.Log)
+	ProfileS3 := profileS3.NewProfileS3(app.Log, app.S3)
+	ProfileRp := profileRp.NewProfileRepo(ProfileDB, ProfileS3)
+	ProfileUC := profileUC.NewProfileUseCase(app.Log, ProfileRp)
+	ProfileC := profileC.NewProfileController(app.Log, ProfileUC)
 
-	//// Группа для административных маршрутов
-	//app.Router.Route("/admin", func(r chi.Router) {
-	//	r.Use(middleJWT.NewCache(app.Log))
-	//	//r.Use(middleAdmin)
-	//})
-	//
-	////Группа маршутов для супперадминов для создание админов
-	//app.Router.Group(func(r chi.Router) {
-	//	r.Use(middleJWT.NewCache(app.Log))
-	//	//r.Use(WhiteIpList(WhiteList)
-	//	//r.Use(middleSuperAdmin)
-	//	//r.Post("/admin/create", auth.CrateAdminHandler(app.Storage, app.Log))
-	//})
+	var AuthMiddleware = middleAuth.New(app.Log)
+
+	app.Router.Route(apiVersion+"/profile", func(r chi.Router) {
+		r.Use(AuthMiddleware)
+		r.Get("/", ProfileC.GetUser)
+		r.Put("/", ProfileC.UpdateUser)
+		r.Delete("/", ProfileC.DeleteUser)
+	})
 }
 
 // @title Film-catalog API

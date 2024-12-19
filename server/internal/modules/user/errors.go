@@ -17,5 +17,7 @@ var (
 	ErrEmailAlreadyConfirmed   = errors.New("email already confirmed")
 	ErrInvalidConfirmCode      = errors.New("invalid confirm code")
 	ErrInvalidTypeAvatar       = errors.New("invalid avatar")
+	ErrInvalidSizeAvatar       = errors.New("file size exceeds 1 MB limit")
 	ErrInvalidResolutionAvatar = errors.New("invalid resolution avatar")
+	ErrInvalidAvatarFile       = errors.New("invalid avatar file")
 )

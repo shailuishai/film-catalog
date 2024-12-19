@@ -6,26 +6,29 @@ import (
 )
 
 type UserProfile struct {
-	UserId    int64   `json:"user_id"`
-	AvatarUrl *string `json:"avatar_url,omitempty"`
+	UserId      uint
+	AvatarUrl   *string
+	Login       *string
+	Email       *string
+	ResetAvatar bool
 }
 
 type Controller interface {
-	UpdateUserHandler(w http.ResponseWriter, r *http.Request)
-	GetUserHandler(w http.ResponseWriter, r *http.Request)
-	DeleteUserHandler(w http.ResponseWriter, r *http.Request)
+	UpdateUser(w http.ResponseWriter, r *http.Request)
+	GetUser(w http.ResponseWriter, r *http.Request)
+	DeleteUser(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
-	UpdateUser(avatar *multipart.File, user *UserProfile, resetAvatar bool) error
-	GetUser(userId int64) (*UserProfile, error)
-	DeleteUser(userId int64) error
+	UpdateUser(profile *UserProfile, avatar *multipart.File) error
+	GetUser(userId uint) (*UserProfile, error)
+	DeleteUser(userId uint) error
 }
 
 type Repo interface {
-	GetUserById(userId int64) (*UserProfile, error)
+	GetUserById(userId uint) (*UserProfile, error)
 	UpdateUser(user *UserProfile) error
-	UploadAvatar(avatarSmall []byte, avatarLarge []byte, userId int64) (*string, error)
-	DeleteUser(userId int64) error
-	DeleteAvatar(userId int64) error
+	UploadAvatar(avatarSmall []byte, avatarLarge []byte, login *string, userId uint) (*string, error)
+	DeleteUser(userId uint) error
+	DeleteAvatar(login *string, userId uint) error
 }

@@ -88,7 +88,7 @@ func (c *EmailController) SendConfirmedEmailCode(w http.ResponseWriter, r *http.
 // @Success 200 {object} response.Response "Success email confirmation"
 // @Failure 400 {object} response.Response "Error email confirmation"
 // @Failure 500 {object} response.Response "Internal server error"
-// @Router /email/confirm [put]
+// @Router /email/confirm	 [put]
 func (c *EmailController) EmailConfirmed(w http.ResponseWriter, r *http.Request) {
 	log := c.log.With("op", "EmailConfirmedHandler")
 

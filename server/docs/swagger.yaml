@@ -325,6 +325,107 @@ paths:
       summary: Send code for confirmation email
       tags:
       - email
+  /profile:
+    delete:
+      description: Deletes the user profile and all associated data.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile deleted successfully
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user profile
+      tags:
+      - profile
+    get:
+      description: Retrieves the user profile information.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user profile
+      tags:
+      - profile
+    put:
+      consumes:
+      - multipart/form-data
+      description: |-
+        Updates the user profile information, including login and avatar.
+        The request accepts a JSON part with the login data, an optional avatar file, and a query parameter `reset_avatar`.
+      parameters:
+      - description: Reset avatar to default
+        in: query
+        name: reset_avatar
+        type: boolean
+      - description: JSON with login data
+        in: formData
+        name: json
+        required: true
+        type: string
+      - description: Avatar image file (max 1MB)
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: File size exceeds 1MB limit
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user profile
+      tags:
+      - profile
 securityDefinitions:
   ApiKeyAuth:
     in: header

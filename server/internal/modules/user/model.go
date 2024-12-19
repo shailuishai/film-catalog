@@ -2,6 +2,7 @@ package user
 
 import (
 	"server/internal/modules/user/auth"
+	"server/internal/modules/user/profile"
 )
 
 type User struct {
@@ -33,5 +34,22 @@ func FromAuthUser(user *auth.UserAuth) *User {
 		Email:          user.Email,
 		Login:          user.Login,
 		VerifiedEmail:  user.VerifiedEmail,
+	}
+}
+
+func ToProfileUser(user *User) *profile.UserProfile {
+	return &profile.UserProfile{
+		UserId:    user.UserId,
+		Email:     &user.Email,
+		Login:     &user.Login,
+		AvatarUrl: &user.AvatarURL,
+	}
+}
+
+func FromProfileUser(user *profile.UserProfile) *User {
+	return &User{
+		UserId:    user.UserId,
+		Login:     *user.Login,
+		AvatarURL: *user.AvatarUrl,
 	}
 }

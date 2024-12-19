@@ -15,7 +15,7 @@ type Repo struct {
 	ch EmailCache
 }
 
-func NewRepo(db EmailDb, cache EmailCache) *Repo {
+func NewEmailRepo(db EmailDb, cache EmailCache) *Repo {
 	return &Repo{
 		db: db,
 		ch: cache,

@@ -48,9 +48,9 @@ func (uc *EmailUseCase) SendEmailForConfirmed(email string) error {
 		return err
 	}
 
-	if err := uc.ess.SendConfirmEmail(code, email); err != nil {
-		return err
-	}
+	go func() {
+		uc.ess.SendConfirmEmail(code, email)
+	}()
 
 	return nil
 }
