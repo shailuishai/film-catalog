@@ -40,7 +40,7 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.uc.SignUp(req.Email, req.Password); err != nil {
+	if err := c.uc.SignUp(req.Email, req.Login, req.Password); err != nil {
 		switch {
 		case errors.Is(err, u.ErrEmailExists):
 			log.Info("email already exists", slog.String("email", req.Email))

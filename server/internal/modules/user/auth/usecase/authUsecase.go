@@ -30,7 +30,7 @@ func NewAuthUseCase(log *slog.Logger, rp auth.Repo) *AuthUseCase {
 	}
 }
 
-func (uc *AuthUseCase) SignUp(email string, password string) error {
+func (uc *AuthUseCase) SignUp(email string, login string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return u.ErrInternal
@@ -39,6 +39,7 @@ func (uc *AuthUseCase) SignUp(email string, password string) error {
 
 	user := &auth.UserAuth{
 		Email:          email,
+		Login:          login,
 		HashedPassword: &hashPassword,
 	}
 

@@ -3,16 +3,18 @@ package user
 import (
 	"server/internal/modules/user/auth"
 	"server/internal/modules/user/profile"
+	"time"
 )
 
 type User struct {
-	UserId         uint    `gorm:"primaryKey;column:user_id"`
-	HashedPassword *string `gorm:"size:255;column:hashed_password"`
-	IsAdmin        bool    `gorm:"default:false;column:is_admin"`
-	Login          string  `gorm:"unique;size:100;not null;column:login"`
-	Email          string  `gorm:"unique;size:100;not null;column:email"`
-	VerifiedEmail  bool    `gorm:"default:false;column:verified_email"`
-	AvatarURL      string  `gorm:"default:'https://useravatar.storage-173.s3hoster.by/default/';column:avatar_url"`
+	UserId         uint      `gorm:"primaryKey;column:user_id"`
+	HashedPassword *string   `gorm:"size:255;column:hashed_password"`
+	IsAdmin        bool      `gorm:"default:false;column:is_admin"`
+	Login          string    `gorm:"unique;size:100;not null;column:login"`
+	Email          string    `gorm:"unique;size:100;not null;column:email"`
+	VerifiedEmail  bool      `gorm:"default:false;column:verified_email"`
+	AvatarURL      string    `gorm:"default:'https://useravatar.storage-173.s3hoster.by/default/';column:avatar_url"`
+	CreateAt       time.Time `gorm:"column:create_at"`
 }
 
 func ToAuthUser(user *User) *auth.UserAuth {

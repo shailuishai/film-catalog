@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
+	"github.com/robfig/cron/v3"
 	swag "github.com/swaggo/http-swagger/v2"
 	"log/slog"
 	"net/http"
@@ -33,6 +34,7 @@ import (
 	profileDb "server/internal/modules/user/profile/repo/database"
 	profileS3 "server/internal/modules/user/profile/repo/s3"
 	profileUC "server/internal/modules/user/profile/usecase"
+	"server/pkg/lib/TaskService"
 	"server/pkg/lib/emailsender"
 	middleAuth "server/pkg/middleware/jwt"
 	middlelog "server/pkg/middleware/logger"
@@ -48,6 +50,8 @@ type App struct {
 	Router      chi.Router
 	Log         *slog.Logger
 	Cfg         *config.Config
+	Cron        *cron.Cron
+	TS          *TaskService.TaskService
 }
 
 func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
@@ -73,7 +77,19 @@ func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
 	}
 
 	router := chi.NewRouter()
-	return &App{Storage: Storage, Cache: Cache, S3: s3s, EmailSender: eSender, Router: router, Log: log, Cfg: cfg}, nil
+
+	taskService := TaskService.NewTaskService(Storage.Db, log)
+
+	c := cron.New()
+	_, err = c.AddFunc("0 0 * * *", func() {
+		taskService.CleanUnverifiedUsers()
+	})
+	if err != nil {
+		return nil, fmt.Errorf("cron init failed: %w", err)
+	}
+	c.Start()
+
+	return &App{Storage: Storage, Cache: Cache, S3: s3s, EmailSender: eSender, Router: router, Log: log, Cfg: cfg, Cron: c, TS: taskService}, nil
 }
 
 func (app *App) Start() error {
@@ -98,6 +114,8 @@ func (app *App) Start() error {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	<-quit
+
+	app.Cron.Stop()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

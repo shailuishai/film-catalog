@@ -24,7 +24,7 @@ type Controller interface {
 }
 
 type UseCase interface {
-	SignUp(email string, password string) error
+	SignUp(email string, login string, password string) error
 	SignIn(email string, login string, password string) (string, string, error)
 	GetAuthURL(provider string) (string, error)
 	Callback(provider, state, code string) (bool, string, string, error)
