@@ -9,7 +9,7 @@ import (
 )
 
 type Cache struct {
-	Db                           *redis.Client
+	Client                       *redis.Client
 	StateExpiration              time.Duration
 	EmailConfirmedCodeExpiration time.Duration
 }

@@ -2,6 +2,7 @@ package avatarManager
 
 import (
 	"bytes"
+	"errors"
 	"github.com/chai2010/webp"
 	"github.com/nfnt/resize"
 	"image"
@@ -11,14 +12,19 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	u "server/internal/modules/user"
 	"sync"
+)
+
+var (
+	ErrInternal                = errors.New("internal server error")
+	ErrInvalidTypeAvatar       = errors.New("invalid type avatar, supported avatar formats are jpg, jpeg, png, webp, or no animated gif")
+	ErrInvalidResolutionAvatar = errors.New("invalid resolution avatar, supported avatar resolution 1x1")
 )
 
 func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	buffer := new(bytes.Buffer)
 	if _, err := io.Copy(buffer, *file); err != nil {
-		return nil, nil, u.ErrInternal
+		return nil, nil, ErrInternal
 	}
 
 	var img image.Image
@@ -33,17 +39,17 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	case "image/gif":
 		isNonAnimated, err := isNonAnimatedGIF(bytes.NewReader(buffer.Bytes()))
 		if err != nil || !isNonAnimated {
-			return nil, nil, u.ErrInvalidTypeAvatar
+			return nil, nil, ErrInvalidTypeAvatar
 		}
 		img, err = gif.Decode(buffer)
 	case "image/webp":
 		img, err = webp.Decode(buffer)
 	default:
-		return nil, nil, u.ErrInvalidTypeAvatar
+		return nil, nil, ErrInvalidTypeAvatar
 	}
 
 	if err != nil {
-		return nil, nil, u.ErrInvalidTypeAvatar
+		return nil, nil, ErrInvalidTypeAvatar
 	}
 
 	bounds := img.Bounds()
@@ -51,7 +57,7 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 	height := bounds.Dy()
 
 	if width != height {
-		return nil, nil, u.ErrInvalidResolutionAvatar
+		return nil, nil, ErrInvalidResolutionAvatar
 	}
 
 	var wg sync.WaitGroup
@@ -65,7 +71,7 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 		resized := resize.Resize(512, 512, img, resize.Lanczos3)
 		buffer := new(bytes.Buffer)
 		if err := webp.Encode(buffer, resized, &webp.Options{Quality: 80}); err != nil {
-			err512 = u.ErrInternal
+			err512 = ErrInternal
 			return
 		}
 		buf512 = buffer.Bytes()
@@ -78,7 +84,7 @@ func ParsingAvatarImage(file *multipart.File) ([]byte, []byte, error) {
 		resized := resize.Resize(64, 64, img, resize.Lanczos3)
 		buffer := new(bytes.Buffer)
 		if err := webp.Encode(buffer, resized, &webp.Options{Quality: 80}); err != nil {
-			err64 = u.ErrInternal
+			err64 = ErrInternal
 			return
 		}
 		buf64 = buffer.Bytes()

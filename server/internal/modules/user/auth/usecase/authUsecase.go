@@ -49,18 +49,21 @@ func (uc *AuthUseCase) SignUp(email string, login string, password string) error
 
 func (uc *AuthUseCase) SignIn(email string, login string, password string) (string, string, error) {
 	var user *auth.UserAuth
+	var err error
 	if email != "" {
-		var err error
 		user, err = uc.rp.GetUserByEmail(email)
 		if err != nil {
 			return "", "", err
 		}
-	} else if login != "" {
-		var err error
+	} else {
 		user, err = uc.rp.GetUserByLogin(login)
 		if err != nil {
 			return "", "", err
 		}
+	}
+
+	if user.HashedPassword == nil {
+		return "", "", u.ErrUserAuthWithOauth2
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(*user.HashedPassword), []byte(password)); err != nil {

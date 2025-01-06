@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"server/internal/modules/user/profile"
+	act "server/internal/modules/actor"
+	u "server/internal/modules/user/profile"
 	"strings"
+	"time"
 )
 
 // Response represents the general structure of an API response
@@ -31,7 +33,7 @@ type UserProfileData struct {
 	AvatarUrl *string `json:"avatar_url"`
 }
 
-func UserProfile(user *profile.UserProfile) Response {
+func UserProfile(user *u.UserProfile) Response {
 	return Response{
 		Status: StatusOK,
 		Data: UserProfileData{
@@ -39,6 +41,47 @@ func UserProfile(user *profile.UserProfile) Response {
 			Login:     user.Login,
 			AvatarUrl: user.AvatarUrl,
 		},
+	}
+}
+
+type ActorData struct {
+	Name      *string    `json:"name,omitempty"`
+	WikiUrl   *string    `json:"wiki_url,omitempty"`
+	AvatarUrl *string    `json:"avatar_url"`
+	CreatedAt *time.Time `json:"created_at"`
+}
+
+func Actors(actors interface{}) Response {
+	switch v := actors.(type) {
+	case *act.ActorDTO:
+		return Response{
+			Status: StatusOK,
+			Data: ActorData{
+				Name:      &v.Name,
+				WikiUrl:   &v.WikiUrl,
+				AvatarUrl: v.AvatarUrl,
+				CreatedAt: &v.CreatedAt,
+			},
+		}
+	case []*act.ActorDTO:
+		var actors []ActorData
+		for _, actor := range v {
+			actors = append(actors, ActorData{
+				Name:      &actor.Name,
+				WikiUrl:   &actor.WikiUrl,
+				AvatarUrl: actor.AvatarUrl,
+				CreatedAt: &actor.CreatedAt,
+			})
+		}
+		return Response{
+			Status: StatusOK,
+			Data:   actors,
+		}
+	default:
+		return Response{
+			Status: StatusError,
+			Error:  "invalid actor type",
+		}
 	}
 }
 

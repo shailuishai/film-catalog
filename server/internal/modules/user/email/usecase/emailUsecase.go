@@ -49,7 +49,10 @@ func (uc *EmailUseCase) SendEmailForConfirmed(email string) error {
 	}
 
 	go func() {
-		uc.ess.SendConfirmEmail(code, email)
+		err := uc.ess.SendConfirmEmail(code, email)
+		if err != nil {
+			uc.log.Error("send email confirm code failed", slog.String("email", email), slog.String("error", err.Error()))
+		}
 	}()
 
 	return nil

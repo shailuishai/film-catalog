@@ -1,6 +1,5 @@
 package main
 
-import "C"
 import (
 	"context"
 	"errors"
@@ -19,6 +18,12 @@ import (
 	"server/internal/init/cache"
 	"server/internal/init/database"
 	"server/internal/init/s3"
+	actorC "server/internal/modules/actor/controller"
+	actorRp "server/internal/modules/actor/repo"
+	actorCh "server/internal/modules/actor/repo/cache"
+	actorDb "server/internal/modules/actor/repo/database"
+	actorS3 "server/internal/modules/actor/repo/s3"
+	actorUC "server/internal/modules/actor/usecase"
 	authC "server/internal/modules/user/auth/controller"
 	authRp "server/internal/modules/user/auth/repo"
 	authCh "server/internal/modules/user/auth/repo/cache"
@@ -180,12 +185,31 @@ func (app *App) SetupRoutes() {
 	ProfileC := profileC.NewProfileController(app.Log, ProfileUC)
 
 	var AuthMiddleware = middleAuth.New(app.Log)
+	//var AuthAdminMiddleware = middleAdmin.New(app.Log)
 
 	app.Router.Route(apiVersion+"/profile", func(r chi.Router) {
 		r.Use(AuthMiddleware)
 		r.Get("/", ProfileC.GetUser)
 		r.Put("/", ProfileC.UpdateUser)
 		r.Delete("/", ProfileC.DeleteUser)
+	})
+
+	ActorDB := actorDb.NewActorDatabase(app.Storage.Db, app.Log)
+	ActorS3 := actorS3.NewActorS3(app.Log, app.S3)
+	ActorCh := actorCh.NewActorCahce(app.Cache)
+	ActorRp := actorRp.NewActorRepo(ActorDB, ActorS3, ActorCh)
+	ActorUC := actorUC.NewActorUseCase(app.Log, ActorRp)
+	ActorC := actorC.NewActorController(app.Log, ActorUC)
+
+	app.Router.Route(apiVersion+"/actors", func(r chi.Router) {
+		r.Get("/", ActorC.GetActors)
+		r.Get("/{id}", ActorC.GetActor)
+		r.Group(func(r chi.Router) {
+			// r.Use(AuthMiddleware, AdminMiddleware)
+			r.Post("/", ActorC.CreateActor)
+			r.Put("/{id}", ActorC.UpdateActor)
+			r.Delete("/{id}", ActorC.DeleteActor)
+		})
 	})
 }
 

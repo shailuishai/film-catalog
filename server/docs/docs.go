@@ -18,6 +18,301 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/actors": {
+            "get": {
+                "description": "Возвращает список актеров с возможностью фильтрации по имени, дате создания, количеству фильмов, сортировке и пагинации",
+                "tags": [
+                    "actor"
+                ],
+                "summary": "Получить список актеров с фильтрацией по различным параметрам",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Имя актера",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Год добавления актера",
+                        "name": "create_at",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Минимальный год создания актера",
+                        "name": "min_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Максимальный год создания актера",
+                        "name": "max_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Минимальное количество фильмов, в которых снялся актер",
+                        "name": "min_movies_count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Максимальное количество фильмов, в которых снялся актер",
+                        "name": "max_movies_count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Поле для сортировки (например, 'name', 'created_at')",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Порядок сортировки (asc или desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Номер страницы для пагинации",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Количество актеров на странице",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.Response"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные данные запроса",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создает нового актера с указанными параметрами",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actor"
+                ],
+                "summary": "Создание нового актера",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Данные актера",
+                        "name": "json",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Аватар актера",
+                        "name": "avatar",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/actors/{id}": {
+            "get": {
+                "description": "Возвращает информацию об актере по его ID",
+                "tags": [
+                    "actor"
+                ],
+                "summary": "Получить актера по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID актера",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновляет данные актера, включая аватар",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actor"
+                ],
+                "summary": "Обновить информацию об актере",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID актера",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Reset avatar to default",
+                        "name": "reset_avatar",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON with login data",
+                        "name": "json",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Avatar image file (max 1MB)",
+                        "name": "avatar",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет актера по его ID",
+                "tags": [
+                    "actor"
+                ],
+                "summary": "Удалить актера по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID актера",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/logout": {
             "post": {
                 "description": "Logs out the user by clearing the refresh token cookie. If the cookie is not found, returns success without any action.",

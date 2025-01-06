@@ -72,6 +72,203 @@ info:
   title: Film-catalog API
   version: 1.0.0
 paths:
+  /actors:
+    get:
+      description: Возвращает список актеров с возможностью фильтрации по имени, дате
+        создания, количеству фильмов, сортировке и пагинации
+      parameters:
+      - description: Имя актера
+        in: query
+        name: name
+        type: string
+      - description: Год добавления актера
+        in: query
+        name: create_at
+        type: integer
+      - description: Минимальный год создания актера
+        in: query
+        name: min_year
+        type: integer
+      - description: Максимальный год создания актера
+        in: query
+        name: max_year
+        type: integer
+      - description: Минимальное количество фильмов, в которых снялся актер
+        in: query
+        name: min_movies_count
+        type: integer
+      - description: Максимальное количество фильмов, в которых снялся актер
+        in: query
+        name: max_movies_count
+        type: integer
+      - description: Поле для сортировки (например, 'name', 'created_at')
+        in: query
+        name: sort_by
+        type: string
+      - description: Порядок сортировки (asc или desc)
+        in: query
+        name: order
+        type: string
+      - description: Номер страницы для пагинации
+        in: query
+        name: page
+        type: integer
+      - description: Количество актеров на странице
+        in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "400":
+          description: Неверные данные запроса
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получить список актеров с фильтрацией по различным параметрам
+      tags:
+      - actor
+    post:
+      consumes:
+      - application/json
+      description: Создает нового актера с указанными параметрами
+      parameters:
+      - description: Данные актера
+        in: formData
+        name: json
+        required: true
+        type: string
+      - description: Аватар актера
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Создание нового актера
+      tags:
+      - actor
+  /actors/{id}:
+    delete:
+      description: Удаляет актера по его ID
+      parameters:
+      - description: ID актера
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Удалить актера по ID
+      tags:
+      - actor
+    get:
+      description: Возвращает информацию об актере по его ID
+      parameters:
+      - description: ID актера
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получить актера по ID
+      tags:
+      - actor
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные актера, включая аватар
+      parameters:
+      - description: ID актера
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Reset avatar to default
+        in: query
+        name: reset_avatar
+        type: boolean
+      - description: JSON with login data
+        in: formData
+        name: json
+        required: true
+        type: string
+      - description: Avatar image file (max 1MB)
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Обновить информацию об актере
+      tags:
+      - actor
   /auth/{provider}:
     get:
       consumes:

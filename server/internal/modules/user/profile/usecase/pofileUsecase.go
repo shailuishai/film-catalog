@@ -38,7 +38,7 @@ func (uc *ProfileUseCase) UpdateUser(user *profile.UserProfile, avatar *multipar
 
 	if user.ResetAvatar {
 		defaultAvatar := "https://useravatar.storage-173.s3hoster.by/default"
-		if err := uc.rp.DeleteAvatar(findUser.Login, findUser.UserId); err != nil {
+		if err := uc.rp.DeleteAvatar(findUser.Login, user.UserId); err != nil {
 			log.Error("failed to delete avatar", err)
 			return err
 		}
@@ -47,13 +47,22 @@ func (uc *ProfileUseCase) UpdateUser(user *profile.UserProfile, avatar *multipar
 		smallAvatar, largeAvatar, err := avatarManager.ParsingAvatarImage(avatar)
 		if err != nil {
 			log.Error("failed to parse avatar image", err)
-			return err
+			switch {
+			case errors.Is(err, avatarManager.ErrInvalidTypeAvatar):
+				return u.ErrInvalidTypeAvatar
+			case errors.Is(err, avatarManager.ErrInvalidResolutionAvatar):
+				return u.ErrInvalidResolutionAvatar
+			default:
+				return u.ErrInternal
+			}
 		}
+
 		avatarUrl, err := uc.rp.UploadAvatar(smallAvatar, largeAvatar, user.Login, user.UserId)
 		if err != nil {
 			log.Error("failed to upload avatar", err)
 			return err
 		}
+
 		user.AvatarUrl = avatarUrl
 	}
 

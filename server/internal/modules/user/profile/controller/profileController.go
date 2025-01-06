@@ -10,6 +10,7 @@ import (
 	u "server/internal/modules/user"
 	"server/internal/modules/user/profile"
 	resp "server/pkg/lib/response"
+	"time"
 )
 
 type ProfileController struct {
@@ -95,7 +96,6 @@ func (c *ProfileController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("avatar")
 	if errors.Is(err, http.ErrMissingFile) {
-		log.Info("no avatar file provided in the request")
 		file = nil
 	} else if err != nil {
 		log.Error("failed to retrieve avatar file", err)
@@ -105,7 +105,9 @@ func (c *ProfileController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		defer func() {
 			if file != nil {
-				file.Close()
+				if err := file.Close(); err != nil {
+					log.Error("failed to close avatar file", err)
+				}
 			}
 		}()
 	}
@@ -115,7 +117,10 @@ func (c *ProfileController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, u.ErrUserNotFound):
 			w.WriteHeader(http.StatusNotFound)
-			render.JSON(w, r, resp.Error(u.ErrUserNotFound.Error()))
+			render.JSON(w, r, resp.Error(err.Error()))
+		case errors.Is(err, u.ErrUserAuthWithOauth2):
+			w.WriteHeader(http.StatusUnauthorized)
+			render.JSON(w, r, resp.Error(u.ErrUserAuthWithOauth2.Error()))
 		case errors.Is(err, u.ErrInvalidResolutionAvatar) || errors.Is(err, u.ErrInvalidTypeAvatar):
 			w.WriteHeader(http.StatusBadRequest)
 			render.JSON(w, r, resp.Error(err.Error()))
@@ -204,7 +209,22 @@ func (c *ProfileController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	_, err := r.Cookie("refresh_token")
+	if err != nil {
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, resp.OK())
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+	})
+
+	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, r, resp.OK())
 	return
 }

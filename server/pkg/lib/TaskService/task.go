@@ -16,7 +16,6 @@ func NewTaskService(db *gorm.DB, log *slog.Logger) *TaskService {
 	return &TaskService{db: db, log: log}
 }
 
-// CleanUnverifiedUsers удаляет пользователей с неподтвержденными email
 func (t *TaskService) CleanUnverifiedUsers() {
 	threshold := time.Now().Add(-24 * time.Hour)
 	result := t.db.Where("verified_email = ? AND create_at <= ?", false, threshold).Delete(&u.User{})

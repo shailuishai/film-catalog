@@ -17,14 +17,14 @@ func NewEmailCache(ch *cache.Cache) *EmailCache {
 }
 
 func (c *EmailCache) SaveEmailConfirmedCode(email string, code string) error {
-	if err := c.ch.Db.Set(context.Background(), email, code, c.ch.EmailConfirmedCodeExpiration).Err(); err != nil {
+	if err := c.ch.Client.Set(context.Background(), email, code, c.ch.EmailConfirmedCodeExpiration).Err(); err != nil {
 		return u.ErrInternal
 	}
 	return nil
 }
 
 func (c *EmailCache) GetEmailConfirmedCode(email string) (string, error) {
-	code, err := c.ch.Db.Get(context.Background(), email).Result()
+	code, err := c.ch.Client.Get(context.Background(), email).Result()
 	if err != nil {
 		return "", u.ErrInternal
 	}
