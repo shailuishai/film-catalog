@@ -26,6 +26,7 @@ import (
 	actorUC "server/internal/modules/actor/usecase"
 	genreC "server/internal/modules/genre/controller"
 	genreRp "server/internal/modules/genre/repo"
+	genreCh "server/internal/modules/genre/repo/cache"
 	genreDb "server/internal/modules/genre/repo/database"
 	genreUC "server/internal/modules/genre/usecase"
 	authC "server/internal/modules/user/auth/controller"
@@ -218,7 +219,8 @@ func (app *App) SetupRoutes() {
 	})
 
 	GenreDB := genreDb.NewGenreDatabase(app.Storage.Db, app.Log)
-	GenreRp := genreRp.NewGenreRepo(GenreDB)
+	GenreCH := genreCh.NewGenreCache(app.Log, app.Cache)
+	GenreRp := genreRp.NewGenreRepo(GenreDB, GenreCH)
 	GenreUC := genreUC.NewGenreUsecase(GenreRp, app.Log)
 	GenreC := genreC.NewGenreController(app.Log, GenreUC)
 
