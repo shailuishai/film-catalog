@@ -33,4 +33,7 @@ type Repo interface {
 	GetGenre(genreID uint) (*GenreDTO, error)
 	GetGenres() ([]*GenreDTO, error)
 	DeleteGenre(genreID uint) error
+	SetCacheGenre(key string, value interface{}, ttl time.Duration) error
+	GetCacheGenre(key string) ([]*GenreDTO, error)
+	DeleteCacheGenre(key string) error
 }

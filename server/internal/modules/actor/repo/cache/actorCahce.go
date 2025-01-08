@@ -26,6 +26,7 @@ func (c *ActorCahce) CacheActor(key string, actors interface{}, ttl time.Duratio
 	case *act.ActorDTO:
 		actors = []*act.ActorDTO{v}
 	case []*act.ActorDTO:
+		actors = v
 	default:
 		return fmt.Errorf("invalid actor type")
 	}

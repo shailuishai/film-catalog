@@ -6,4 +6,5 @@ var (
 	ErrInternalServer = errors.New("internal server error")
 	ErrNoSuchGenre    = errors.New("no such genre")
 	ErrGenreExists    = errors.New("genre already exists")
+	ErrMissCache      = errors.New("miss cache error")
 )
