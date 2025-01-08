@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	act "server/internal/modules/actor"
+	g "server/internal/modules/genre"
 	u "server/internal/modules/user/profile"
 	"strings"
 	"time"
@@ -45,6 +46,7 @@ func UserProfile(user *u.UserProfile) Response {
 }
 
 type ActorData struct {
+	Id        uint       `json:"actor_id"`
 	Name      *string    `json:"name,omitempty"`
 	WikiUrl   *string    `json:"wiki_url,omitempty"`
 	AvatarUrl *string    `json:"avatar_url"`
@@ -57,6 +59,7 @@ func Actors(actors interface{}) Response {
 		return Response{
 			Status: StatusOK,
 			Data: ActorData{
+				Id:        v.ActorId,
 				Name:      &v.Name,
 				WikiUrl:   &v.WikiUrl,
 				AvatarUrl: v.AvatarUrl,
@@ -67,6 +70,7 @@ func Actors(actors interface{}) Response {
 		var actors []ActorData
 		for _, actor := range v {
 			actors = append(actors, ActorData{
+				Id:        actor.ActorId,
 				Name:      &actor.Name,
 				WikiUrl:   &actor.WikiUrl,
 				AvatarUrl: actor.AvatarUrl,
@@ -80,7 +84,45 @@ func Actors(actors interface{}) Response {
 	default:
 		return Response{
 			Status: StatusError,
-			Error:  "invalid actor type",
+			Error:  "invalid server error",
+		}
+	}
+}
+
+type GenreData struct {
+	Id        uint       `json:"genre_id"`
+	Name      *string    `json:"name,omitempty"`
+	CreatedAt *time.Time `json:"created_at"`
+}
+
+func Genres(genres interface{}) Response {
+	switch v := genres.(type) {
+	case *g.GenreDTO:
+		return Response{
+			Status: StatusOK,
+			Data: GenreData{
+				Id:        v.GenreId,
+				Name:      &v.Name,
+				CreatedAt: &v.CreateAt,
+			},
+		}
+	case []*g.GenreDTO:
+		var genres []GenreData
+		for _, genre := range v {
+			genres = append(genres, GenreData{
+				Id:        genre.GenreId,
+				Name:      &genre.Name,
+				CreatedAt: &genre.CreateAt,
+			})
+		}
+		return Response{
+			Status: StatusOK,
+			Data:   genres,
+		}
+	default:
+		return Response{
+			Status: StatusError,
+			Error:  "invalid server error",
 		}
 	}
 }

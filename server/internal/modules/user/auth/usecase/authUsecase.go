@@ -74,12 +74,12 @@ func (uc *AuthUseCase) SignIn(email string, login string, password string) (stri
 		return "", "", u.ErrEmailNotConfirmed
 	}
 
-	accessToken, err := jwt.GenerateAccessToken(user.UserId)
+	accessToken, err := jwt.GenerateAccessToken(user.UserId, user.IsAdmin)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := jwt.GenerateRefreshToken(user.UserId)
+	refreshToken, err := jwt.GenerateRefreshToken(user.UserId, user.IsAdmin)
 	if err != nil {
 		return "", "", err
 	}
@@ -108,7 +108,7 @@ func (uc *AuthUseCase) RefreshToken(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	accessToken, err := jwt.GenerateAccessToken(user.UserId)
+	accessToken, err := jwt.GenerateAccessToken(user.UserId, user.IsAdmin)
 	if err != nil {
 		return "", err
 	}
@@ -195,12 +195,12 @@ func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, str
 			}
 		}
 
-		accessToken, err := jwt.GenerateAccessToken(userId)
+		accessToken, err := jwt.GenerateAccessToken(userId, user.IsAdmin)
 		if err != nil {
 			return false, "", "", err
 		}
 
-		refreshToken, err := jwt.GenerateRefreshToken(userId)
+		refreshToken, err := jwt.GenerateRefreshToken(userId, user.IsAdmin)
 		if err != nil {
 			return false, "", "", err
 		}
@@ -210,12 +210,12 @@ func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, str
 		return false, "", "", err
 	}
 
-	accessToken, err := jwt.GenerateAccessToken(existingUser.UserId)
+	accessToken, err := jwt.GenerateAccessToken(existingUser.UserId, existingUser.IsAdmin)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	refreshToken, err := jwt.GenerateRefreshToken(existingUser.UserId)
+	refreshToken, err := jwt.GenerateRefreshToken(existingUser.UserId, existingUser.IsAdmin)
 	if err != nil {
 		return false, "", "", err
 	}

@@ -1,5 +1,10 @@
 basePath: /v1
 definitions:
+  controller.CreateGenreRequest:
+    properties:
+      name:
+        type: string
+    type: object
   controller.EmailConfirmedRequest:
     properties:
       code:
@@ -19,6 +24,13 @@ definitions:
         type: string
     required:
     - email
+    type: object
+  controller.UpdateGenreRequest:
+    properties:
+      genre_id:
+        type: integer
+      name:
+        type: string
     type: object
   controller.UserSignInRequest:
     properties:
@@ -522,6 +534,142 @@ paths:
       summary: Send code for confirmation email
       tags:
       - email
+  /genres:
+    get:
+      description: Возвращает список всех доступных жанров
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получение списка жанров
+      tags:
+      - genre
+    post:
+      consumes:
+      - application/json
+      description: Создает новый жанр с указанным названием
+      parameters:
+      - description: Название жанра
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateGenreRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Создание нового жанра
+      tags:
+      - genre
+    put:
+      consumes:
+      - application/json
+      description: Обновляет название существующего жанра
+      parameters:
+      - description: ID жанра и новое название
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UpdateGenreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Обновление жанра
+      tags:
+      - genre
+  /genres/{id}:
+    delete:
+      description: Удаляет жанр по указанному ID
+      parameters:
+      - description: ID жанра
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Удаление жанра
+      tags:
+      - genre
+    get:
+      description: Возвращает информацию о жанре по указанному ID
+      parameters:
+      - description: ID жанра
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получение жанра по ID
+      tags:
+      - genre
   /profile:
     delete:
       description: Deletes the user profile and all associated data.

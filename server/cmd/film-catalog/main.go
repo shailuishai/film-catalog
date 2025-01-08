@@ -24,6 +24,10 @@ import (
 	actorDb "server/internal/modules/actor/repo/database"
 	actorS3 "server/internal/modules/actor/repo/s3"
 	actorUC "server/internal/modules/actor/usecase"
+	genreC "server/internal/modules/genre/controller"
+	genreRp "server/internal/modules/genre/repo"
+	genreDb "server/internal/modules/genre/repo/database"
+	genreUC "server/internal/modules/genre/usecase"
 	authC "server/internal/modules/user/auth/controller"
 	authRp "server/internal/modules/user/auth/repo"
 	authCh "server/internal/modules/user/auth/repo/cache"
@@ -184,8 +188,9 @@ func (app *App) SetupRoutes() {
 	ProfileUC := profileUC.NewProfileUseCase(app.Log, ProfileRp)
 	ProfileC := profileC.NewProfileController(app.Log, ProfileUC)
 
-	var AuthMiddleware = middleAuth.New(app.Log)
-	//var AuthAdminMiddleware = middleAdmin.New(app.Log)
+	var AuthMiddleware = middleAuth.NewUserAuth(app.Log)
+	var AuthAdminMiddleware = middleAuth.NewAdminAuth(app.Log)
+	_ = AuthAdminMiddleware
 
 	app.Router.Route(apiVersion+"/profile", func(r chi.Router) {
 		r.Use(AuthMiddleware)
@@ -205,12 +210,29 @@ func (app *App) SetupRoutes() {
 		r.Get("/", ActorC.GetActors)
 		r.Get("/{id}", ActorC.GetActor)
 		r.Group(func(r chi.Router) {
-			// r.Use(AuthMiddleware, AdminMiddleware)
+			//r.Use(AuthAdminMiddleware)
 			r.Post("/", ActorC.CreateActor)
 			r.Put("/{id}", ActorC.UpdateActor)
 			r.Delete("/{id}", ActorC.DeleteActor)
 		})
 	})
+
+	GenreDB := genreDb.NewGenreDatabase(app.Storage.Db, app.Log)
+	GenreRp := genreRp.NewGenreRepo(GenreDB)
+	GenreUC := genreUC.NewGenreUsecase(GenreRp, app.Log)
+	GenreC := genreC.NewGenreController(app.Log, GenreUC)
+
+	app.Router.Route(apiVersion+"/genres", func(r chi.Router) {
+		r.Get("/", GenreC.GetGenres)
+		r.Get("/{id}", GenreC.GetGenre)
+		r.Group(func(r chi.Router) {
+			//r.Use(AuthAdminMiddleware)
+			r.Post("/", GenreC.CreateGenre)
+			r.Put("/", GenreC.UpdateGenre)
+			r.Delete("/{id}", GenreC.DeleteGenre)
+		})
+	})
+
 }
 
 // @title Film-catalog API
