@@ -29,6 +29,11 @@ import (
 	genreCh "server/internal/modules/genre/repo/cache"
 	genreDb "server/internal/modules/genre/repo/database"
 	genreUC "server/internal/modules/genre/usecase"
+	reviewC "server/internal/modules/review/controller"
+	reviewRp "server/internal/modules/review/repo"
+	reviewCh "server/internal/modules/review/repo/cache"
+	reviewDb "server/internal/modules/review/repo/database"
+	reviewUC "server/internal/modules/review/usecase"
 	authC "server/internal/modules/user/auth/controller"
 	authRp "server/internal/modules/user/auth/repo"
 	authCh "server/internal/modules/user/auth/repo/cache"
@@ -235,6 +240,22 @@ func (app *App) SetupRoutes() {
 		})
 	})
 
+	ReviewDB := reviewDb.NewReviewDatabase(app.Storage.Db, app.Log)
+	ReviewCh := reviewCh.NewReviewCache(app.Log, app.Cache)
+	ReviewRp := reviewRp.NewReviewRepo(ReviewDB, ReviewCh)
+	ReviewUC := reviewUC.NewReviewUseCase(ReviewRp, app.Log)
+	ReviewC := reviewC.NewReviewController(app.Log, ReviewUC)
+
+	app.Router.Route(apiVersion+"/reviews", func(r chi.Router) {
+		r.Get("/", ReviewC.GetReviewsByFilmID)
+		r.Get("/user/{user_id}", ReviewC.GetReviewsByReviewerID)
+		r.Group(func(r chi.Router) {
+			//r.Use(AuthMiddleware)
+			r.Post("/", ReviewC.CreateReview)
+			r.Put("/{id}", ReviewC.UpdateReview)
+			r.Delete("/{id}", ReviewC.DeleteReview)
+		})
+	})
 }
 
 // @title Film-catalog API

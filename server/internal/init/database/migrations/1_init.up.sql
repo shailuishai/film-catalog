@@ -69,18 +69,48 @@ CREATE TABLE reviews (
     review_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users (user_id) ON DELETE CASCADE,
     film_id INT REFERENCES film (film_id) ON DELETE CASCADE,
+    rating INT CHECK (rating >= 0 AND rating <= 100) NOT NULL,
     review_text TEXT NOT NULL,
     create_at DATE DEFAULT current_date,
     UNIQUE (user_id,film_id)
 );
 
-CREATE TABLE film_stat (
-    film_id SERIAL PRIMARY KEY REFERENCES film (film_id) ON DELETE CASCADE,
-    review_id INT NOT NULL,
-    CONSTRAINT fk_film FOREIGN KEY (film_id) REFERENCES film (film_id) ON DELETE CASCADE,
-    CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE
-);
+CREATE MATERIALIZED VIEW film_stats AS
+SELECT
+    film_id,
+    AVG(rating) AS avg_rating,
+    COUNT(*) AS total_count_reviews,
+    COUNT(CASE WHEN rating BETWEEN 0 AND 20 THEN 1 END) AS count_0_20,
+    COUNT(CASE WHEN rating BETWEEN 21 AND 40 THEN 1 END) AS count_21_40,
+    COUNT(CASE WHEN rating BETWEEN 41 AND 60 THEN 1 END) AS count_41_60,
+    COUNT(CASE WHEN rating BETWEEN 61 AND 80 THEN 1 END) AS count_61_80,
+    COUNT(CASE WHEN rating BETWEEN 81 AND 100 THEN 1 END) AS count_81_100
+FROM reviews
+GROUP BY film_id;
 
+
+CREATE OR REPLACE FUNCTION refresh_film_stats()
+    RETURNS TRIGGER AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW film_stats;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_film_stats
+    AFTER INSERT OR UPDATE OR DELETE ON reviews
+    FOR EACH STATEMENT
+EXECUTE FUNCTION refresh_film_stats();
+
+
+CREATE UNIQUE INDEX idx_film_stats_film_id ON film_stats (film_id);
+CREATE INDEX idx_reviews_film_user ON reviews (film_id, user_id);
+CREATE INDEX idx_reviews_rating ON reviews (rating);
+CREATE INDEX idx_users_is_admin ON users (is_admin);
+CREATE INDEX idx_film_runtime ON film (runtime);
+CREATE INDEX idx_genres_name ON genres (name);
+CREATE INDEX idx_actors_name ON actors (name);
+CREATE INDEX idx_film_actor_film_id_actor_id ON film_actor (film_id, actor_id);
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_login ON users (login);
 CREATE INDEX idx_films_date ON film (release_date);

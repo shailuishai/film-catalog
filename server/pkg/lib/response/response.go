@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	act "server/internal/modules/actor"
 	g "server/internal/modules/genre"
+	r "server/internal/modules/review"
 	u "server/internal/modules/user/profile"
 	"strings"
 	"time"
@@ -118,6 +119,53 @@ func Genres(genres interface{}) Response {
 		return Response{
 			Status: StatusOK,
 			Data:   genres,
+		}
+	default:
+		return Response{
+			Status: StatusError,
+			Error:  "invalid server error",
+		}
+	}
+}
+
+type ReviewData struct {
+	ReviewID   uint       `json:"review_id"`
+	UserID     uint       `json:"user_id"`
+	FilmID     uint       `json:"film_id"`
+	Rating     int        `json:"rating"`
+	ReviewText string     `json:"review_text"`
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+}
+
+func Reviews(reviews interface{}) Response {
+	switch v := reviews.(type) {
+	case *r.ReviewDTO:
+		return Response{
+			Status: StatusOK,
+			Data: ReviewData{
+				ReviewID:   v.ReviewID,
+				UserID:     v.UserID,
+				FilmID:     v.FilmID,
+				Rating:     v.Rating,
+				ReviewText: v.ReviewText,
+				CreatedAt:  &v.CreatedAt,
+			},
+		}
+	case []*r.ReviewDTO:
+		var reviewList []ReviewData
+		for _, review := range v {
+			reviewList = append(reviewList, ReviewData{
+				ReviewID:   review.ReviewID,
+				UserID:     review.UserID,
+				FilmID:     review.FilmID,
+				Rating:     review.Rating,
+				ReviewText: review.ReviewText,
+				CreatedAt:  &review.CreatedAt,
+			})
+		}
+		return Response{
+			Status: StatusOK,
+			Data:   reviewList,
 		}
 	default:
 		return Response{
