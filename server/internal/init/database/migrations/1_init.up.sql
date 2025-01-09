@@ -28,8 +28,9 @@ EXECUTE FUNCTION set_default_login();
 
 CREATE TABLE film (
     film_id SERIAL PRIMARY KEY,
-    poster_гкд TEXT DEFAULT 'https://filmposter.database-173.s3hoster.by/default/',
-    synopsis TEXT DEFAULT '-',
+    title TEXT NOT NULL DEFAULT 'фильмец под чипсики',
+    poster_url TEXT NOT NULL DEFAULT 'https://filmposter.database-173.s3hoster.by/default/',
+    synopsis TEXT NOT NULL DEFAULT '-',
     release_date DATE,
     runtime INT,
     producer VARCHAR(255),

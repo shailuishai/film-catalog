@@ -20,8 +20,8 @@ type Config struct {
 
 type ElasticsearchConfig struct {
 	Address  string `yaml:"address"  env-required:"true"`
-	Username string `yaml:"username" env-required:"true"`
-	Password string `yaml:"password" env-required:"true"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 	Index    string `yaml:"index" env-required:"true"`
 }
 

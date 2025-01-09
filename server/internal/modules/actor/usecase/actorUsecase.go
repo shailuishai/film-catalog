@@ -30,7 +30,6 @@ func (uc *ActorUseCase) CreateActor(actor *act.ActorDTO, avatar *multipart.File)
 	log := uc.log.With("op", "usecase create actor")
 
 	if *avatar != nil {
-		log.Info("file not nil", "file", avatar)
 		_, avatar512x512, err := avatarManager.ParsingAvatarImage(avatar)
 		if err != nil {
 			log.Error("failed to parse avatar image", err)

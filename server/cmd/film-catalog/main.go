@@ -17,6 +17,7 @@ import (
 	_ "server/docs"
 	"server/internal/init/cache"
 	"server/internal/init/database"
+	"server/internal/init/elasticsearch"
 	"server/internal/init/s3"
 	actorC "server/internal/modules/actor/controller"
 	actorRp "server/internal/modules/actor/repo"
@@ -24,6 +25,13 @@ import (
 	actorDb "server/internal/modules/actor/repo/database"
 	actorS3 "server/internal/modules/actor/repo/s3"
 	actorUC "server/internal/modules/actor/usecase"
+	filmC "server/internal/modules/film/controller"
+	filmRp "server/internal/modules/film/repo"
+	filmCh "server/internal/modules/film/repo/cache"
+	filmDb "server/internal/modules/film/repo/database"
+	filmES "server/internal/modules/film/repo/elasticsearch"
+	filmS3 "server/internal/modules/film/repo/s3"
+	filmUC "server/internal/modules/film/usecase"
 	genreC "server/internal/modules/genre/controller"
 	genreRp "server/internal/modules/genre/repo"
 	genreCh "server/internal/modules/genre/repo/cache"
@@ -56,6 +64,7 @@ type App struct {
 	Storage     *database.Storage
 	Cache       *cache.Cache
 	S3          *s3.S3Storage
+	ES          *elasticsearch.Search
 	EmailSender *emailsender.EmailSender
 	Router      chi.Router
 	Log         *slog.Logger
@@ -81,6 +90,11 @@ func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
 		return nil, fmt.Errorf("s3 init failed: %w", err)
 	}
 
+	es, err := elasticsearch.NewSearch(cfg.ElasticsearchConfig)
+	if err != nil {
+		return nil, fmt.Errorf("elastic init failed: %w", err)
+	}
+
 	eSender, err := emailsender.New(cfg.SMTPConfig)
 	if err != nil {
 		return nil, fmt.Errorf("email sender init failed: %w", err)
@@ -99,7 +113,7 @@ func NewApp(cfg *config.Config, log *slog.Logger) (*App, error) {
 	}
 	c.Start()
 
-	return &App{Storage: Storage, Cache: Cache, S3: s3s, EmailSender: eSender, Router: router, Log: log, Cfg: cfg, Cron: c, TS: taskService}, nil
+	return &App{Storage: Storage, Cache: Cache, S3: s3s, ES: es, EmailSender: eSender, Router: router, Log: log, Cfg: cfg, Cron: c, TS: taskService}, nil
 }
 
 func (app *App) Start() error {
@@ -235,6 +249,27 @@ func (app *App) SetupRoutes() {
 		})
 	})
 
+	FilmDB := filmDb.NewFilmDatabase(app.Storage.Db, app.Log)
+	FilmCH := filmCh.NewFilmCache(app.Cache)
+	FilmS3 := filmS3.NewFilmS3(app.Log, app.S3)
+	FilmES := filmES.NewFilmEs(app.Log, app.ES)
+	FilmRp := filmRp.NewFilmRepo(FilmDB, FilmCH, FilmS3, FilmES)
+	FilmUC := filmUC.NewFilmUsecase(FilmRp, app.Log)
+	FilmC := filmC.NewFilmController(app.Log, FilmUC)
+
+	// Настройка маршрутов для Film
+	app.Router.Route(apiVersion+"/films", func(r chi.Router) {
+		r.Get("/", FilmC.GetFilms)
+		r.Get("/{id}", FilmC.GetFilmByID)
+		r.Get("/search", FilmC.SearchFilms)
+
+		r.Group(func(r chi.Router) {
+			//r.Use(AuthAdminMiddleware)
+			r.Post("/", FilmC.CreateFilm)
+			r.Put("/{id}", FilmC.UpdateFilm)
+			r.Delete("/{id}", FilmC.DeleteFilm)
+		})
+	})
 }
 
 // @title Film-catalog API

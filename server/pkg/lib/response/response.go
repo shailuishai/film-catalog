@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	act "server/internal/modules/actor"
+	f "server/internal/modules/film"
 	g "server/internal/modules/genre"
 	u "server/internal/modules/user/profile"
 	"strings"
@@ -118,6 +119,90 @@ func Genres(genres interface{}) Response {
 		return Response{
 			Status: StatusOK,
 			Data:   genres,
+		}
+	default:
+		return Response{
+			Status: StatusError,
+			Error:  "invalid server error",
+		}
+	}
+}
+
+type FilmData struct {
+	ID          uint          `json:"id"`
+	PosterURL   string        `json:"poster_url"`
+	Synopsis    string        `json:"synopsis"`
+	ReleaseDate time.Time     `json:"release_date"`
+	Runtime     time.Duration `json:"runtime"`
+	Producer    string        `json:"producer"`
+	CreatedAt   time.Time     `json:"created_at"`
+
+	AvgRating          float64 `json:"avg_rating"`
+	TotalReviews       uint    `json:"total_reviews"`
+	CountRatings0_20   uint    `json:"count_ratings_0_20"`
+	CountRatings21_40  uint    `json:"count_ratings_21_40"`
+	CountRatings41_60  uint    `json:"count_ratings_41_60"`
+	CountRatings61_80  uint    `json:"count_ratings_61_80"`
+	CountRatings81_100 uint    `json:"count_ratings_81_100"`
+
+	Genres  []uint `json:"genres"`
+	Actors  []uint `json:"actors"`
+	Reviews []uint `json:"reviews"`
+}
+
+func Films(films interface{}) Response {
+	switch v := films.(type) {
+	case *f.FilmDTO:
+		return Response{
+			Status: StatusOK,
+			Data: FilmData{
+				ID:          v.ID,
+				PosterURL:   v.PosterURL,
+				Synopsis:    v.Synopsis,
+				ReleaseDate: v.ReleaseDate,
+				Runtime:     v.Runtime,
+				Producer:    v.Producer,
+				CreatedAt:   v.CreatedAt,
+
+				AvgRating:          v.AvgRating,
+				TotalReviews:       v.TotalReviews,
+				CountRatings0_20:   v.CountRatings0_20,
+				CountRatings21_40:  v.CountRatings21_40,
+				CountRatings41_60:  v.CountRatings41_60,
+				CountRatings61_80:  v.CountRatings61_80,
+				CountRatings81_100: v.CountRatings81_100,
+
+				Genres: v.Genres,
+				Actors: v.Actors,
+			},
+		}
+	case []*f.FilmDTO:
+		var filmList []FilmData
+		for _, film := range v {
+			filmList = append(filmList, FilmData{
+				ID:          film.ID,
+				PosterURL:   film.PosterURL,
+				Synopsis:    film.Synopsis,
+				ReleaseDate: film.ReleaseDate,
+				Runtime:     film.Runtime,
+				Producer:    film.Producer,
+				CreatedAt:   film.CreatedAt,
+
+				AvgRating:          film.AvgRating,
+				TotalReviews:       film.TotalReviews,
+				CountRatings0_20:   film.CountRatings0_20,
+				CountRatings21_40:  film.CountRatings21_40,
+				CountRatings41_60:  film.CountRatings41_60,
+				CountRatings61_80:  film.CountRatings61_80,
+				CountRatings81_100: film.CountRatings81_100,
+
+				Genres: film.Genres,
+				Actors: film.Actors,
+			})
+		}
+		return Response{
+			Status: StatusOK,
+			Data:   filmList,
 		}
 	default:
 		return Response{
