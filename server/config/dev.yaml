@@ -24,3 +24,8 @@ s3:
   endpoint: "database-173.s3hoster.by"
   bucket: "useravatars"
   region: "BTC"
+elasticsearch:
+  address: "http://localhost:9200"
+  username: ""
+  password: ""
+  index: "movies"

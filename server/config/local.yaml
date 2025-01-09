@@ -42,3 +42,8 @@ s3:
           keys:
             - "default/512x512.webp"
             - "default/64x64.webp"
+elasticsearch:
+  address: "http://localhost:9200"
+  username: ""
+  password: ""
+  index: "movies"

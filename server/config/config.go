@@ -8,13 +8,21 @@ import (
 )
 
 type Config struct {
-	Env              string           `yaml:"env" env-Default:"development"`
-	DbConfig         DbConfig         `yaml:"db"`
-	HttpServerConfig HttpServerConfig `yaml:"http_server"  env-required:"true"`
-	CacheConfig      CacheConfig      `yaml:"cache"`
-	SMTPConfig       SMTPConfig       `yaml:"smtp"`
-	JWTConfig        JWTConfig        `yaml:"jwt"`
-	S3Config         S3Config         `yaml:"s3"`
+	Env                 string              `yaml:"env" env-Default:"development"`
+	DbConfig            DbConfig            `yaml:"db" env-required:"true"`
+	HttpServerConfig    HttpServerConfig    `yaml:"http_server"  env-required:"true"`
+	CacheConfig         CacheConfig         `yaml:"cache" env-required:"true"`
+	SMTPConfig          SMTPConfig          `yaml:"smtp" env-required:"true"`
+	JWTConfig           JWTConfig           `yaml:"jwt" env-required:"true"`
+	S3Config            S3Config            `yaml:"s3" env-required:"true"`
+	ElasticsearchConfig ElasticsearchConfig `yaml:"elasticsearch" env-required:"true"`
+}
+
+type ElasticsearchConfig struct {
+	Address  string `yaml:"address"  env-required:"true"`
+	Username string `yaml:"username" env-required:"true"`
+	Password string `yaml:"password" env-required:"true"`
+	Index    string `yaml:"index" env-required:"true"`
 }
 
 type CacheConfig struct {
