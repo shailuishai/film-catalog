@@ -131,7 +131,7 @@ func (c *ActorController) CreateActor(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} response.Response
 // @Router /actors/{id} [get]
 func (c *ActorController) GetActor(w http.ResponseWriter, r *http.Request) {
-	actorIdStr := chi.URLParam(r, "actorId")
+	actorIdStr := chi.URLParam(r, "id")
 
 	actorIdUint64, err := strconv.ParseUint(actorIdStr, 10, 32)
 	if err != nil {
