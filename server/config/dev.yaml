@@ -5,18 +5,17 @@ http_server:
   idle_timeout: 60s
 db:
   username: "user"
-  host: "postgres"
+  host: "dpg-cu0kkc3tq21c73csdjl0-a"
   port: "5432"
-  dbname: "film"
+  dbname: "film_32q6"
   ssl_mode: "disable"
 cache:
-  address: "redis:6379"
+  address: "red-cu0kic3v2p9s73dhu8ig:6379"
   db: 0
   state_expiration: 4m
   email_confirmed_code_expiration: 16m
 elasticsearch:
-  address: "http://elasticsearch:9200"
-  username: "elastic"
+  address: "https://my-elasticsearch-project-e7c356.es.us-east-1.aws.elastic.cloud:443"
   index: "movies"
 s3:
   endpoint: "storage-173.s3hoster.by"

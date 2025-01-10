@@ -1,8 +1,10 @@
 package elasticsearch
 
 import (
+	"crypto/tls"
 	"github.com/elastic/go-elasticsearch/v8"
 	"log"
+	"net/http"
 	"os"
 	"server/config"
 	"time"
@@ -24,9 +26,14 @@ func NewSearch(cfg config.ElasticsearchConfig) (*Search, error) {
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		client, err = elasticsearch.NewClient(elasticsearch.Config{
 			Addresses: []string{cfg.Address},
-			Username:  cfg.Username,
-			Password:  os.Getenv("ELASTIC_PASSWORD"),
+			APIKey:    os.Getenv("ELASTIC_API_KEY"),
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
 		})
+
 		if err != nil {
 			log.Printf("Attempt %d: Failed to create Elasticsearch client: %v", attempt, err)
 			time.Sleep(retryDelay)
