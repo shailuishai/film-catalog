@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"log/slog"
@@ -80,12 +81,12 @@ func (c *ReviewController) CreateReview(w http.ResponseWriter, req *http.Request
 	return
 }
 
-// GetReview - Получение отзыва по ID
-// @Summary Получение отзыва по ID
-// @Description Возвращает информацию о отзыве по указанному ID
+// GetReview - Получение отзыва по FilmId
+// @Summary Получение отзыва по FilmId
+// @Description Возвращает информацию о отзыве по указанному FilmId
 // @Tags         review
 // @Produce      json
-// @Param        id query string true "ID отзыва"
+// @Param        id query string true "FilmId отзыва"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -98,7 +99,7 @@ func (c *ReviewController) GetReview(w http.ResponseWriter, req *http.Request) {
 	reviewID, err := strconv.ParseUint(reviewIDStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid review ID"))
+		render.JSON(w, req, resp.Error("invalid review FilmId"))
 		return
 	}
 
@@ -174,13 +175,14 @@ func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request
 
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, req, resp.OK())
+	return
 }
 
 // DeleteReview - Удаление отзыва
 // @Summary Удаление отзыва
-// @Description Удаляет отзыв по указанному ID
+// @Description Удаляет отзыв по указанному FilmId
 // @Tags         review
-// @Param        id query string true "ID отзыва"
+// @Param        id query string true "FilmId отзыва"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -189,11 +191,11 @@ func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request
 func (c *ReviewController) DeleteReview(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "DeleteReview")
 
-	reviewIDStr := req.URL.Query().Get("id")
+	reviewIDStr := chi.URLParam(req, "id")
 	reviewID, err := strconv.ParseUint(reviewIDStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid review ID"))
+		render.JSON(w, req, resp.Error("invalid review FilmId"))
 		return
 	}
 
@@ -210,16 +212,16 @@ func (c *ReviewController) DeleteReview(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, req, resp.OK())
 }
 
-// GetReviewsByFilmID - Получение отзывов по ID фильма
-// @Summary Получение отзывов по ID фильма
+// GetReviewsByFilmID - Получение отзывов по FilmId фильма
+// @Summary Получение отзывов по FilmId фильма
 // @Description Возвращает список отзывов для указанного фильма
 // @Tags         review
 // @Produce      json
-// @Param        film_id query string true "ID фильма"
+// @Param        film_id query string true "FilmId фильма"
 // @Success 200 {array} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -227,17 +229,17 @@ func (c *ReviewController) DeleteReview(w http.ResponseWriter, req *http.Request
 func (c *ReviewController) GetReviewsByFilmID(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "GetReviewsByFilmID")
 
-	filmIDStr := req.URL.Query().Get("film_id")
+	filmIDStr := chi.URLParam(req, "film_id")
 	filmID, err := strconv.ParseUint(filmIDStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid film ID"))
+		render.JSON(w, req, resp.Error("invalid film FilmId"))
 		return
 	}
 
 	reviews, err := c.uc.GetReviewsByFilmID(uint(filmID))
 	if err != nil {
-		log.Error("failed to get reviews by film ID", err)
+		log.Error("failed to get reviews by film FilmId", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
 		return
@@ -247,30 +249,30 @@ func (c *ReviewController) GetReviewsByFilmID(w http.ResponseWriter, req *http.R
 	render.JSON(w, req, resp.Reviews(reviews))
 }
 
-// GetReviewsByReviewerID - Получение отзывов по ID пользователя
-// @Summary Получение отзывов по ID пользователя
+// GetReviewsByReviewerID - Получение отзывов по FilmId пользователя
+// @Summary Получение отзывов по FilmId пользователя
 // @Description Возвращает список отзывов, оставленных указанным пользователем
 // @Tags         review
 // @Produce      json
-// @Param        reviewer_id query string true "ID пользователя"
+// @Param        reviewer_id query string true "FilmId пользователя"
 // @Success 200 {array} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /reviews/reviewer/{reviewer_id} [get]
+// @Router /reviews/reviewer/{user_id} [get]
 func (c *ReviewController) GetReviewsByReviewerID(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "GetReviewsByReviewerID")
 
-	reviewerIDStr := req.URL.Query().Get("reviewer_id")
+	reviewerIDStr := chi.URLParam(req, "user_id")
 	reviewerID, err := strconv.ParseUint(reviewerIDStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid reviewer ID"))
+		render.JSON(w, req, resp.Error("invalid reviewer UserId"))
 		return
 	}
 
 	reviews, err := c.uc.GetReviewsByReviewerID(uint(reviewerID))
 	if err != nil {
-		log.Error("failed to get reviews by reviewer ID", err)
+		log.Error("failed to get reviews by reviewer FilmId", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
 		return

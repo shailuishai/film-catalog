@@ -2,7 +2,9 @@ package database
 
 import (
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log/slog"
 	r "server/internal/modules/review"
 )
@@ -21,12 +23,28 @@ func NewReviewDatabase(db *gorm.DB, log *slog.Logger) *ReviewDatabase {
 
 func (db *ReviewDatabase) CreateReview(review *r.ReviewDTO) error {
 	reviewModel := review.ToModel()
-	return db.db.Create(reviewModel).Error
+	if err := db.db.Create(reviewModel).Error; err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				db.log.Error("Duplicate key violation")
+				return r.ErrReviewExists
+			}
+		}
+		return err
+	}
+	return nil
 }
 
 func (db *ReviewDatabase) UpdateReview(review *r.ReviewDTO) error {
 	reviewModel := review.ToModel()
-	return db.db.Save(reviewModel).Error
+
+	result := db.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "film_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"rating", "review_text", "create_at"}),
+	}).Create(reviewModel)
+
+	return result.Error
 }
 
 func (db *ReviewDatabase) GetReview(reviewID uint) (*r.ReviewDTO, error) {
@@ -63,5 +81,14 @@ func (db *ReviewDatabase) GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDT
 }
 
 func (db *ReviewDatabase) DeleteReview(reviewID uint) error {
-	return db.db.Delete(&r.Review{}, reviewID).Error
+	result := db.db.Delete(&r.Review{}, reviewID)
+
+	if result.Error != nil {
+		return r.ErrInternal
+	}
+	if result.RowsAffected == 0 {
+		return r.ErrNoSuchReview
+	}
+
+	return nil
 }

@@ -14,7 +14,7 @@ type User struct {
 	Email          string    `gorm:"unique;size:100;not null;column:email"`
 	VerifiedEmail  bool      `gorm:"default:false;column:verified_email"`
 	AvatarURL      string    `gorm:"default:'https://useravatar.storage-173.s3hoster.by/default/';column:avatar_url"`
-	CreateAt       time.Time `gorm:"column:create_at"`
+	CreatedAt      time.Time `gorm:"column:create_at"`
 }
 
 func ToAuthUser(user *User) *auth.UserAuth {

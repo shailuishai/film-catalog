@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"log/slog"
@@ -81,7 +82,7 @@ func (c *GenreController) CreateGenre(w http.ResponseWriter, r *http.Request) {
 // @Tags         genre
 // @Accept       json
 // @Produce      json
-// @Param        json body UpdateGenreRequest true "ID жанра и новое название"
+// @Param        json body UpdateGenreRequest true "FilmId жанра и новое название"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -152,11 +153,11 @@ func (c *GenreController) GetGenres(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetGenre - Получение информации о жанре
-// @Summary Получение жанра по ID
-// @Description Возвращает информацию о жанре по указанному ID
+// @Summary Получение жанра по FilmId
+// @Description Возвращает информацию о жанре по указанному FilmId
 // @Tags         genre
 // @Produce      json
-// @Param        id query string true "ID жанра"
+// @Param        id query string true "FilmId жанра"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -197,9 +198,9 @@ func (c *GenreController) GetGenre(w http.ResponseWriter, r *http.Request) {
 
 // DeleteGenre - Удаление жанра
 // @Summary Удаление жанра
-// @Description Удаляет жанр по указанному ID
+// @Description Удаляет жанр по указанному FilmId
 // @Tags         genre
-// @Param        id query string true "ID жанра"
+// @Param        id query string true "FilmId жанра"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -208,12 +209,12 @@ func (c *GenreController) GetGenre(w http.ResponseWriter, r *http.Request) {
 func (c *GenreController) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 	log := c.log.With("op", "DeleteGenre")
 
-	genreIdStr := r.URL.Query().Get("id")
+	genreIdStr := chi.URLParam(r, "id")
 
 	genreIdUint64, err := strconv.ParseUint(genreIdStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, resp.Error("invalid actor id"))
+		render.JSON(w, r, resp.Error("invalid genre id"))
 		return
 	}
 
@@ -232,7 +233,7 @@ func (c *GenreController) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, r, resp.OK())
 	return
 }

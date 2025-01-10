@@ -43,7 +43,16 @@ func (uc *FilmUseCase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 }
 
 func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error {
-	if poster != nil {
+	if film.PosterURL == "" {
+		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
+	}
+	id, err := uc.rp.CreateFilm(film)
+	if err != nil {
+		return err
+	}
+	film.ID = id
+
+	if *poster != nil {
 		_, posterBytes, err := avatarManager.ParsingPosterImage(poster)
 		if err != nil {
 			return err
@@ -55,7 +64,12 @@ func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error
 		film.PosterURL = posterUrl
 	}
 
-	if err := uc.rp.CreateFilm(film); err != nil {
+	if err := uc.rp.UpdateFilm(film); err != nil {
+		return err
+	}
+
+	film, err = uc.GetFilmByID(film.ID)
+	if err != nil {
 		return err
 	}
 
@@ -73,7 +87,7 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 		}
 	}
 
-	if poster != nil {
+	if *poster != nil {
 		_, posterBytes, err := avatarManager.ParsingAvatarImage(poster)
 		if err != nil {
 			return err
@@ -123,10 +137,27 @@ func (uc *FilmUseCase) DeleteFilm(id uint) error {
 }
 
 func (uc *FilmUseCase) SearchFilms(query string) ([]*f.FilmDTO, error) {
-	films, err := uc.rp.SearchFilms(query)
+	ids, err := uc.rp.SearchFilms(query)
 	if err != nil {
 		return nil, f.ErrFilmSearchFailed
 	}
+
+	// Если фильмы не найдены, возвращаем пустой список
+	if len(ids) == 0 {
+		return []*f.FilmDTO{}, f.ErrFilmNotFound
+	}
+
+	// Получаем полные данные фильмов по FilmId
+	films := make([]*f.FilmDTO, 0, len(ids))
+	for _, id := range ids {
+		film, err := uc.rp.GetFilmByID(id)
+		if err != nil {
+			uc.log.Error("Ошибка при получении фильма", slog.Uint64("id", uint64(id)), slog.Any("error", err))
+			continue
+		}
+		films = append(films, film)
+	}
+
 	return films, nil
 }
 

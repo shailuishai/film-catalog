@@ -3,17 +3,20 @@ package film
 import (
 	"mime/multipart"
 	"net/http"
+	"server/internal/modules/actor"
+	g "server/internal/modules/genre"
 	"time"
 )
 
 type FilmDTO struct {
-	ID          uint          `json:"id"`
-	PosterURL   string        `json:"poster_url"`
-	Synopsis    string        `json:"synopsis"`
-	ReleaseDate time.Time     `json:"release_date"`
-	Runtime     time.Duration `json:"runtime"`
-	Producer    string        `json:"producer"`
-	CreatedAt   time.Time     `json:"created_at"`
+	ID          uint      `json:"id"`
+	Title       string    `json:"title"`
+	PosterURL   string    `json:"poster_url"`
+	Synopsis    string    `json:"synopsis"`
+	ReleaseDate time.Time `json:"release_date"`
+	Runtime     string    `json:"runtime"`
+	Producer    string    `json:"producer"`
+	CreateAt    time.Time `json:"create_at"`
 
 	AvgRating          float64 `json:"avg_rating"`
 	TotalReviews       uint    `json:"total_reviews"`
@@ -23,9 +26,11 @@ type FilmDTO struct {
 	CountRatings61_80  uint    `json:"count_ratings_61_80"`
 	CountRatings81_100 uint    `json:"count_ratings_81_100"`
 
-	Genres  []uint `json:"genres"`
-	Actors  []uint `json:"actors"`
-	Reviews []uint `json:"reviews"`
+	GenreIDs []uint `json:"genre_ids"` // Только ID жанров
+	ActorIDs []uint `json:"actor_ids"` // Только ID актеров
+
+	Genres []g.GenreDTO     `json:"genres"`
+	Actors []actor.ActorDTO `json:"actors"`
 
 	RemovePoster bool `json:"remove_poster"`
 }
@@ -70,13 +75,13 @@ type UseCase interface {
 type Repo interface {
 	//DB
 	GetFilmByID(id uint) (*FilmDTO, error)
-	CreateFilm(film *FilmDTO) error
+	CreateFilm(film *FilmDTO) (uint, error)
 	UpdateFilm(film *FilmDTO) error
 	DeleteFilm(id uint) error
 	GetFilms(filters FilmFilters, sort FilmSort) ([]*FilmDTO, error)
 
 	//ES
-	SearchFilms(query string) ([]*FilmDTO, error)
+	SearchFilms(query string) ([]uint, error)
 	IndexFilm(film *FilmDTO) error
 
 	//Cache

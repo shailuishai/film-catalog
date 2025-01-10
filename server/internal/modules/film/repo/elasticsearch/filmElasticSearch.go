@@ -21,15 +21,25 @@ func NewFilmEs(log *slog.Logger, s *elasticsearch.Search) *FilmEs {
 	}
 }
 
-func (es *FilmEs) SearchFilms(query string) ([]*f.FilmDTO, error) {
+type FilmSearchDTO struct {
+	ID       uint     `json:"id"`
+	Title    string   `json:"title"`
+	Synopsis string   `json:"synopsis"`
+	Producer string   `json:"producer"`
+	Genres   []string `json:"genres"`
+	Actors   []string `json:"actors"`
+}
+
+func (es *FilmEs) SearchFilms(query string) ([]uint, error) {
 	// Создаем JSON-запрос для поиска
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
 				"query":  query,
-				"fields": []string{"title", "description"},
+				"fields": []string{"title", "synopsis", "producer", "genres", "actors"},
 			},
 		},
+		"_source": []string{"id"}, // Запрашиваем только FilmId
 	}
 
 	// Преобразуем запрос в JSON
@@ -69,34 +79,41 @@ func (es *FilmEs) SearchFilms(query string) ([]*f.FilmDTO, error) {
 		return nil, err
 	}
 
-	// Извлекаем фильмы из ответа
+	// Извлекаем FilmId фильмов из ответа
 	hits := result["hits"].(map[string]interface{})["hits"].([]interface{})
-	films := make([]*f.FilmDTO, 0, len(hits))
+	ids := make([]uint, 0, len(hits))
 
 	for _, hit := range hits {
 		source := hit.(map[string]interface{})["_source"]
-		filmJSON, err := json.Marshal(source)
-		if err != nil {
-			es.log.Error("Ошибка при сериализации фильма", slog.Any("error", err))
-			continue
-		}
-
-		var film f.FilmDTO
-		if err := json.Unmarshal(filmJSON, &film); err != nil {
-			es.log.Error("Ошибка при десериализации фильма", slog.Any("error", err))
-			continue
-		}
-
-		films = append(films, &film)
+		id := uint(source.(map[string]interface{})["id"].(float64))
+		ids = append(ids, id)
 	}
 
-	es.log.Info("Успешный поиск", slog.Int("найдено фильмов", len(films)))
-	return films, nil
+	es.log.Info("Успешный поиск", slog.Int("найдено фильмов", len(ids)))
+	return ids, nil
 }
 
 func (es *FilmEs) IndexFilm(film *f.FilmDTO) error {
+	// Создаем структуру для индексации
+	filmSearch := FilmSearchDTO{
+		ID:       film.ID,
+		Title:    film.Title,
+		Synopsis: film.Synopsis,
+		Producer: film.Producer,
+		Genres:   make([]string, 0, len(film.Genres)),
+		Actors:   make([]string, 0, len(film.Actors)),
+	}
+
+	// Преобразуем жанры и актеров в строки
+	for _, genre := range film.Genres {
+		filmSearch.Genres = append(filmSearch.Genres, genre.Name)
+	}
+	for _, actor := range film.Actors {
+		filmSearch.Actors = append(filmSearch.Actors, actor.Name)
+	}
+
 	// Преобразуем фильм в JSON
-	filmJSON, err := json.Marshal(film)
+	filmJSON, err := json.Marshal(filmSearch)
 	if err != nil {
 		es.log.Error("Ошибка при сериализации фильма", slog.Any("error", err))
 		return err
@@ -106,7 +123,7 @@ func (es *FilmEs) IndexFilm(film *f.FilmDTO) error {
 	res, err := es.s.Client.Index(
 		es.s.Index,                // Имя индекса
 		bytes.NewReader(filmJSON), // Тело документа
-		es.s.Client.Index.WithDocumentID(fmt.Sprint(film.ID)), // ID документа
+		es.s.Client.Index.WithDocumentID(fmt.Sprint(film.ID)), // FilmId документа
 	)
 	if err != nil {
 		es.log.Error("Ошибка при индексации фильма", slog.Any("error", err))

@@ -65,10 +65,7 @@ func (uc *GenreUsecase) GetGenres() ([]*g.GenreDTO, error) {
 	cacheKey := "genres"
 
 	genres, err := uc.rp.GetCacheGenre(cacheKey)
-	if err != nil {
-		return nil, err
-	}
-	if genres != nil {
+	if err == nil && genres != nil {
 		return genres, nil
 	}
 

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"log/slog"
@@ -121,10 +122,10 @@ func (c *ActorController) CreateActor(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetActor - Получение информации об актере
-// @Summary Получить актера по ID
-// @Description Возвращает информацию об актере по его ID
+// @Summary Получить актера по FilmId
+// @Description Возвращает информацию об актере по его FilmId
 // @Tags         actor
-// @Param id query string true "ID актера"
+// @Param id query string true "FilmId актера"
 // @Success 200 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -283,7 +284,7 @@ func (c *ActorController) GetActors(w http.ResponseWriter, r *http.Request) {
 // @Tags         actor
 // @Accept json
 // @Produce      json
-// @Param id query string true "ID актера"
+// @Param id query string true "FilmId актера"
 // @Param        reset_avatar query     bool   false "Reset avatar to default"
 // @Param        json         formData  string true  "JSON with login data" example={"login":"new_login"}
 // @Param        avatar       formData  file   false "Avatar image file (max 1MB)"
@@ -319,7 +320,7 @@ func (c *ActorController) UpdateActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actorIdStr := r.URL.Query().Get("id")
+	actorIdStr := chi.URLParam(r, "id")
 
 	actorIdUint64, err := strconv.ParseUint(actorIdStr, 10, 32)
 	if err != nil {
@@ -382,16 +383,16 @@ func (c *ActorController) UpdateActor(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteActor - Удаление актера
-// @Summary Удалить актера по ID
-// @Description Удаляет актера по его ID
+// @Summary Удалить актера по FilmId
+// @Description Удаляет актера по его FilmId
 // @Tags         actor
-// @Param id query string true "ID актера"
+// @Param id query string true "FilmId актера"
 // @Success 204 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
 // @Router /actors/{id} [delete]
 func (c *ActorController) DeleteActor(w http.ResponseWriter, r *http.Request) {
-	actorIdStr := r.URL.Query().Get("id")
+	actorIdStr := chi.URLParam(r, "id")
 
 	actorIdUint64, err := strconv.ParseUint(actorIdStr, 10, 32)
 	if err != nil {

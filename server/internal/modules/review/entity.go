@@ -11,7 +11,7 @@ type ReviewDTO struct {
 	FilmID     uint      `json:"film_id"`
 	Rating     int       `json:"rating"`
 	ReviewText string    `json:"review_text"`
-	CreatedAt  time.Time `json:"created_at"`
+	CreateAt   time.Time `json:"create_at"`
 }
 
 type Controller interface {

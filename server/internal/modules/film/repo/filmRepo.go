@@ -7,7 +7,7 @@ import (
 
 type FilmDB interface {
 	GetFilmByID(id uint) (*f.FilmDTO, error)
-	CreateFilm(film *f.FilmDTO) error
+	CreateFilm(film *f.FilmDTO) (uint, error)
 	UpdateFilm(film *f.FilmDTO) error
 	DeleteFilm(id uint) error
 	GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error)
@@ -25,7 +25,7 @@ type FilmS3 interface {
 }
 
 type FilmES interface {
-	SearchFilms(query string) ([]*f.FilmDTO, error)
+	SearchFilms(query string) ([]uint, error)
 	IndexFilm(film *f.FilmDTO) error
 	DeleteFilmFromIndex(filmID uint) error
 }
@@ -50,7 +50,7 @@ func (r *Repo) GetFilmByID(id uint) (*f.FilmDTO, error) {
 	return r.db.GetFilmByID(id)
 }
 
-func (r *Repo) CreateFilm(film *f.FilmDTO) error {
+func (r *Repo) CreateFilm(film *f.FilmDTO) (uint, error) {
 	return r.db.CreateFilm(film)
 }
 
@@ -66,7 +66,7 @@ func (r *Repo) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, e
 	return r.db.GetFilms(filters, sort)
 }
 
-func (r *Repo) SearchFilms(query string) ([]*f.FilmDTO, error) {
+func (r *Repo) SearchFilms(query string) ([]uint, error) {
 	return r.es.SearchFilms(query)
 }
 
@@ -83,7 +83,7 @@ func (r *Repo) GetFilmsFromCache(key string) ([]*f.FilmDTO, error) {
 }
 
 func (r *Repo) SetFilmsToCache(key string, films interface{}, ttl time.Duration) error {
-	return r.SetFilmsToCache(key, films, ttl)
+	return r.ch.SetFilmsToCache(key, films, ttl)
 }
 
 func (r *Repo) DeleteFilmFromCache(key string) error {

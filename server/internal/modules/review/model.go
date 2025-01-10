@@ -4,8 +4,8 @@ import "time"
 
 type Review struct {
 	ReviewID   uint      `gorm:"primaryKey;column:review_id"`
-	UserID     uint      `gorm:"column:user_id"`
-	FilmID     uint      `gorm:"column:film_id"`
+	UserID     uint      `gorm:"column:user_id;uniqueIndex:idx_user_film"`
+	FilmID     uint      `gorm:"column:film_id;uniqueIndex:idx_user_film"`
 	Rating     int       `gorm:"column:rating"`
 	ReviewText string    `gorm:"column:review_text"`
 	CreatedAt  time.Time `gorm:"column:create_at"`
@@ -18,7 +18,7 @@ func (r *Review) ToDTO() *ReviewDTO {
 		FilmID:     r.FilmID,
 		Rating:     r.Rating,
 		ReviewText: r.ReviewText,
-		CreatedAt:  r.CreatedAt,
+		CreateAt:   r.CreatedAt,
 	}
 }
 
@@ -29,7 +29,7 @@ func (r *ReviewDTO) ToModel() *Review {
 		FilmID:     r.FilmID,
 		Rating:     r.Rating,
 		ReviewText: r.ReviewText,
-		CreatedAt:  r.CreatedAt,
+		CreatedAt:  r.CreateAt,
 	}
 }
 

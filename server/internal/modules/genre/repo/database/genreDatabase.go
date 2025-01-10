@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 	"log/slog"
 	g "server/internal/modules/genre"
@@ -25,6 +26,12 @@ func (db *GenreDatabase) CreateGenre(name string) (uint, error) {
 	}
 
 	if err := db.db.Create(genre).Error; err != nil {
+		var PgxErr *pgconn.PgError
+		if errors.As(err, &PgxErr) {
+			if PgxErr.Code == "23505" {
+				return 0, g.ErrGenreExists
+			}
+		}
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return 0, g.ErrGenreExists
 		}

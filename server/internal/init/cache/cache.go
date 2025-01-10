@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"os"
 	"server/config"
@@ -15,6 +16,7 @@ type Cache struct {
 }
 
 func NewCache(cfg config.CacheConfig) (*Cache, error) {
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Address,
 		DB:       cfg.Db,
@@ -22,7 +24,7 @@ func NewCache(cfg config.CacheConfig) (*Cache, error) {
 	})
 
 	if _, err := client.Ping(context.Background()).Result(); err != nil {
-		return nil, err
+		return nil, errors.New(os.Getenv("REDIS_PASSWORD"))
 	}
 
 	return &Cache{client, cfg.StateExpiration, cfg.EmailConfirmedCodeExpiration}, nil

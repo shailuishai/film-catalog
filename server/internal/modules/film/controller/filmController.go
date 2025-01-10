@@ -24,6 +24,7 @@ type Controller struct {
 
 func NewFilmController(log *slog.Logger, filmUseCase f.UseCase) f.Controller {
 	validation := validator.New()
+	validation.RegisterValidation("runtime_format", validateRuntimeFormat)
 	return &Controller{
 		filmUseCase: filmUseCase,
 		log:         log,
@@ -31,11 +32,11 @@ func NewFilmController(log *slog.Logger, filmUseCase f.UseCase) f.Controller {
 	}
 }
 
-// GetFilmByID - Получение фильма по ID
-// @Summary Получить фильм по ID
-// @Description Возвращает информацию о фильме по его ID
+// GetFilmByID - Получение фильма по FilmId
+// @Summary Получить фильм по FilmId
+// @Description Возвращает информацию о фильме по его FilmId
 // @Tags film
-// @Param id path string true "ID фильма"
+// @Param id path string true "FilmId фильма"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -101,6 +102,7 @@ func (c *Controller) CreateFilm(w http.ResponseWriter, r *http.Request) {
 
 	var req CreateFilmRequest
 	if err := json.Unmarshal([]byte(jsonData), &req); err != nil {
+		log.Error("failed to unmarshal json", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		render.JSON(w, r, resp.Error("invalid JSON data"))
 		return
@@ -131,13 +133,22 @@ func (c *Controller) CreateFilm(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
+	releaseDate, err := time.Parse("2006-01-02", req.ReleaseDate)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("invalid release_date"))
+		return
+	}
+
 	filmDTO := &f.FilmDTO{
+		Title:       req.Title,
 		Synopsis:    req.Synopsis,
-		ReleaseDate: req.ReleaseDate,
+		ReleaseDate: releaseDate,
 		Runtime:     req.Runtime,
 		Producer:    req.Producer,
-		Genres:      req.GenreIDs,
-		Actors:      req.ActorIDs,
+		GenreIDs:    req.GenreIDs,
+		ActorIDs:    req.ActorIDs,
+		CreateAt:    time.Now(),
 	}
 
 	if err := c.filmUseCase.CreateFilm(filmDTO, &file); err != nil {
@@ -172,10 +183,9 @@ func (c *Controller) CreateFilm(w http.ResponseWriter, r *http.Request) {
 // @Tags film
 // @Accept multipart/form-data
 // @Produce json
-// @Param id path string true "ID фильма"
+// @Param id path string true "FilmId фильма"
 // @Param data formData string true "Данные фильма в формате JSON"
 // @Param poster formData file false "Постер фильма"
-// @Param remove_poster formData bool false "Удалить постер"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -236,38 +246,31 @@ func (c *Controller) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	removePoster, err := strconv.ParseBool(r.FormValue("remove_poster"))
+	releaseDate, err := time.Parse("2006-01-02", req.ReleaseDate)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, resp.Error("invalid remove_poster"))
+		render.JSON(w, r, resp.Error("invalid release_date"))
 		return
 	}
 
 	filmDTO := &f.FilmDTO{
 		ID:           id,
+		Title:        req.Title,
 		Synopsis:     req.Synopsis,
-		ReleaseDate:  req.ReleaseDate,
+		ReleaseDate:  releaseDate,
 		Runtime:      req.Runtime,
 		Producer:     req.Producer,
-		Genres:       req.GenreIDs,
-		Actors:       req.ActorIDs,
-		RemovePoster: removePoster,
+		GenreIDs:     req.GenreIDs,
+		ActorIDs:     req.ActorIDs,
+		RemovePoster: req.RemovePoster,
 	}
 
 	if err := c.filmUseCase.UpdateFilm(filmDTO, &file); err != nil {
 		switch {
-		case errors.Is(err, f.ErrFilmNotFound):
+		case errors.Is(err, f.ErrFilmNotFound) || errors.Is(err, f.ErrInvalidFilmData) || errors.Is(err, f.ErrGenreNotFound) ||
+			errors.Is(err, f.ErrActorNotFound) || errors.Is(err, f.ErrFilmPosterNotFound):
 			w.WriteHeader(http.StatusNotFound)
-			render.JSON(w, r, resp.Error(f.ErrFilmNotFound.Error()))
-		case errors.Is(err, f.ErrInvalidFilmData):
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error(f.ErrInvalidFilmData.Error()))
-		case errors.Is(err, f.ErrGenreNotFound):
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error(f.ErrGenreNotFound.Error()))
-		case errors.Is(err, f.ErrActorNotFound):
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error(f.ErrActorNotFound.Error()))
+			render.JSON(w, r, resp.Error(err.Error()))
 		default:
 			log.Error("failed to update film", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -282,10 +285,10 @@ func (c *Controller) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteFilm - Удаление фильма
-// @Summary Удалить фильм по ID
-// @Description Удаляет фильм по его ID
+// @Summary Удалить фильм по FilmId
+// @Description Удаляет фильм по его FilmId
 // @Tags film
-// @Param id path string true "ID фильма"
+// @Param id path string true "FilmId фильма"
 // @Success 204 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -360,8 +363,8 @@ func (c *Controller) SearchFilms(w http.ResponseWriter, r *http.Request) {
 // @Summary Получить список фильмов с фильтрацией и пагинацией
 // @Description Возвращает список фильмов с возможностью фильтрации по жанрам, актерам, продюсеру, рейтингу, дате выпуска, длительности и сортировке
 // @Tags film
-// @Param genre_ids query []uint false "Список ID жанров"
-// @Param actor_ids query []uint false "Список ID актеров"
+// @Param genre_ids query []uint false "Список FilmId жанров"
+// @Param actor_ids query []uint false "Список FilmId актеров"
 // @Param producer query string false "Продюсер"
 // @Param min_rating query float64 false "Минимальный рейтинг"
 // @Param max_rating query float64 false "Максимальный рейтинг"

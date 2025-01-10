@@ -10,11 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"log"
-	"mime/multipart"
 	"os"
 	"server/config"
-	avatarManager "server/pkg/lib/avatarMenager"
-	"strings"
 	"time"
 )
 
@@ -105,7 +102,7 @@ func (s *S3Storage) createBucketIfNotExists(bucket config.BucketConfig) error {
 			return fmt.Errorf("failed to apply bucket policy: %v", err)
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		err = uploadDefaultAvatar(s.Client, bucket)
 		if err != nil {
@@ -142,53 +139,30 @@ func applyBucketPolicy(client *s3.Client, bucket string) error {
 }
 
 func uploadDefaultAvatar(client *s3.Client, bucket config.BucketConfig) error {
-	log.Printf("%s", bucket.DefaultFile.Path)
-
-	file, err := os.Open(bucket.DefaultFile.Path)
-	if err != nil {
-		return fmt.Errorf("unable to open default avatar file: %v", err)
-	}
-	defer file.Close()
-	var multipartFile multipart.File = file
-
-	keys := make(map[string][]byte)
-
-	if strings.Contains(bucket.Name, "avatar") {
-		buf52, buf512, err := avatarManager.ParsingAvatarImage(&multipartFile)
+	for i, path := range bucket.DefaultFile.Path {
+		file, err := os.Open(path)
 		if err != nil {
-			return fmt.Errorf("failed to process default avatar image: %v", err)
+			return fmt.Errorf("unable to open default file %s: %v", path, err)
 		}
-		keys[bucket.DefaultFile.Keys[0]] = buf512
-		if len(bucket.DefaultFile.Keys) > 1 {
-			keys[bucket.DefaultFile.Keys[1]] = buf52
-		}
-	} else {
-		fileData := make([]byte, 0)
-		_, err := file.Read(fileData)
+		defer file.Close()
+
+		fileData, err := os.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("failed to read default file: %v", err)
+			return fmt.Errorf("failed to read default file %s: %v", path, err)
 		}
 
-		if len(bucket.DefaultFile.Keys) > 0 {
-			keys[bucket.DefaultFile.Keys[0]] = fileData
-		} else {
-			return errors.New("no keys provided for non-avatar file")
-		}
-	}
-
-	for key, data := range keys {
+		key := bucket.DefaultFile.Keys[i]
 		uploadInput := &s3.PutObjectInput{
 			Bucket:      &bucket.Name,
 			Key:         aws.String(key),
-			Body:        bytes.NewReader(data),
+			Body:        bytes.NewReader(fileData),
 			ContentType: aws.String("image/webp"),
 		}
 
-		_, err := client.PutObject(context.TODO(), uploadInput)
+		_, err = client.PutObject(context.TODO(), uploadInput)
 		if err != nil {
 			return fmt.Errorf("failed to upload %s to S3: %v", key, err)
 		}
 	}
-
 	return nil
 }

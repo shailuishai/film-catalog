@@ -168,15 +168,15 @@ const docTemplate = `{
         },
         "/actors/{id}": {
             "get": {
-                "description": "Возвращает информацию об актере по его ID",
+                "description": "Возвращает информацию об актере по его FilmId",
                 "tags": [
                     "actor"
                 ],
-                "summary": "Получить актера по ID",
+                "summary": "Получить актера по FilmId",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID актера",
+                        "description": "FilmId актера",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -218,7 +218,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID актера",
+                        "description": "FilmId актера",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -277,15 +277,15 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Удаляет актера по его ID",
+                "description": "Удаляет актера по его FilmId",
                 "tags": [
                     "actor"
                 ],
-                "summary": "Удалить актера по ID",
+                "summary": "Удалить актера по FilmId",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID актера",
+                        "description": "FilmId актера",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -702,7 +702,7 @@ const docTemplate = `{
                             "type": "integer"
                         },
                         "collectionFormat": "csv",
-                        "description": "Список ID жанров",
+                        "description": "Список FilmId жанров",
                         "name": "genre_ids",
                         "in": "query"
                     },
@@ -712,7 +712,7 @@ const docTemplate = `{
                             "type": "integer"
                         },
                         "collectionFormat": "csv",
-                        "description": "Список ID актеров",
+                        "description": "Список FilmId актеров",
                         "name": "actor_ids",
                         "in": "query"
                     },
@@ -905,15 +905,15 @@ const docTemplate = `{
         },
         "/films/{id}": {
             "get": {
-                "description": "Возвращает информацию о фильме по его ID",
+                "description": "Возвращает информацию о фильме по его FilmId",
                 "tags": [
                     "film"
                 ],
-                "summary": "Получить фильм по ID",
+                "summary": "Получить фильм по FilmId",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID фильма",
+                        "description": "FilmId фильма",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -961,7 +961,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID фильма",
+                        "description": "FilmId фильма",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1014,15 +1014,15 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Удаляет фильм по его ID",
+                "description": "Удаляет фильм по его FilmId",
                 "tags": [
                     "film"
                 ],
-                "summary": "Удалить фильм по ID",
+                "summary": "Удалить фильм по FilmId",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID фильма",
+                        "description": "FilmId фильма",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1092,7 +1092,7 @@ const docTemplate = `{
                 "summary": "Обновление жанра",
                 "parameters": [
                     {
-                        "description": "ID жанра и новое название",
+                        "description": "FilmId жанра и новое название",
                         "name": "json",
                         "in": "body",
                         "required": true,
@@ -1169,18 +1169,18 @@ const docTemplate = `{
         },
         "/genres/{id}": {
             "get": {
-                "description": "Возвращает информацию о жанре по указанному ID",
+                "description": "Возвращает информацию о жанре по указанному FilmId",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "genre"
                 ],
-                "summary": "Получение жанра по ID",
+                "summary": "Получение жанра по FilmId",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID жанра",
+                        "description": "FilmId жанра",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -1214,7 +1214,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Удаляет жанр по указанному ID",
+                "description": "Удаляет жанр по указанному FilmId",
                 "tags": [
                     "genre"
                 ],
@@ -1222,7 +1222,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID жанра",
+                        "description": "FilmId жанра",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -1410,6 +1410,279 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/reviews": {
+            "put": {
+                "description": "Обновляет данные отзыва",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Обновление отзыва",
+                "parameters": [
+                    {
+                        "description": "Данные отзыва",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UpdateReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создает новый отзыв с указанными данными",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Создание нового отзыва",
+                "parameters": [
+                    {
+                        "description": "Данные отзыва",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.CreateReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/film/{film_id}": {
+            "get": {
+                "description": "Возвращает список отзывов для указанного фильма",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Получение отзывов по FilmId фильма",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "FilmId фильма",
+                        "name": "film_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.Response"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/reviewer/{reviewer_id}": {
+            "get": {
+                "description": "Возвращает список отзывов, оставленных указанным пользователем",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Получение отзывов по FilmId пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "FilmId пользователя",
+                        "name": "reviewer_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.Response"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/reviews/{id}": {
+            "get": {
+                "description": "Возвращает информацию о отзыве по указанному FilmId",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "review"
+                ],
+                "summary": "Получение отзыва по FilmId",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "FilmId отзыва",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет отзыв по указанному FilmId",
+                "tags": [
+                    "review"
+                ],
+                "summary": "Удаление отзыва",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "FilmId отзыва",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1418,6 +1691,31 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.CreateReviewRequest": {
+            "type": "object",
+            "required": [
+                "film_id",
+                "rating",
+                "review_text",
+                "user_id"
+            ],
+            "properties": {
+                "film_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "review_text": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1458,6 +1756,35 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.UpdateReviewRequest": {
+            "type": "object",
+            "required": [
+                "film_id",
+                "rating",
+                "review_id",
+                "review_text",
+                "user_id"
+            ],
+            "properties": {
+                "film_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "review_id": {
+                    "type": "integer"
+                },
+                "review_text": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

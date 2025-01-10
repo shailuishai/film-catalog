@@ -27,7 +27,7 @@ func (uc *ReviewUseCase) CreateReview(review *r.ReviewDTO) error {
 	return uc.rp.CreateReview(review)
 }
 
-// GetReview возвращает отзыв по ID
+// GetReview возвращает отзыв по FilmId
 func (uc *ReviewUseCase) GetReview(reviewID uint) (*r.ReviewDTO, error) {
 	cacheKey := "review_" + strconv.Itoa(int(reviewID))
 
@@ -57,15 +57,15 @@ func (uc *ReviewUseCase) UpdateReview(review *r.ReviewDTO) error {
 	return uc.rp.UpdateReview(review)
 }
 
-// DeleteReview удаляет отзыв по ID
+// DeleteReview удаляет отзыв по FilmId
 func (uc *ReviewUseCase) DeleteReview(reviewID uint) error {
 	cacheKey := "review_" + strconv.Itoa(int(reviewID))
-	_ = uc.rp.DeleteCache(cacheKey) // Инвалидация кэша
+	_ = uc.rp.DeleteCache(cacheKey)
 
 	return uc.rp.DeleteReview(reviewID)
 }
 
-// GetReviewsByFilmID возвращает отзывы по ID фильма
+// GetReviewsByFilmID возвращает отзывы по FilmId фильма
 func (uc *ReviewUseCase) GetReviewsByFilmID(filmID uint) ([]*r.ReviewDTO, error) {
 	cacheKey := "reviews_film_" + strconv.Itoa(int(filmID))
 
@@ -87,7 +87,7 @@ func (uc *ReviewUseCase) GetReviewsByFilmID(filmID uint) ([]*r.ReviewDTO, error)
 	return reviews, nil
 }
 
-// GetReviewsByReviewerID возвращает отзывы по ID пользователя
+// GetReviewsByReviewerID возвращает отзывы по FilmId пользователя
 func (uc *ReviewUseCase) GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDTO, error) {
 	cacheKey := "reviews_reviewer_" + strconv.Itoa(int(reviewerID))
 

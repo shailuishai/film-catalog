@@ -5,7 +5,7 @@ import "time"
 type Actor struct {
 	ActorID   uint      `gorm:"primaryKey;column:actor_id"`
 	Name      string    `gorm:"size:200;not null;column:name"`
-	AvatarURL *string   `gorm:"default:'https://actoravatar.storage-173.s3hoster.by/default/512x512.webp';column:avatar_url"`
+	AvatarURL *string   `gorm:"default:'https://actoravatar.storage-173.s3hoster.by/default/';column:avatar_url"`
 	WikiURL   string    `gorm:"default:'';not null;column:wiki_url"`
 	CreatedAt time.Time `gorm:"column:create_at"`
 }

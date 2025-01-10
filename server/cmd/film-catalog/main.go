@@ -69,6 +69,7 @@ type App struct {
 	Storage     *database.Storage
 	Cache       *cache.Cache
 	S3          *s3.S3Storage
+	ES          *elasticsearch.Search
 	EmailSender *emailsender.EmailSender
 	Router      chi.Router
 	Log         *slog.Logger
@@ -167,7 +168,7 @@ func (app *App) SetupRoutes() {
 
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
-		swag.URL("http://localhost:8079/swagger/doc.json"),
+		swag.URL("http://localhost:8080/swagger/doc.json"),
 	))
 
 	apiVersion := "/v1"
@@ -262,10 +263,11 @@ func (app *App) SetupRoutes() {
 	app.Router.Route(apiVersion+"/reviews", func(r chi.Router) {
 		r.Get("/", ReviewC.GetReviewsByFilmID)
 		r.Get("/user/{user_id}", ReviewC.GetReviewsByReviewerID)
+		r.Get("/film/{film_id}", ReviewC.GetReviewsByFilmID)
 		r.Group(func(r chi.Router) {
 			//r.Use(AuthMiddleware)
 			r.Post("/", ReviewC.CreateReview)
-			r.Put("/{id}", ReviewC.UpdateReview)
+			r.Put("/", ReviewC.UpdateReview)
 			r.Delete("/{id}", ReviewC.DeleteReview)
 		})
 	})

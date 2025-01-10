@@ -21,7 +21,6 @@ type Config struct {
 type ElasticsearchConfig struct {
 	Address  string `yaml:"address"  env-required:"true"`
 	Username string `yaml:"username"`
-	Password string `yaml:"password"`
 	Index    string `yaml:"index" env-required:"true"`
 }
 
@@ -43,7 +42,7 @@ type DbConfig struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	DbName   string `yaml:"dbname"`
-	Sslmode  string `yaml:"sslmode"`
+	SSLMode  string `yaml:"ssl_mode"`
 }
 
 type SMTPConfig struct {
@@ -65,7 +64,7 @@ type BucketConfig struct {
 }
 
 type DefaultFile struct {
-	Path string   `yaml:"path"`
+	Path []string `yaml:"path"`
 	Keys []string `yaml:"keys"`
 }
 

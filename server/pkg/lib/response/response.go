@@ -130,13 +130,14 @@ func Genres(genres interface{}) Response {
 }
 
 type FilmData struct {
-	ID          uint          `json:"id"`
-	PosterURL   string        `json:"poster_url"`
-	Synopsis    string        `json:"synopsis"`
-	ReleaseDate time.Time     `json:"release_date"`
-	Runtime     time.Duration `json:"runtime"`
-	Producer    string        `json:"producer"`
-	CreatedAt   time.Time     `json:"created_at"`
+	ID          uint      `json:"id"`
+	Title       string    `json:"title"`
+	PosterURL   string    `json:"poster_url"`
+	Synopsis    string    `json:"synopsis"`
+	ReleaseDate time.Time `json:"release_date"`
+	Runtime     string    `json:"runtime"`
+	Producer    string    `json:"producer"`
+	CreatedAt   time.Time `json:"created_at"`
 
 	AvgRating          float64 `json:"avg_rating"`
 	TotalReviews       uint    `json:"total_reviews"`
@@ -146,49 +147,89 @@ type FilmData struct {
 	CountRatings61_80  uint    `json:"count_ratings_61_80"`
 	CountRatings81_100 uint    `json:"count_ratings_81_100"`
 
-	Genres  []uint `json:"genres"`
-	Actors  []uint `json:"actors"`
-	Reviews []uint `json:"reviews"`
+	GenreIDs []uint      `json:"genre_ids,omitempty"` // Только ID жанров
+	ActorIDs []uint      `json:"actor_ids,omitempty"` // Только ID актеров
+	Genres   []GenreData `json:"genres,omitempty"`    // Полные данные жанров
+	Actors   []ActorData `json:"actors,omitempty"`    // Полные данные актеров
 }
 
 func Films(films interface{}) Response {
 	switch v := films.(type) {
 	case *f.FilmDTO:
+		filmData := FilmData{
+			ID:          v.ID,
+			Title:       v.Title,
+			PosterURL:   v.PosterURL,
+			Synopsis:    v.Synopsis,
+			ReleaseDate: v.ReleaseDate,
+			Runtime:     v.Runtime,
+			Producer:    v.Producer,
+			CreatedAt:   v.CreateAt,
+
+			AvgRating:          v.AvgRating,
+			TotalReviews:       v.TotalReviews,
+			CountRatings0_20:   v.CountRatings0_20,
+			CountRatings21_40:  v.CountRatings21_40,
+			CountRatings41_60:  v.CountRatings41_60,
+			CountRatings61_80:  v.CountRatings61_80,
+			CountRatings81_100: v.CountRatings81_100,
+		}
+
+		// Если переданы только FilmId жанров
+		if len(v.GenreIDs) > 0 {
+			filmData.GenreIDs = v.GenreIDs
+		}
+
+		// Если переданы полные данные жанров
+		if len(v.Genres) > 0 {
+			genres := make([]GenreData, len(v.Genres))
+			for i, genre := range v.Genres {
+				genres[i] = GenreData{
+					Id:        genre.GenreId,
+					Name:      &genre.Name,
+					CreatedAt: &genre.CreateAt,
+				}
+			}
+			filmData.Genres = genres
+		}
+
+		// Если переданы только FilmId актеров
+		if len(v.ActorIDs) > 0 {
+			filmData.ActorIDs = v.ActorIDs
+		}
+
+		// Если переданы полные данные актеров
+		if len(v.Actors) > 0 {
+			actors := make([]ActorData, len(v.Actors))
+			for i, actor := range v.Actors {
+				actors[i] = ActorData{
+					Id:        actor.ActorId,
+					Name:      &actor.Name,
+					WikiUrl:   &actor.WikiUrl,
+					AvatarUrl: actor.AvatarUrl,
+					CreatedAt: &actor.CreatedAt,
+				}
+			}
+			filmData.Actors = actors
+		}
+
 		return Response{
 			Status: StatusOK,
-			Data: FilmData{
-				ID:          v.ID,
-				PosterURL:   v.PosterURL,
-				Synopsis:    v.Synopsis,
-				ReleaseDate: v.ReleaseDate,
-				Runtime:     v.Runtime,
-				Producer:    v.Producer,
-				CreatedAt:   v.CreatedAt,
-
-				AvgRating:          v.AvgRating,
-				TotalReviews:       v.TotalReviews,
-				CountRatings0_20:   v.CountRatings0_20,
-				CountRatings21_40:  v.CountRatings21_40,
-				CountRatings41_60:  v.CountRatings41_60,
-				CountRatings61_80:  v.CountRatings61_80,
-				CountRatings81_100: v.CountRatings81_100,
-
-				Genres: v.Genres,
-				Actors: v.Actors,
-			},
+			Data:   filmData,
 		}
+
 	case []*f.FilmDTO:
 		var filmList []FilmData
 		for _, film := range v {
-			filmList = append(filmList, FilmData{
-				ID:          film.ID,
-				PosterURL:   film.PosterURL,
-				Synopsis:    film.Synopsis,
-				ReleaseDate: film.ReleaseDate,
-				Runtime:     film.Runtime,
-				Producer:    film.Producer,
-				CreatedAt:   film.CreatedAt,
-
+			filmData := FilmData{
+				ID:                 film.ID,
+				Title:              film.Title,
+				PosterURL:          film.PosterURL,
+				Synopsis:           film.Synopsis,
+				ReleaseDate:        film.ReleaseDate,
+				Runtime:            film.Runtime,
+				Producer:           film.Producer,
+				CreatedAt:          film.CreateAt,
 				AvgRating:          film.AvgRating,
 				TotalReviews:       film.TotalReviews,
 				CountRatings0_20:   film.CountRatings0_20,
@@ -196,15 +237,53 @@ func Films(films interface{}) Response {
 				CountRatings41_60:  film.CountRatings41_60,
 				CountRatings61_80:  film.CountRatings61_80,
 				CountRatings81_100: film.CountRatings81_100,
+			}
 
-				Genres: film.Genres,
-				Actors: film.Actors,
-			})
+			// Если переданы только FilmId жанров
+			if len(film.GenreIDs) > 0 {
+				filmData.GenreIDs = film.GenreIDs
+			}
+
+			// Если переданы полные данные жанров
+			if len(film.Genres) > 0 {
+				genres := make([]GenreData, len(film.Genres))
+				for i, genre := range film.Genres {
+					genres[i] = GenreData{
+						Id:        genre.GenreId,
+						Name:      &genre.Name,
+						CreatedAt: &genre.CreateAt,
+					}
+				}
+				filmData.Genres = genres
+			}
+
+			// Если переданы только FilmId актеров
+			if len(film.ActorIDs) > 0 {
+				filmData.ActorIDs = film.ActorIDs
+			}
+
+			// Если переданы полные данные актеров
+			if len(film.Actors) > 0 {
+				actors := make([]ActorData, len(film.Actors))
+				for i, actor := range film.Actors {
+					actors[i] = ActorData{
+						Id:        actor.ActorId,
+						Name:      &actor.Name,
+						WikiUrl:   &actor.WikiUrl,
+						AvatarUrl: actor.AvatarUrl,
+						CreatedAt: &actor.CreatedAt,
+					}
+				}
+				filmData.Actors = actors
+			}
+
+			filmList = append(filmList, filmData)
 		}
 		return Response{
 			Status: StatusOK,
 			Data:   filmList,
 		}
+
 	default:
 		return Response{
 			Status: StatusError,
@@ -233,7 +312,7 @@ func Reviews(reviews interface{}) Response {
 				FilmID:     v.FilmID,
 				Rating:     v.Rating,
 				ReviewText: v.ReviewText,
-				CreatedAt:  &v.CreatedAt,
+				CreatedAt:  &v.CreateAt,
 			},
 		}
 	case []*r.ReviewDTO:
@@ -245,7 +324,7 @@ func Reviews(reviews interface{}) Response {
 				FilmID:     review.FilmID,
 				Rating:     review.Rating,
 				ReviewText: review.ReviewText,
-				CreatedAt:  &review.CreatedAt,
+				CreatedAt:  &review.CreateAt,
 			})
 		}
 		return Response{
