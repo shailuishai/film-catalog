@@ -978,12 +978,6 @@ const docTemplate = `{
                         "description": "Постер фильма",
                         "name": "poster",
                         "in": "formData"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Удалить постер",
-                        "name": "remove_poster",
-                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1551,7 +1545,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reviews/reviewer/{reviewer_id}": {
+        "/reviews/reviewer/{user_id}": {
             "get": {
                 "description": "Возвращает список отзывов, оставленных указанным пользователем",
                 "produces": [
@@ -1861,9 +1855,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
-	Host:             "",
+	Host:             "film-catalog-8re5.onrender.com",
 	BasePath:         "/v1",
-	Schemes:          []string{},
+	Schemes:          []string{"https"},
 	Title:            "Film-catalog API",
 	Description:      "API for potatorate site",
 	InfoInstanceName: "swagger",

@@ -115,6 +115,7 @@ definitions:
         example: success/error
         type: string
     type: object
+host: film-catalog-8re5.onrender.com
 info:
   contact:
     name: Evdokimov Igor
@@ -224,9 +225,9 @@ paths:
       - actor
   /actors/{id}:
     delete:
-      description: Удаляет актера по его ID
+      description: Удаляет актера по его FilmId
       parameters:
-      - description: ID актера
+      - description: FilmId актера
         in: query
         name: id
         required: true
@@ -244,13 +245,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Удалить актера по ID
+      summary: Удалить актера по FilmId
       tags:
       - actor
     get:
-      description: Возвращает информацию об актере по его ID
+      description: Возвращает информацию об актере по его FilmId
       parameters:
-      - description: ID актера
+      - description: FilmId актера
         in: query
         name: id
         required: true
@@ -268,7 +269,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получить актера по ID
+      summary: Получить актера по FilmId
       tags:
       - actor
     put:
@@ -276,7 +277,7 @@ paths:
       - application/json
       description: Обновляет данные актера, включая аватар
       parameters:
-      - description: ID актера
+      - description: FilmId актера
         in: query
         name: id
         required: true
@@ -579,14 +580,14 @@ paths:
         актерам, продюсеру, рейтингу, дате выпуска, длительности и сортировке
       parameters:
       - collectionFormat: csv
-        description: Список ID жанров
+        description: Список FilmId жанров
         in: query
         items:
           type: integer
         name: genre_ids
         type: array
       - collectionFormat: csv
-        description: Список ID актеров
+        description: Список FilmId актеров
         in: query
         items:
           type: integer
@@ -692,9 +693,9 @@ paths:
       - film
   /films/{id}:
     delete:
-      description: Удаляет фильм по его ID
+      description: Удаляет фильм по его FilmId
       parameters:
-      - description: ID фильма
+      - description: FilmId фильма
         in: path
         name: id
         required: true
@@ -712,13 +713,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Удалить фильм по ID
+      summary: Удалить фильм по FilmId
       tags:
       - film
     get:
-      description: Возвращает информацию о фильме по его ID
+      description: Возвращает информацию о фильме по его FilmId
       parameters:
-      - description: ID фильма
+      - description: FilmId фильма
         in: path
         name: id
         required: true
@@ -740,7 +741,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получить фильм по ID
+      summary: Получить фильм по FilmId
       tags:
       - film
     put:
@@ -748,7 +749,7 @@ paths:
       - multipart/form-data
       description: Обновляет данные фильма, включая постер
       parameters:
-      - description: ID фильма
+      - description: FilmId фильма
         in: path
         name: id
         required: true
@@ -762,10 +763,6 @@ paths:
         in: formData
         name: poster
         type: file
-      - description: Удалить постер
-        in: formData
-        name: remove_poster
-        type: boolean
       produces:
       - application/json
       responses:
@@ -868,7 +865,7 @@ paths:
       - application/json
       description: Обновляет название существующего жанра
       parameters:
-      - description: ID жанра и новое название
+      - description: FilmId жанра и новое название
         in: body
         name: json
         required: true
@@ -894,9 +891,9 @@ paths:
       - genre
   /genres/{id}:
     delete:
-      description: Удаляет жанр по указанному ID
+      description: Удаляет жанр по указанному FilmId
       parameters:
-      - description: ID жанра
+      - description: FilmId жанра
         in: query
         name: id
         required: true
@@ -922,9 +919,9 @@ paths:
       tags:
       - genre
     get:
-      description: Возвращает информацию о жанре по указанному ID
+      description: Возвращает информацию о жанре по указанному FilmId
       parameters:
-      - description: ID жанра
+      - description: FilmId жанра
         in: query
         name: id
         required: true
@@ -948,7 +945,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение жанра по ID
+      summary: Получение жанра по FilmId
       tags:
       - genre
   /profile:
@@ -1117,9 +1114,9 @@ paths:
       - review
   /reviews/{id}:
     delete:
-      description: Удаляет отзыв по указанному ID
+      description: Удаляет отзыв по указанному FilmId
       parameters:
-      - description: ID отзыва
+      - description: FilmId отзыва
         in: query
         name: id
         required: true
@@ -1145,9 +1142,9 @@ paths:
       tags:
       - review
     get:
-      description: Возвращает информацию о отзыве по указанному ID
+      description: Возвращает информацию о отзыве по указанному FilmId
       parameters:
-      - description: ID отзыва
+      - description: FilmId отзыва
         in: query
         name: id
         required: true
@@ -1171,14 +1168,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение отзыва по ID
+      summary: Получение отзыва по FilmId
       tags:
       - review
   /reviews/film/{film_id}:
     get:
       description: Возвращает список отзывов для указанного фильма
       parameters:
-      - description: ID фильма
+      - description: FilmId фильма
         in: query
         name: film_id
         required: true
@@ -1200,14 +1197,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение отзывов по ID фильма
+      summary: Получение отзывов по FilmId фильма
       tags:
       - review
-  /reviews/reviewer/{reviewer_id}:
+  /reviews/reviewer/{user_id}:
     get:
       description: Возвращает список отзывов, оставленных указанным пользователем
       parameters:
-      - description: ID пользователя
+      - description: FilmId пользователя
         in: query
         name: reviewer_id
         required: true
@@ -1229,9 +1226,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение отзывов по ID пользователя
+      summary: Получение отзывов по FilmId пользователя
       tags:
       - review
+schemes:
+- https
 securityDefinitions:
   ApiKeyAuth:
     in: header

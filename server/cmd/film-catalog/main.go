@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"server/config"
+	"server/docs"
 	_ "server/docs"
 	"server/internal/init/cache"
 	"server/internal/init/database"
@@ -137,7 +138,7 @@ func (app *App) Start() error {
 	}()
 
 	app.Log.Info("server started", slog.String("Addr", app.Cfg.HttpServerConfig.Address))
-	app.Log.Info("docs " + "http://" + app.Cfg.HttpServerConfig.Address + "/swagger/index.html#/")
+	app.Log.Info("docs " + "https://film-catalog-8re5.onrender.com/swagger/index.html#/")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -168,9 +169,8 @@ func (app *App) SetupRoutes() {
 
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
-		swag.URL("http://localhost:8080/swagger/doc.json"),
+		swag.URL("https://film-catalog-8re5.onrender.com/swagger/doc.json"), // Укажите URL вашего бэкенда
 	))
-
 	apiVersion := "/v1"
 
 	AuthDB := authDb.NewAuthDatabase(app.Storage.Db, app.Log)
@@ -297,13 +297,22 @@ func (app *App) SetupRoutes() {
 // @title Film-catalog API
 // @version 1.0.0
 // @description API for potatorate site
+
 // @contact.name Evdokimov Igor
 // @contact.url https://t.me/epelptic
+
+// @host film-catalog-8re5.onrender.com
 // @BasePath /v1
+// @Schemes https
+
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
 func main() {
+	docs.SwaggerInfo.Host = "film-catalog-8re5.onrender.com"
+	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.Schemes = []string{"https"}
+
 	cfg := config.MustLoad()
 	log := SetupLogger(cfg.Env)
 
