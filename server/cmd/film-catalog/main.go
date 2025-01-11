@@ -167,10 +167,10 @@ func (app *App) SetupRoutes() {
 		middlelog.New(app.Log),
 		middleware.URLFormat,
 		cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"http://localhost:5173"}, // Укажите домен вашего фронтенда
+			AllowedOrigins:   []string{"http://192.168.0.107:5173/", "*"}, // Укажите домен вашего фронтенда
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-			ExposedHeaders:   []string{"Link"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "*"},
+			ExposedHeaders:   []string{"Link", "*"},
 			AllowCredentials: true,
 			MaxAge:           300, // Максимальное время кэширования preflight запросов
 		}),
@@ -178,7 +178,7 @@ func (app *App) SetupRoutes() {
 
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
-		swag.URL("https://film-catalog-8re5.onrender.com/swagger/doc.json"), // Укажите URL вашего бэкенда
+		swag.URL("https://film-catalog-8re5.onrender.com/swagger/doc.json"),
 	))
 	apiVersion := "/v1"
 
