@@ -25,7 +25,7 @@ type Storage struct {
 
 func NewStorage(cfg config.DbConfig) (*Storage, error) {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s",
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		cfg.Host, cfg.Username, os.Getenv("DB_PASSWORD"), cfg.DbName, cfg.Port,
 	)
 

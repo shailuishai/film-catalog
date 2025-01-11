@@ -1,10 +1,8 @@
 package elasticsearch
 
 import (
-	"crypto/tls"
 	"github.com/elastic/go-elasticsearch/v8"
 	"log"
-	"net/http"
 	"os"
 	"server/config"
 	"time"
@@ -25,13 +23,9 @@ func NewSearch(cfg config.ElasticsearchConfig) (*Search, error) {
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		client, err = elasticsearch.NewClient(elasticsearch.Config{
-			Addresses: []string{cfg.Address},
-			APIKey:    os.Getenv("ELASTIC_API_KEY"),
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
+			Addresses: []string{cfg.Address},         // Адрес Elasticsearch
+			Username:  "elastic",                     // Логин для локального Elasticsearch
+			Password:  os.Getenv("ELASTIC_PASSWORD"), // Пароль из переменной окружения
 		})
 
 		if err != nil {
