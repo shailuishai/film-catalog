@@ -167,7 +167,7 @@ func (app *App) SetupRoutes() {
 		middlelog.New(app.Log),
 		middleware.URLFormat,
 		cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"http://192.168.0.107:5173/"}, // Укажите домен вашего фронтенда
+			AllowedOrigins:   []string{"http://192.168.0.107:5174/"}, // Укажите домен вашего фронтенда
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 			ExposedHeaders:   []string{"Link"},
