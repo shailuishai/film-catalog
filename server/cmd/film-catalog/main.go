@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/robfig/cron/v3"
 	swag "github.com/swaggo/http-swagger/v2"
@@ -165,6 +166,14 @@ func (app *App) SetupRoutes() {
 		middleware.RequestID,
 		middlelog.New(app.Log),
 		middleware.URLFormat,
+		cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"https://your-frontend-domain.com"}, // Укажите домен вашего фронтенда
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: true,
+			MaxAge:           300, // Максимальное время кэширования preflight запросов
+		}),
 	)
 
 	//Swagger UI endpoint
