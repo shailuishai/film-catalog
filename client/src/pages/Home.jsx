@@ -1,8 +1,9 @@
 import React from "react";
 import { Box, Heading, Text, SimpleGrid, Flex, Button } from "@chakra-ui/react";
+import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
 import FilmCard from "../components/FilmCard"; // Предположим, что у вас есть компонент FilmCard
-import ActorCard from "../components/ActorCard"; // Предположим, что у вас есть компонент ActorCard
+import ActorCard from "../components/ActorCard";
 
 const Home = () => {
     // Пример данных для фильмов и актеров
@@ -39,7 +40,9 @@ const Home = () => {
     ];
 
     return (
-        <Box p={4}>
+        <>
+        <Header />
+        <Box py={4}>
             {/* Приветственное сообщение */}
             <Heading as="h1" size="xl" mb={4}>
                 Welcome to PatatoRates!
@@ -81,6 +84,7 @@ const Home = () => {
                 ))}
             </SimpleGrid>
         </Box>
+        </>
     );
 };
 
