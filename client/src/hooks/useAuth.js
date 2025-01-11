@@ -37,10 +37,10 @@ export const useAuth = () => {
     };
 
     // Регистрация
-    const handleSignUp = async (userData) => {
+    const handleSignUp = async (userDataInput) => { // Переименовали параметр
         setIsLoading(true);
         try {
-            const userData = await signUp(userData);
+            const userData = await signUp(userDataInput); // Используем переименованную переменную
             setUser(userData);
         } catch (error) {
             throw error;

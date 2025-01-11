@@ -54,10 +54,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
             borderRadius="md"
             boxShadow="lg"
         >
-            {/* Кнопка закрытия для мобильных устройств */}
-            <Flex justify="flex-end" p={4} display={{ base: "flex", md: "none" }}>
-                <CloseButton onClick={onToggle} />
-            </Flex>
 
             {/* Логотип и кнопка сворачивания */}
             <Flex
@@ -92,7 +88,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     size="lg"
                     variant="ghost"
                     boxSize="48px"
-                    _hover={{ bg: "rgba(255, 165, 0, 0.1)", color: accentColor }}
                     onClick={() => setIsCollapsed(!isCollapsed)} // Переключаем состояние
                 />
             </Flex>
@@ -115,12 +110,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     gap={4}
                     p={isCollapsed ? 0 : 4}
                     color={textColor}
-                    _hover={{
-                        bg: "rgba(255, 165, 0, 0.1)",
-                        backdropFilter: "blur(4px)",
-                        color: accentColor,
-                        textDecoration: "none",
-                    }}
                     _activeLink={{
                         bg: "rgba(255, 165, 0, 0.1)",
                         color: accentColor,
@@ -139,12 +128,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     gap={4}
                     p={isCollapsed ? 0 : 4}
                     color={textColor}
-                    _hover={{
-                        bg: "rgba(255, 165, 0, 0.1)",
-                        backdropFilter: "blur(4px)",
-                        color: accentColor,
-                        textDecoration: "none",
-                    }}
                     _activeLink={{
                         bg: "rgba(255, 165, 0, 0.1)",
                         color: accentColor,
@@ -163,12 +146,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     gap={4}
                     p={isCollapsed ? 0 : 4}
                     color={textColor}
-                    _hover={{
-                        bg: "rgba(255, 165, 0, 0.1)",
-                        backdropFilter: "blur(4px)",
-                        color: accentColor,
-                        textDecoration: "none",
-                    }}
                     _activeLink={{
                         bg: "rgba(255, 165, 0, 0.1)",
                         color: accentColor,
@@ -215,12 +192,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                         gap={4}
                         p={isCollapsed ? 0 : 4}
                         color={textColor}
-                        _hover={{
-                            bg: "rgba(255, 165, 0, 0.1)",
-                            backdropFilter: "blur(4px)",
-                            color: accentColor,
-                            textDecoration: "none",
-                        }}
                         _activeLink={{
                             bg: "rgba(255, 165, 0, 0.1)",
                             color: accentColor,

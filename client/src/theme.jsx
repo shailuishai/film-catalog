@@ -1,4 +1,4 @@
-import { extendTheme } from "@chakra-ui/react";
+import {extendTheme } from "@chakra-ui/react";
 
 
 const config = {
@@ -7,7 +7,6 @@ const config = {
 };
 
 const theme = extendTheme({
-    // Цветовая палитра
     colors: {
         brand: {
             50: "#f0f0f0",
@@ -100,42 +99,32 @@ const theme = extendTheme({
         },
     },
 
-    // Стили для компонентов
     components: {
         Button: {
-            // Базовая стилизация для всех кнопок
             baseStyle: {
-                fontWeight: "bold", // Жирный текст
-                borderRadius: "md", // Скругленные углы (8px)
+                fontWeight: "bold",
+                borderRadius: "md",
+                _hover: {
+                    bg: "rgba(255, 165, 0, 0.1)",
+                    color: "accent.400",
+                    textDecoration: "none",
+                },
             },
-            // Варианты кнопок
             variants: {
                 solid: {
-                    bg: "brand.900", // Основной цвет (темный)
-                    color: "white", // Белый текст
+                    bg: "brand.800",
+                    color: "white",
                     _hover: {
-                        bg: "brand.800", // Темнее при наведении
-                    },
-                },
-                outline: {
-                    border: "2px solid",
-                    borderColor: "brand.900", // Основной цвет для границы
-                    color: "brand.900", // Основной цвет для текста
-                    _hover: {
-                        bg: "brand.50", // Светлый фон при наведении
+                        bg: "brand.800",
                     },
                 },
             },
         },
         Input: {
-            // Стили для полей ввода
             baseStyle: {
                 field: {
-                    borderRadius: "md", // Скругленные углы (8px)
-                    _focus: {
-                        borderColor: "brand.900", // Основной цвет при фокусе
-                        boxShadow: "0 0 0 1px brand.900", // Тонкая обводка
-                    },
+                    borderRadius: "md",
+                    focusBorderColor: "accent.400",
                 },
             },
         },
