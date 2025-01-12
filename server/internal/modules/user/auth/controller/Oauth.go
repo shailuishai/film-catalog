@@ -41,6 +41,7 @@ func (c *AuthController) Oauth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	return
 }
 
 // OauthCallback
@@ -94,4 +95,5 @@ func (c *AuthController) OauthCallback(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	}
 	render.JSON(w, r, resp.AccessToken(AccessToken))
+	return
 }
