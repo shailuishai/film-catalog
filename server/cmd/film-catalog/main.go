@@ -139,7 +139,7 @@ func (app *App) Start() error {
 	}()
 
 	app.Log.Info("server started", slog.String("Addr", app.Cfg.HttpServerConfig.Address))
-	app.Log.Info("docs " + "https://film-catalog-8re5.onrender.com/swagger/index.html#/")
+	app.Log.Info("docs " + "http://localhost:8080/swagger/index.html#/")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -167,7 +167,7 @@ func (app *App) SetupRoutes() {
 		middlelog.New(app.Log),
 		middleware.URLFormat,
 		cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"http://192.168.0.107:5174/"}, // Укажите домен вашего фронтенда
+			AllowedOrigins:   []string{"http://192.168.0.107:5174/", "http://localhost:5173", "http://192.168.0.107:5173"}, // Укажите домен вашего фронтенда
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 			ExposedHeaders:   []string{"Link"},
@@ -178,7 +178,7 @@ func (app *App) SetupRoutes() {
 
 	//Swagger UI endpoint
 	app.Router.Get("/swagger/*", swag.Handler(
-		swag.URL("https://film-catalog-8re5.onrender.com/swagger/doc.json"),
+		swag.URL("http://localhost:8080/swagger/doc.json"),
 	))
 	apiVersion := "/v1"
 
@@ -310,15 +310,15 @@ func (app *App) SetupRoutes() {
 // @contact.name Evdokimov Igor
 // @contact.url https://t.me/epelptic
 
-// @host film-catalog-8re5.onrender.com
+// @host localhost:8080
 // @BasePath /v1
-// @Schemes https
+// @Schemes http
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
 func main() {
-	docs.SwaggerInfo.Host = "film-catalog-8re5.onrender.com"
+	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"https"}
 

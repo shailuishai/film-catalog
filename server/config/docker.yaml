@@ -15,7 +15,7 @@ cache:
     state_expiration: 4m
     email_confirmed_code_expiration: 16m
 elasticsearch:
-  address: "https://my-elasticsearch-project-e7c356.es.us-east-1.aws.elastic.cloud:443"
+  address: "http://elasticsearch:9200"
   index: "movies"
 s3:
   endpoint: "storage-173.s3hoster.by"

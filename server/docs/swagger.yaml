@@ -115,7 +115,7 @@ definitions:
         example: success/error
         type: string
     type: object
-host: film-catalog-8re5.onrender.com
+host: localhost:8080
 info:
   contact:
     name: Evdokimov Igor
@@ -1230,7 +1230,7 @@ paths:
       tags:
       - review
 schemes:
-- https
+- http
 securityDefinitions:
   ApiKeyAuth:
     in: header
