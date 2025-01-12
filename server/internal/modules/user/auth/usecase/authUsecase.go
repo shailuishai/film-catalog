@@ -98,7 +98,7 @@ func (uc *AuthUseCase) RefreshToken(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	userId := claims.UserID.
+	userId := claims.UserID
 
 	user, err := uc.rp.GetUserById(userId)
 	if err != nil {
