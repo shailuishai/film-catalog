@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"server/pkg/lib/jwt"
 	resp "server/pkg/lib/response"
-	"strconv"
 )
 
 func NewUserAuth(log *slog.Logger) func(next http.Handler) http.Handler {
@@ -22,39 +21,18 @@ func NewUserAuth(log *slog.Logger) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr, err := jwt.ExtractJWTFromHeader(r)
 			if err != nil {
-				log.Info("extraction failed")
-				if errors.Is(err, jwt.ErrNoAccessToken) {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				}
+				handleAuthError(w, r, log, err)
 				return
 			}
 
 			claims, err := jwt.ValidateJWT(tokenStr)
 			if err != nil {
-				log.Info("validate failed")
-				if errors.Is(err, jwt.ErrNoAccessToken) {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				}
+				handleAuthError(w, r, log, err)
 				return
 			}
 
-			userId, err := strconv.ParseUint(claims.Subject, 10, 32)
-			if err != nil {
-				log.Error("cant parse userId claims=%s, uint=%d", claims.Subject, userId)
-				w.WriteHeader(http.StatusUnauthorized)
-				render.JSON(w, r, resp.Error(jwt.ErrInvalidToken.Error()))
-				return
-			}
-
-			uintUserId := uint(userId)
+			// Используем UserID вместо Subject
+			uintUserId := claims.UserID
 			ctx := context.WithValue(r.Context(), "userId", uintUserId)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
@@ -72,27 +50,13 @@ func NewAdminAuth(log *slog.Logger) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr, err := jwt.ExtractJWTFromHeader(r)
 			if err != nil {
-				log.Info("extraction failed")
-				if errors.Is(err, jwt.ErrNoAccessToken) {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				}
+				handleAuthError(w, r, log, err)
 				return
 			}
 
 			claims, err := jwt.ValidateJWT(tokenStr)
 			if err != nil {
-				log.Info("validate failed")
-				if errors.Is(err, jwt.ErrNoAccessToken) {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					render.JSON(w, r, resp.Error(err.Error()))
-				}
+				handleAuthError(w, r, log, err)
 				return
 			}
 
@@ -104,18 +68,22 @@ func NewAdminAuth(log *slog.Logger) func(next http.Handler) http.Handler {
 				return
 			}
 
-			userId, err := strconv.ParseUint(claims.Subject, 10, 32)
-			if err != nil {
-				log.Error("cant parse userId claims=%s, uint=%d", claims.Subject, userId)
-				w.WriteHeader(http.StatusUnauthorized)
-				render.JSON(w, r, resp.Error(jwt.ErrInvalidToken.Error()))
-				return
-			}
-
-			uintUserId := uint(userId)
+			// Используем UserID вместо Subject
+			uintUserId := claims.UserID
 			ctx := context.WithValue(r.Context(), "userId", uintUserId)
 			ctx = context.WithValue(ctx, "isAdmin", true)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
+	}
+}
+
+func handleAuthError(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) {
+	log.Error("auth error", slog.String("error", err.Error()))
+	if errors.Is(err, jwt.ErrNoAccessToken) {
+		w.WriteHeader(http.StatusUnauthorized)
+		render.JSON(w, r, resp.Error(err.Error()))
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		render.JSON(w, r, resp.Error(err.Error()))
 	}
 }
