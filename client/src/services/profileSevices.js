@@ -1,7 +1,18 @@
 import api from "./api";
+import Cookies from "js-cookie";
 
 export const getProfile = async () => {
-    const response = await api.get("/profile");
+    const token = Cookies.get("access_token"); // Получаем токен из куки
+    if (!token) {
+        throw new Error("Токен отсутствует"); // Если токена нет, выбрасываем ошибку
+    }
+
+    const response = await api.get("/profile", {
+        headers: {
+            Authorization: `Bearer ${token}`, // Передаем токен в заголовке
+        },
+    });
+
     return response.data;
 };
 

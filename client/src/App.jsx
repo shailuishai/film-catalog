@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ChakraProvider, Box, Flex } from "@chakra-ui/react";
 import theme from "./theme";
-
 import Sidebar from "./components/Sidebar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Callback from "./pages/Callback";
-import { useState } from "react"; // Добавляем useState
+import ConfirmEmail from "./pages/ConfirmEmail";
+import Profile from "./pages/Profile.jsx";
+import { useState } from "react";
+
 
 const App = () => {
     const [isCollapsed, setIsCollapsed] = useState(false); // Состояние для сворачивания сайдбара
@@ -25,7 +27,8 @@ const App = () => {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/auth" element={<Auth />} />
-                            <Route path="/auth/callback/:provider" element={<Callback />} />
+                            <Route path="/confirm-email" element={<ConfirmEmail/>}/>
+                            <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
                             {/*<Route path="/films" element={<Films />} />*/}
                             {/*<Route path="/films/:id" element={<FilmDetail />} />*/}
                             {/*<Route path="*" element={<NotFound />} />*/}
