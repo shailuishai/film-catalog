@@ -47,7 +47,7 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, u.ErrUserNotFound):
 			w.WriteHeader(http.StatusUnauthorized)
-			render.JSON(w, r, resp.Error("failed email or password"))
+			render.JSON(w, r, resp.Error("failed email or login or password"))
 		case errors.Is(err, u.ErrEmailNotConfirmed):
 			w.WriteHeader(http.StatusForbidden)
 			render.JSON(w, r, resp.Error("email not confirmed"))
