@@ -68,7 +68,7 @@ func (db *AuthDatabase) GetUserByLogin(login string) (*auth.UserAuth, error) {
 
 func (db *AuthDatabase) GetUserById(id uint) (*auth.UserAuth, error) {
 	var User user.User
-	if err := db.db.Where("id = ?", id).First(&User).Error; err != nil {
+	if err := db.db.Where("user_id = ?", id).First(&User).Error; err != nil {
 		db.log.Error(err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, user.ErrUserNotFound
