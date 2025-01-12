@@ -15,7 +15,6 @@ import (
 	u "server/internal/modules/user"
 	"server/internal/modules/user/auth"
 	"server/pkg/lib/jwt"
-	"strconv"
 )
 
 type AuthUseCase struct {
