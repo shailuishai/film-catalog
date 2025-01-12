@@ -1,7 +1,7 @@
 // src/services/api.js
 import axios from "axios";
 
-export const API_URL = "https://film-catalog-8re5.onrender.com/v1"; // Замените на ваш API URL
+export const API_URL = import.meta.env.VITE_API_URL; // Используем переменную окружения
 
 const api = axios.create({
     baseURL: API_URL,
@@ -17,13 +17,13 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-
                 await refreshToken();
-
                 return api(originalRequest);
             } catch (refreshError) {
-
-                window.location.href = "/auth";
+                // Редирект только если пользователь не на странице /auth
+                if (window.location.pathname !== '/auth') {
+                    window.location.href = "/auth";
+                }
                 return Promise.reject(refreshError);
             }
         }

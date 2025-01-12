@@ -4,9 +4,10 @@ import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
 import FilmCard from "../components/FilmCard"; // Предположим, что у вас есть компонент FilmCard
 import ActorCard from "../components/ActorCard";
+import { signIn } from '../services/authServices';
 
 const Home = () => {
-    // Пример данных для фильмов и актеров
+
     const films = [
         {
             id: 1,
