@@ -15,7 +15,6 @@ import (
 	u "server/internal/modules/user"
 	"server/internal/modules/user/auth"
 	"server/pkg/lib/jwt"
-	"strconv"
 )
 
 type AuthUseCase struct {
@@ -98,12 +97,9 @@ func (uc *AuthUseCase) RefreshToken(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	userId, err := strconv.ParseUint(claims.Subject, 10, 0)
-	if err != nil {
-		return "", u.ErrInternal
-	}
+	userId := claims.UserID
 
-	user, err := uc.rp.GetUserById(uint(userId))
+	user, err := uc.rp.GetUserById(userId)
 	if err != nil {
 		return "", err
 	}
