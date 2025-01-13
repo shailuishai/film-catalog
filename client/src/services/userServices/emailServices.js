@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../api.js";
 
 export const sendConfirmationCode = async (email) => {
     const response = await api.post("/email/send-code", { email });

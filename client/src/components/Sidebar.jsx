@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     Box,
     Flex,
@@ -12,9 +12,9 @@ import {
     useColorModeValue,
     Button,
     IconButton,
-    Spinner,
+    Spinner, HStack, Spacer, useColorMode,
 } from "@chakra-ui/react";
-import { NavLink as RouterLink } from "react-router-dom";
+import { NavLink as RouterLink, useNavigate } from "react-router-dom";
 import {
     FaFilm,
     FaUser,
@@ -23,19 +23,30 @@ import {
     FaAngleDoubleRight,
     FaAngleDoubleLeft,
 } from "react-icons/fa";
-import { useAuth } from "../hooks/useAuth";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
 
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем пропсы
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     const { isOpen, onToggle } = useDisclosure();
-    const { user, isLoading, logout } = useAuth();
-
+    const { user, isLoading, logout } = useAuth(); // Используем данные из контекста
+    const navigate = useNavigate();
+    const { colorMode, toggleColorMode } = useColorMode();
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const textColor = useColorModeValue("brand.900", "white");
     const accentColor = useColorModeValue("accent.400", "accent.400");
+    const avatarPrefix = useColorModeValue("_Light", "_Dark");
+
+    const isDefaultAvatar = user?.avatar_url?.includes("default");
+    const avatarUrl = user
+        ? isDefaultAvatar
+            ? `${user.avatar_url}64x64${avatarPrefix}.webp`
+            : `${user.avatar_url}64x64.webp`
+        : null;
 
     return (
-        <Box
+        <Flex
+            flexDirection="column"
             as="nav"
             position="fixed"
             left={4}
@@ -54,7 +65,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
             borderRadius="md"
             boxShadow="lg"
         >
-
             {/* Логотип и кнопка сворачивания */}
             <Flex
                 alignItems="center"
@@ -88,7 +98,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     size="lg"
                     variant="ghost"
                     boxSize="48px"
-                    onClick={() => setIsCollapsed(!isCollapsed)} // Переключаем состояние
+                    onClick={() => setIsCollapsed(!isCollapsed)}
                 />
             </Flex>
 
@@ -155,32 +165,56 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                     {!isCollapsed && "Жанры"}
                 </Button>
             </VStack>
-
+            <Spacer />
             {/* Профиль и кнопка Sign In/Sign Up или Logout */}
-            <Box mt="auto" py={4}>
+            <VStack
+                spacing={4}
+                align="start"
+                pt={4}
+                borderTop="2px solid"
+                borderColor={borderColor}
+            >
+                {/* Кнопка смены темы */}
+                <Button
+                    variant="ghost"
+                    h="48px"
+                    w={isCollapsed ? "48px" : "100%"}
+                    justifyContent={isCollapsed ? "center" : "start"}
+                    gap={4}
+                    p={isCollapsed ? 0 : 4}
+                    color={textColor}
+                    onClick={toggleColorMode}
+                >
+                    {colorMode === "light" ? <MoonIcon boxSize={"24px"} /> : <SunIcon boxSize={"24px"} />}
+                    {!isCollapsed && "Сменить тему"}
+                </Button>
                 {isLoading ? (
-                    <Flex justify="center">
+                    <Flex
+                        justify="center"
+                        h="48px"
+                        w={isCollapsed ? "48px" : "100%"}
+                    >
                         <Spinner size="lg" />
                     </Flex>
                 ) : user ? (
-                    <>
-                        <Flex align="center" mb={4}>
-                            <Avatar size="sm" src={user.avatar} name={user.name} mr={2} />
-                            {!isCollapsed && (
-                                <Text fontSize="md" color={textColor}>
-                                    {user.name}
-                                </Text>
-                            )}
-                        </Flex>
-                        <Button
-                            w="100%"
-                            variant="ghost"
-                            onClick={logout}
-                        >
-                            <FaSignInAlt size={24} />
-                            {!isCollapsed && "Logout"}
-                        </Button>
-                    </>
+                    <Button
+                        as={RouterLink}
+                        to="/profile"
+                        variant="ghost"
+                        h="48px"
+                        w={isCollapsed ? "48px" : "100%"}
+                        justifyContent={isCollapsed ? "center" : "start"}
+                        gap={4}
+                        p={isCollapsed ? 0 : 4}
+                        color={textColor}
+                        _activeLink={{
+                            bg: "rgba(255, 165, 0, 0.1)",
+                            color: accentColor,
+                        }}
+                    >
+                        <Avatar size="sm" src={avatarUrl} />
+                        {!isCollapsed && `${user.login}`}
+                    </Button>
                 ) : (
                     <Button
                         as={RouterLink}
@@ -198,11 +232,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => { // Принимаем п�
                         }}
                     >
                         <FaSignInAlt size={24} />
-                        {!isCollapsed && "Sign In/Sign Up"}
+                        {!isCollapsed && "Войти/Зарегистрироваться"}
                     </Button>
                 )}
-            </Box>
-        </Box>
+            </VStack>
+        </Flex>
     );
 };
 
