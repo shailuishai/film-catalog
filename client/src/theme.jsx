@@ -112,10 +112,14 @@ const theme = extendTheme({
             },
             variants: {
                 solid: {
+                    borderWidth:"2px",
                     bg: "brand.800",
                     color: "white",
+                    fontWeight: "bold",
+                    borderRadius: "md",
+
                     _hover: {
-                        bg: "brand.800",
+                        textDecoration: "none",
                     },
                 },
             },
@@ -123,6 +127,7 @@ const theme = extendTheme({
         Input: {
             baseStyle: {
                 field: {
+                    borderWidth:"2px",
                     borderRadius: "md",
                     focusBorderColor: "accent.400",
                 },
@@ -131,6 +136,7 @@ const theme = extendTheme({
         Card: {
             // Стили для карточек (если используете компонент Card)
             baseStyle: {
+                borderWidth:"2px",
                 borderRadius: "md", // Скругленные углы (8px)
                 boxShadow: "md", // Тень для карточек
             },
@@ -157,6 +163,13 @@ const theme = extendTheme({
                 _hover: {
                     textDecoration: "underline", // Подчеркивание при наведении
                 },
+            },
+            Button: {
+                variants:{
+                    solid: {
+                        borderColor: props.colorMode === "dark" ? "brand.900":"brand.900",
+                    },
+                }
             },
         }),
     },

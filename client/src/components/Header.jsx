@@ -1,9 +1,6 @@
-import {Flex, Input, Button, useDisclosure, useColorMode, IconButton, useColorModeValue} from "@chakra-ui/react";
-import { HamburgerIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { Flex, Input, Button, useColorModeValue } from "@chakra-ui/react";
 
 const Header = () => {
-    const { onToggle } = useDisclosure();
-    const { colorMode, toggleColorMode } = useColorMode();
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const textColor = useColorModeValue("brand.900", "white");
@@ -21,12 +18,6 @@ const Header = () => {
                 focusBorderColor={accentColor}
             />
             <Button ml={4}>Search</Button>
-            <IconButton
-                aria-label="Toggle theme"
-                icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-                onClick={toggleColorMode}
-                ml={2}
-            />
         </Flex>
     );
 };

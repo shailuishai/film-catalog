@@ -14,23 +14,33 @@ import {
     FormErrorMessage,
     useColorModeValue,
     FormHelperText,
+    InputGroup,
+    InputRightElement,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../hooks/useAuth";
-import { handleOAuth } from "../services/authServices.js";
-import { FaGoogle, FaYandex } from "react-icons/fa";
-import {useLocation, useNavigate} from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { FaGoogle, FaYandex, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useLocation, useNavigate } from "react-router-dom";
+import LandArea from "../components/LandArea";
 
 const MotionBox = motion.create(Box);
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true); // Режим входа или регистрации
-    const [credentials, setCredentials] = useState({ login: "", email: "", password: "" });
-    const [errors, setErrors] = useState({ login: "", email: "", password: "" });
-    const { signIn, signUp, isLoading } = useAuth();
+    const [credentials, setCredentials] = useState({ login: "", email: "", password: "", confirmPassword: "" });
+    const [errors, setErrors] = useState({ login: "", email: "", password: "", confirmPassword: "" });
+    const [showPassword, setShowPassword] = useState(false); // Видимость пароля
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Видимость подтверждения пароля
+    const { signIn, signUp, isLoading, handleOAuth } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
     const location = useLocation();
+    const [isRegistrationVisible, setIsRegistrationVisible] = useState(false);
+
+    const handleDigComplete = () => {
+        setIsRegistrationVisible(true); // Показываем кнопку регистрации после "откапывания"
+    };
+
 
     // Цвета из темы
     const bgColor = useColorModeValue("white", "brand.900");
@@ -59,12 +69,12 @@ const Auth = () => {
 
     // Валидация полей
     const validateFields = () => {
-        const newErrors = { login: "", email: "", password: "" };
+        const newErrors = { login: "", email: "", password: "", confirmPassword: "" };
         let isValid = true;
 
         if (isLogin) {
             // Валидация для входа
-            if (!credentials.email.trim()) {
+            if (!credentials.email.trim() && !credentials.login.trim()) {
                 newErrors.email = "Email или логин обязателен";
                 isValid = false;
             }
@@ -77,17 +87,25 @@ const Auth = () => {
                 newErrors.email = "Некорректный email";
                 isValid = false;
             }
-        }
 
-        if (!credentials.password.trim()) {
-            newErrors.password = "Пароль обязателен";
-            isValid = false;
-        } else if (credentials.password.length < 6) {
-            newErrors.password = "Пароль должен быть не менее 6 символов";
-            isValid = false;
-        } else if (!validatePassword(credentials.password)) {
-            newErrors.password = "Пароль должен содержать хотя бы одну заглавную букву, одну прописную и одну цифру";
-            isValid = false;
+            if (!credentials.password.trim()) {
+                newErrors.password = "Пароль обязателен";
+                isValid = false;
+            } else if (credentials.password.length < 6) {
+                newErrors.password = "Пароль должен быть не менее 6 символов";
+                isValid = false;
+            } else if (!validatePassword(credentials.password)) {
+                newErrors.password = "Пароль должен содержать хотя бы одну заглавную букву, одну прописную и одну цифру";
+                isValid = false;
+            }
+
+            if (!credentials.confirmPassword.trim()) {
+                newErrors.confirmPassword = "Подтверждение пароля обязательно";
+                isValid = false;
+            } else if (credentials.password !== credentials.confirmPassword) {
+                newErrors.confirmPassword = "Пароли не совпадают";
+                isValid = false;
+            }
         }
 
         setErrors(newErrors);
@@ -96,8 +114,8 @@ const Auth = () => {
 
     // Очистка полей и ошибок при переключении режима
     const toggleMode = () => {
-        setCredentials({ login: "", email: "", password: "" });
-        setErrors({ login: "", email: "", password: "" });
+        setCredentials({ login: "", email: "", password: "", confirmPassword: "" });
+        setErrors({ login: "", email: "", password: "", confirmPassword: "" });
         setIsLogin((prev) => !prev);
     };
 
@@ -108,7 +126,7 @@ const Auth = () => {
 
     // Обработка отправки формы
     const handleSubmit = async (e) => {
-        setErrors({ login: "", email: "", password: "" });
+        setErrors({ login: "", email: "", password: "", confirmPassword: "" });
         e.preventDefault();
         if (!validateFields()) return;
 
@@ -118,7 +136,7 @@ const Auth = () => {
                     ? { email: credentials.email, password: credentials.password }
                     : { login: credentials.email, password: credentials.password };
 
-                const response = await signIn(payload);
+                await signIn(payload);
 
                 toast({
                     title: "Успешный вход",
@@ -127,8 +145,6 @@ const Auth = () => {
                     duration: 5000,
                     isClosable: true,
                 });
-
-                navigate("/profile");
             } else {
                 // Регистрация
                 const payload = {
@@ -189,20 +205,22 @@ const Auth = () => {
     };
 
     return (
-        <Flex justify="center" align="center" h="100vh" bg={bgColor}>
+        <Flex justify="center" align="center" h="100vh" bg={useColorModeValue("white", "brand.900")}>
             <MotionBox
+                position="relative"
+                zIndex={20}
                 w="400px"
                 p={6}
-                borderWidth="1px"
+                borderWidth="2px"
                 borderRadius="md"
                 boxShadow="lg"
-                bg={bgColor}
-                borderColor={borderColor}
+                bg={useColorModeValue("white", "brand.900")}
+                borderColor={useColorModeValue("gray.200", "brand.800")}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
             >
-                <Text fontSize="2xl" mb={6} textAlign="center" color={textColor}>
+                <Text fontWeight="bold" fontSize="2xl" mb={4} textAlign="center" color={textColor}>
                     {isLogin ? "Вход" : "Регистрация"}
                 </Text>
                 <form onSubmit={handleSubmit}>
@@ -211,23 +229,21 @@ const Auth = () => {
                         {isLogin && (
                             <FormControl isInvalid={!!errors.email}>
                                 <Input
+                                    maxW="400px"
+                                    minW="200px"
                                     type="text"
                                     placeholder="Email или логин"
                                     value={credentials.email}
                                     onChange={(e) => {
                                         setCredentials({ ...credentials, email: e.target.value });
-                                        // Сбрасываем ошибку при вводе
                                         if (errors.email) setErrors({ ...errors, email: "" });
                                     }}
+                                    border="2px solid"
                                     borderColor={borderColor}
-                                    _focus={{ borderColor: accentColor }}
+                                    boxShadow="lg"
+                                    focusBorderColor={accentColor}
                                 />
                                 <FormErrorMessage>{errors.email}</FormErrorMessage>
-                                {credentials.email && !validateEmail(credentials.email) && (
-                                    <FormHelperText color="red.500">
-                                        Введите корректный email, например: user@example.com
-                                    </FormHelperText>
-                                )}
                             </FormControl>
                         )}
 
@@ -236,27 +252,34 @@ const Auth = () => {
                             <>
                                 <FormControl isInvalid={!!errors.login}>
                                     <Input
+                                        maxW="400px"
+                                        minW="200px"
                                         type="text"
                                         placeholder="Логин (необязательно)"
                                         value={credentials.login}
                                         onChange={(e) => setCredentials({ ...credentials, login: e.target.value })}
+                                        border="2px solid"
                                         borderColor={borderColor}
-                                        _focus={{ borderColor: accentColor }}
+                                        boxShadow="lg"
+                                        focusBorderColor={accentColor}
                                     />
                                     <FormErrorMessage>{errors.login}</FormErrorMessage>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.email}>
                                     <Input
+                                        maxW="400px"
+                                        minW="200px"
                                         type="email"
                                         placeholder="Email"
                                         value={credentials.email}
                                         onChange={(e) => {
                                             setCredentials({ ...credentials, email: e.target.value });
-                                            // Сбрасываем ошибку при вводе
                                             if (errors.email) setErrors({ ...errors, email: "" });
                                         }}
+                                        border="2px solid"
                                         borderColor={borderColor}
-                                        _focus={{ borderColor: accentColor }}
+                                        boxShadow="lg"
+                                        focusBorderColor={accentColor}
                                     />
                                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                                     {credentials.email && !validateEmail(credentials.email) && (
@@ -270,19 +293,70 @@ const Auth = () => {
 
                         {/* Поле для пароля */}
                         <FormControl isInvalid={!!errors.password}>
-                            <Input
-                                type="password"
-                                placeholder="Пароль"
-                                value={credentials.password}
-                                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                borderColor={borderColor}
-                                _focus={{ borderColor: accentColor }}
-                            />
+                            <InputGroup>
+                                <Input
+                                    maxW="400px"
+                                    minW="200px"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Пароль"
+                                    value={credentials.password}
+                                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                                    border="2px solid"
+                                    borderColor={borderColor}
+                                    boxShadow="lg"
+                                    focusBorderColor={accentColor}
+                                />
+                                <InputRightElement>
+                                    <IconButton
+                                        aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                                        icon={showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        size="sm"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        variant="ghost"
+                                    />
+                                </InputRightElement>
+                            </InputGroup>
                             <FormErrorMessage>{errors.password}</FormErrorMessage>
                         </FormControl>
 
+                        {/* Поле для подтверждения пароля (только для регистрации) */}
+                        {!isLogin && (
+                            <FormControl isInvalid={!!errors.confirmPassword}>
+                                <InputGroup>
+                                    <Input
+                                        maxW="400px"
+                                        minW="200px"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        placeholder="Подтвердите пароль"
+                                        value={credentials.confirmPassword}
+                                        onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })}
+                                        border="2px solid"
+                                        borderColor={borderColor}
+                                        boxShadow="lg"
+                                        focusBorderColor={accentColor}
+                                    />
+                                    <InputRightElement>
+                                        <IconButton
+                                            aria-label={showConfirmPassword ? "Скрыть пароль" : "Показать пароль"}
+                                            icon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                            size="sm"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            variant="ghost"
+                                        />
+                                    </InputRightElement>
+                                </InputGroup>
+                                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
+                            </FormControl>
+                        )}
+
                         {/* Кнопка отправки */}
-                        <Button type="submit" w="100%" isLoading={isLoading} colorScheme="brand">
+                        <Button
+                            type="submit"
+                            w="100%"
+                            isLoading={isLoading}
+                            variant={"solid"}
+                            colorScheme="brand"
+                        >
                             {isLogin ? "Войти" : "Зарегистрироваться"}
                         </Button>
                     </VStack>
@@ -318,6 +392,9 @@ const Auth = () => {
                     {isLogin ? "Нет аккаунта? Зарегистрируйтесь" : "Уже есть аккаунт? Войдите"}
                 </Button>
             </MotionBox>
+
+            {/* Область с землей */}
+            <LandArea onDigComplete={handleDigComplete} isRegistrationVisible={isRegistrationVisible} />
         </Flex>
     );
 };

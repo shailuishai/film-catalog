@@ -1,69 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { useToast } from "@chakra-ui/react";
-import { getProfile } from "../services/profileSevices"; // Импортируем функцию для получения данных пользователя
+import { Flex, Spinner, useToast } from "@chakra-ui/react";
+import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
     const toast = useToast();
     const [isLoading, setIsLoading] = useState(true); // Состояние загрузки
+    const { user, isLoading: authLoading } = useAuth(); // Используем данные из контекста
 
     useEffect(() => {
         const checkAuth = async () => {
             setIsLoading(true);
             try {
-                const token = Cookies.get("access_token"); // Получаем токен из куки
-                if (!token) {
-                    // Если токена нет, перенаправляем на страницу авторизации
-                    toast({
-                        title: "Доступ запрещен",
-                        description: "Пожалуйста, авторизуйтесь для доступа к этой странице.",
-                        status: "warning",
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                    navigate("/auth");
-                    return;
+                if (!user) {
+                    // Попробуем обновить токен, если пользователь не авторизован
+                    try {
+                        const response = await refreshToken();
+                        const { access_token } = response.data;
+                        if (access_token) {
+                            Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24) });
+                            const profile = await getProfile();
+                            setUser(profile.data);
+                        } else {
+                            navigate("/auth");
+                        }
+                    } catch (refreshError) {
+                        navigate("/auth");
+                    }
                 }
-
-                // Проверяем валидность токена, запрашивая данные пользователя
-                const response = await getProfile(); // Запрос на получение данных пользователя
-                if (!response.data) {
-                    // Если данные пользователя не получены, перенаправляем на страницу авторизации
-                    toast({
-                        title: "Ошибка доступа",
-                        description: "Не удалось загрузить данные пользователя. Пожалуйста, авторизуйтесь снова.",
-                        status: "error",
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                    navigate("/auth");
-                    return;
-                }
-
-                // Если токен и данные пользователя валидны, разрешаем доступ
             } catch (error) {
-                // Если произошла ошибка, перенаправляем на страницу авторизации
-                toast({
-                    title: "Ошибка доступа",
-                    description: "Произошла ошибка при проверке авторизации. Пожалуйста, авторизуйтесь снова.",
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                });
                 navigate("/auth");
             } finally {
-                setIsLoading(false); // Завершаем загрузку
+                setIsLoading(false);
             }
         };
 
-        checkAuth(); // Вызываем проверку авторизации
-    }, [navigate, toast]);
+        checkAuth();
+    }, [navigate, user]);
 
     // Если идет загрузка, показываем спиннер или заглушку
-    if (isLoading) {
-        return <div>Загрузка...</div>; // Можно заменить на спиннер или другой индикатор загрузки
+    if (isLoading || authLoading) {
+        return (
+            <Flex w="100%" h="100vh" alignItems="center" justifyContent="center">
+                <Spinner size="xl" aria-label="Loading" />
+            </Flex>
+        );
     }
 
     // Если загрузка завершена и пользователь авторизован, показываем children

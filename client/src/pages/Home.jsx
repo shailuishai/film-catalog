@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
 import FilmCard from "../components/FilmCard"; // Предположим, что у вас есть компонент FilmCard
 import ActorCard from "../components/ActorCard";
-import { signIn } from '../services/authServices';
+import { signIn } from '../services/userServices/authServices.js';
 
 const Home = () => {
 

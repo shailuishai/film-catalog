@@ -11,7 +11,8 @@ import {
     FormErrorMessage,
 } from "@chakra-ui/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { sendConfirmationCode, confirmEmail } from "../services/emailServices.js";
+import { sendConfirmationCode, confirmEmail } from "../services/userServices/emailServices.js";
+import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
 
 const ConfirmEmail = () => {
     const [email, setEmail] = useState("");
