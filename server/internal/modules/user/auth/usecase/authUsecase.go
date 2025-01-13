@@ -170,11 +170,15 @@ func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, str
 		return false, "", "", err
 	}
 
+	uc.log.Error("1")
+
 	client := config.Client(context.Background(), token)
 	user, err := fetchUserInfo(client, provider)
 	if err != nil {
 		return false, "", "", err
 	}
+
+	uc.log.Error("2")
 
 	existingUser, err := uc.rp.GetUserByEmail(user.Email)
 	if errors.Is(err, u.ErrUserNotFound) {
