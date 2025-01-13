@@ -120,14 +120,14 @@ var oauthConfigs = map[string]*oauth2.Config{
 	"google": &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_KEY"),
 		ClientSecret: os.Getenv("GOOGLE_SECRET"),
-		RedirectURL:  "https://film-catalog-8re5.onrender.com/v1/auth/google/callback",
+		RedirectURL:  "https://local.dev/auth/google/callback",
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		Endpoint:     google.Endpoint,
 	},
 	"yandex": &oauth2.Config{
 		ClientID:     os.Getenv("YANDEX_KEY"),
 		ClientSecret: os.Getenv("YANDEX_SECRET"),
-		RedirectURL:  "https://film-catalog-8re5.onrender.com/v1/auth/yandex/callback",
+		RedirectURL:  "https://local.dev/auth/yandex/callback",
 		Endpoint:     yandex.Endpoint,
 	},
 }

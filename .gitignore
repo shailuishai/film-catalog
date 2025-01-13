@@ -29,3 +29,5 @@ client/src/gpu.js
 /client/.vite/deps/package.json
 /client/.vite/deps/_metadata.json
 /client/.env
+/client/certs/local.dev.pem
+/client/certs/local.dev-key.pem
