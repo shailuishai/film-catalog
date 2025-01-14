@@ -157,28 +157,27 @@ func (uc *AuthUseCase) GetAuthURL(provider string) (string, error) {
 func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, string, error) {
 	config, ok := oauthConfigs[provider]
 	if !ok {
-		return false, "", "", u.ErrUnsupportedProvider
+		return false, "", "", fmt.Errorf("unsupported provider: %s", provider)
 	}
 
 	isValidState, err := uc.rp.VerifyStateCode(state)
-	if err != nil || !isValidState {
-		return false, "", "", err
+	if err != nil {
+		return false, "", "", fmt.Errorf("failed to verify state code: %w", err)
+	}
+	if !isValidState {
+		return false, "", "", errors.New("invalid state code")
 	}
 
 	token, err := config.Exchange(context.Background(), code)
 	if err != nil {
-		return false, "", "", err
+		return false, "", "", fmt.Errorf("failed to exchange code for token: %w", err)
 	}
-
-	uc.log.Error("1")
 
 	client := config.Client(context.Background(), token)
 	user, err := fetchUserInfo(client, provider)
 	if err != nil {
-		return false, "", "", err
+		return false, "", "", fmt.Errorf("failed to fetch user info: %w", err)
 	}
-
-	uc.log.Error("2")
 
 	existingUser, err := uc.rp.GetUserByEmail(user.Email)
 	if errors.Is(err, u.ErrUserNotFound) {
@@ -188,36 +187,36 @@ func (uc *AuthUseCase) Callback(provider, state, code string) (bool, string, str
 				user.Login = ""
 				userId, err = uc.rp.CreateUser(user)
 				if err != nil {
-					return false, "", "", err
+					return false, "", "", fmt.Errorf("failed to create user after login conflict: %w", err)
 				}
 			} else {
-				return false, "", "", err
+				return false, "", "", fmt.Errorf("failed to create user: %w", err)
 			}
 		}
 
 		accessToken, err := jwt.GenerateAccessToken(userId, user.IsAdmin)
 		if err != nil {
-			return false, "", "", err
+			return false, "", "", fmt.Errorf("failed to generate access token: %w", err)
 		}
 
 		refreshToken, err := jwt.GenerateRefreshToken(userId, user.IsAdmin)
 		if err != nil {
-			return false, "", "", err
+			return false, "", "", fmt.Errorf("failed to generate refresh token: %w", err)
 		}
 
 		return false, accessToken, refreshToken, nil
 	} else if err != nil {
-		return false, "", "", err
+		return false, "", "", fmt.Errorf("failed to get user by email: %w", err)
 	}
 
 	accessToken, err := jwt.GenerateAccessToken(existingUser.UserId, existingUser.IsAdmin)
 	if err != nil {
-		return false, "", "", err
+		return false, "", "", fmt.Errorf("failed to generate access token for existing user: %w", err)
 	}
 
 	refreshToken, err := jwt.GenerateRefreshToken(existingUser.UserId, existingUser.IsAdmin)
 	if err != nil {
-		return false, "", "", err
+		return false, "", "", fmt.Errorf("failed to generate refresh token for existing user: %w", err)
 	}
 	return true, accessToken, refreshToken, nil
 }
@@ -230,12 +229,12 @@ func fetchUserInfo(client *http.Client, provider string) (*auth.UserAuth, error)
 	case "yandex":
 		url = "https://login.yandex.ru/info?format=json"
 	default:
-		return nil, u.ErrUnsupportedProvider
+		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
 
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user info from %s: %w", provider, err)
 	}
 	defer resp.Body.Close()
 
@@ -243,17 +242,17 @@ func fetchUserInfo(client *http.Client, provider string) (*auth.UserAuth, error)
 	case "google":
 		var user GoogleUserData
 		if err := render.DecodeJSON(resp.Body, &user); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to decode Google user info: %w", err)
 		}
 		return GoogleToUser(&user), nil
 	case "yandex":
 		var user YandexUserData
 		if err := render.DecodeJSON(resp.Body, &user); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to decode Yandex user info: %w", err)
 		}
 		return YandexToUser(&user), nil
 	default:
-		return nil, u.ErrUnsupportedProvider
+		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
 }
 
