@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
