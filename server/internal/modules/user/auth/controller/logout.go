@@ -31,6 +31,7 @@ func (c *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(-time.Hour),
 		HttpOnly: true,
 		Path:     "/",
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.WriteHeader(http.StatusNoContent)

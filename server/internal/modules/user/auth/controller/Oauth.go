@@ -86,6 +86,7 @@ func (c *AuthController) OauthCallback(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(15 * 24 * time.Hour),
 		HttpOnly: true,
 		Path:     "/",
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
