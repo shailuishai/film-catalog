@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {logout, OAuth, OAuthCallback, signIn, signUp} from "../services/userServices/authServices";
+import {logout, OAuthCallback, signIn, signUp} from "../services/userServices/authServices";
 import {getProfile} from "../services/userServices/profileSevices";
 import Cookies from "js-cookie";
 
@@ -23,7 +23,6 @@ export const AuthProvider = ({ children, navigate }) => {
                     setUser(null);
                 }
             } catch (error) {
-                // Если произошла ошибка, считаем пользователя неавторизованным
                 setUser(null);
             } finally {
                 setIsLoading(false);
@@ -52,7 +51,6 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
-    // Регистрация
     const handleSignUp = async (userData) => {
         setIsLoading(true);
         try {
@@ -103,6 +101,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 navigate("/profile");
             }
         } catch (error) {
+            setUser(null);
             console.error("OAuth callback error:", error);
         }
     };

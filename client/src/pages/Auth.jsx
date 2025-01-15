@@ -26,11 +26,11 @@ import LandArea from "../components/LandArea";
 const MotionBox = motion.create(Box);
 
 const Auth = () => {
-    const [isLogin, setIsLogin] = useState(true); // Режим входа или регистрации
+    const [isLogin, setIsLogin] = useState(true);
     const [credentials, setCredentials] = useState({ login: "", email: "", password: "", confirmPassword: "" });
     const [errors, setErrors] = useState({ login: "", email: "", password: "", confirmPassword: "" });
-    const [showPassword, setShowPassword] = useState(false); // Видимость пароля
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Видимость подтверждения пароля
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { signIn, signUp, isLoading, handleOAuth } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
@@ -38,7 +38,12 @@ const Auth = () => {
     const [isRegistrationVisible, setIsRegistrationVisible] = useState(false);
 
     const handleDigComplete = () => {
-        setIsRegistrationVisible(true); // Показываем кнопку регистрации после "откапывания"
+        setIsRegistrationVisible(true);
+    };
+
+    const handleRegisterClick = () => {
+        setIsLogin(false);
+        setIsRegistrationVisible(false);
     };
 
 
@@ -394,7 +399,7 @@ const Auth = () => {
             </MotionBox>
 
             {/* Область с землей */}
-            <LandArea onDigComplete={handleDigComplete} isRegistrationVisible={isRegistrationVisible} />
+            <LandArea onDigComplete={handleDigComplete} isRegistrationVisible={isRegistrationVisible} onRegisterClick={handleRegisterClick} />
         </Flex>
     );
 };
