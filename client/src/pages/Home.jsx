@@ -27,10 +27,10 @@ const Home = () => {
 
     const actors = [
         {
-            id: 1,
-            name: "Leonardo DiCaprio",
-            avatar: "https://via.placeholder.com/150",
-            bio: "Academy Award-winning actor.",
+            actor_id: 6,
+            name: "Jason Statham",
+            wiki_url: "https://en.wikipedia.org/wiki/Jason_Statham",
+            avatar_url: "https://actoravatar.storage-173.s3hoster.by/JasonStatham6",
         },
         {
             id: 2,
@@ -81,7 +81,7 @@ const Home = () => {
             </Heading>
             <SimpleGrid columns={[1, 2, 3]} spacing={4}>
                 {actors.map((actor) => (
-                    <ActorCard key={actor.id} actor={actor} />
+                    <ActorCard key={actor.actor_id} actor={actor} />
                 ))}
             </SimpleGrid>
         </Box>

@@ -26,6 +26,9 @@ dist-ssr
 *.sw?
 
 client/src/gpu.js
+/client/certs/local.dev.pem
+/client/certs/local.dev-key.pem
+/client/.env
 /client/.vite/deps/package.json
 /client/.vite/deps/_metadata.json
 /client/.env

@@ -24,7 +24,7 @@ api.interceptors.response.use(
                 const response = await refreshToken();
                 const { access_token } = response.data;
                 if (access_token) {
-                    Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24) });
+                    Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true  });
                 }
                 return api(originalRequest);
             } catch (refreshError) {
