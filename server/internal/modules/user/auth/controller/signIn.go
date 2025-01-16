@@ -66,6 +66,7 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
