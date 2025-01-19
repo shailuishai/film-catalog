@@ -19,9 +19,8 @@ import {
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { FaGoogle, FaYandex, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGoogle, FaYandex, FaEye, FaEyeSlash, FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
-import LandArea from "../components/LandArea";
 
 const MotionBox = motion.create(Box);
 
@@ -35,19 +34,7 @@ const Auth = () => {
     const toast = useToast();
     const navigate = useNavigate();
     const location = useLocation();
-    const [isRegistrationVisible, setIsRegistrationVisible] = useState(false);
 
-    const handleDigComplete = () => {
-        setIsRegistrationVisible(true);
-    };
-
-    const handleRegisterClick = () => {
-        setIsLogin(false);
-        setIsRegistrationVisible(false);
-    };
-
-
-    // Цвета из темы
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
     const borderColor = useColorModeValue("gray.200", "brand.800");
@@ -59,7 +46,12 @@ const Auth = () => {
         }
     }, [location.state]);
 
-    // Валидация пароля
+    useEffect(() => {
+        // Сброс полей и ошибок при переключении между режимами
+        setCredentials({ login: "", email: "", password: "", confirmPassword: "" });
+        setErrors({ login: "", email: "", password: "", confirmPassword: "" });
+    }, [isLogin]);
+
     const validatePassword = (password) => {
         const hasUpperCase = /[A-Z]/.test(password);
         const hasLowerCase = /[a-z]/.test(password);
@@ -67,24 +59,20 @@ const Auth = () => {
         return hasUpperCase && hasLowerCase && hasNumber;
     };
 
-    // Валидация email
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
 
-    // Валидация полей
     const validateFields = () => {
         const newErrors = { login: "", email: "", password: "", confirmPassword: "" };
         let isValid = true;
 
         if (isLogin) {
-            // Валидация для входа
             if (!credentials.email.trim() && !credentials.login.trim()) {
                 newErrors.email = "Email или логин обязателен";
                 isValid = false;
             }
         } else {
-            // Валидация для регистрации
             if (!credentials.email.trim()) {
                 newErrors.email = "Email обязателен";
                 isValid = false;
@@ -117,19 +105,14 @@ const Auth = () => {
         return isValid;
     };
 
-    // Очистка полей и ошибок при переключении режима
     const toggleMode = () => {
-        setCredentials({ login: "", email: "", password: "", confirmPassword: "" });
-        setErrors({ login: "", email: "", password: "", confirmPassword: "" });
         setIsLogin((prev) => !prev);
     };
 
-    // Определяет, является ли значение email или логином
     const isEmail = (value) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     };
 
-    // Обработка отправки формы
     const handleSubmit = async (e) => {
         setErrors({ login: "", email: "", password: "", confirmPassword: "" });
         e.preventDefault();
@@ -151,11 +134,10 @@ const Auth = () => {
                     isClosable: true,
                 });
             } else {
-                // Регистрация
                 const payload = {
                     email: credentials.email,
                     password: credentials.password,
-                    login: credentials.login || undefined, // Логин не обязателен
+                    login: credentials.login || undefined,
                 };
 
                 await signUp(payload);
@@ -168,7 +150,6 @@ const Auth = () => {
                     isClosable: true,
                 });
 
-                // Передаем email через состояние маршрута
                 navigate("/confirm-email", { state: { email: credentials.email } });
             }
         } catch (error) {
@@ -176,6 +157,13 @@ const Auth = () => {
 
             if (error.response && error.response.data) {
                 const { error: errorType } = error.response.data;
+
+                // Обработка ошибки "failed email or login or password"
+                if (errorType === "failed email or login or password") {
+                    errorMessage = "Неверный email/логин или пароль.";
+                    setErrors({ ...errors, email: errorMessage, password: errorMessage });
+                    return;
+                }
 
                 switch (errorType) {
                     case "user with this email already exists":
@@ -210,72 +198,36 @@ const Auth = () => {
     };
 
     return (
-        <Flex justify="center" align="center" h="100vh" bg={useColorModeValue("white", "brand.900")}>
-            <MotionBox
-                position="relative"
-                zIndex={20}
-                w="400px"
-                p={6}
-                borderWidth="2px"
-                borderRadius="md"
-                boxShadow="lg"
-                bg={useColorModeValue("white", "brand.900")}
-                borderColor={useColorModeValue("gray.200", "brand.800")}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-            >
-                <Text fontWeight="bold" fontSize="2xl" mb={4} textAlign="center" color={textColor}>
-                    {isLogin ? "Вход" : "Регистрация"}
-                </Text>
-                <form onSubmit={handleSubmit}>
-                    <VStack spacing={4}>
-                        {/* Поле для входа: email или логин */}
-                        {isLogin && (
-                            <FormControl isInvalid={!!errors.email}>
-                                <Input
-                                    maxW="400px"
-                                    minW="200px"
-                                    type="text"
-                                    placeholder="Email или логин"
-                                    value={credentials.email}
-                                    onChange={(e) => {
-                                        setCredentials({ ...credentials, email: e.target.value });
-                                        if (errors.email) setErrors({ ...errors, email: "" });
-                                    }}
-                                    border="2px solid"
-                                    borderColor={borderColor}
-                                    boxShadow="lg"
-                                    focusBorderColor={accentColor}
-                                />
-                                <FormErrorMessage>{errors.email}</FormErrorMessage>
-                            </FormControl>
-                        )}
-
-                        {/* Поле для регистрации: email */}
-                        {!isLogin && (
-                            <>
-                                <FormControl isInvalid={!!errors.login}>
-                                    <Input
-                                        maxW="400px"
-                                        minW="200px"
-                                        type="text"
-                                        placeholder="Логин (необязательно)"
-                                        value={credentials.login}
-                                        onChange={(e) => setCredentials({ ...credentials, login: e.target.value })}
-                                        border="2px solid"
-                                        borderColor={borderColor}
-                                        boxShadow="lg"
-                                        focusBorderColor={accentColor}
-                                    />
-                                    <FormErrorMessage>{errors.login}</FormErrorMessage>
-                                </FormControl>
+        <Flex justify="center" align="center" h="100vh" bg={bgColor}>
+            <AnimatePresence mode="wait">
+                <MotionBox
+                    key={isLogin ? "login" : "register"}
+                    initial={{ opacity: 0, x: isLogin ? -400 : 400 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: isLogin ? 400 : -400 }}
+                    transition={{ duration: 0.5 }}
+                    position="relative"
+                    zIndex={20}
+                    w="400px"
+                    p={6}
+                    borderWidth="2px"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    bg={bgColor}
+                    borderColor={borderColor}
+                >
+                    <Text fontWeight="bold" fontSize="2xl" mb={4} textAlign="center" color={textColor}>
+                        {isLogin ? "Вход" : "Регистрация"}
+                    </Text>
+                    <form onSubmit={handleSubmit}>
+                        <VStack spacing={4}>
+                            {isLogin ? (
                                 <FormControl isInvalid={!!errors.email}>
                                     <Input
                                         maxW="400px"
                                         minW="200px"
-                                        type="email"
-                                        placeholder="Email"
+                                        type="text"
+                                        placeholder="Email или логин"
                                         value={credentials.email}
                                         onChange={(e) => {
                                             setCredentials({ ...credentials, email: e.target.value });
@@ -287,54 +239,59 @@ const Auth = () => {
                                         focusBorderColor={accentColor}
                                     />
                                     <FormErrorMessage>{errors.email}</FormErrorMessage>
-                                    {credentials.email && !validateEmail(credentials.email) && (
-                                        <FormHelperText color="red.500">
-                                            Введите корректный email, например: user@example.com
-                                        </FormHelperText>
-                                    )}
                                 </FormControl>
-                            </>
-                        )}
+                            ) : (
+                                <>
+                                    <FormControl isInvalid={!!errors.login}>
+                                        <Input
+                                            maxW="400px"
+                                            minW="200px"
+                                            type="text"
+                                            placeholder="Логин (необязательно)"
+                                            value={credentials.login}
+                                            onChange={(e) => setCredentials({ ...credentials, login: e.target.value })}
+                                            border="2px solid"
+                                            borderColor={borderColor}
+                                            boxShadow="lg"
+                                            focusBorderColor={accentColor}
+                                        />
+                                        <FormErrorMessage>{errors.login}</FormErrorMessage>
+                                    </FormControl>
+                                    <FormControl isInvalid={!!errors.email}>
+                                        <Input
+                                            maxW="400px"
+                                            minW="200px"
+                                            type="email"
+                                            placeholder="Email"
+                                            value={credentials.email}
+                                            onChange={(e) => {
+                                                setCredentials({ ...credentials, email: e.target.value });
+                                                if (errors.email) setErrors({ ...errors, email: "" });
+                                            }}
+                                            border="2px solid"
+                                            borderColor={borderColor}
+                                            boxShadow="lg"
+                                            focusBorderColor={accentColor}
+                                        />
+                                        <FormErrorMessage>{errors.email}</FormErrorMessage>
+                                        {credentials.email && !validateEmail(credentials.email) && (
+                                            <FormHelperText color="red.500">
+                                                Введите корректный email, например: user@example.com
+                                            </FormHelperText>
+                                        )}
+                                    </FormControl>
+                                </>
+                            )}
 
-                        {/* Поле для пароля */}
-                        <FormControl isInvalid={!!errors.password}>
-                            <InputGroup>
-                                <Input
-                                    maxW="400px"
-                                    minW="200px"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Пароль"
-                                    value={credentials.password}
-                                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                    border="2px solid"
-                                    borderColor={borderColor}
-                                    boxShadow="lg"
-                                    focusBorderColor={accentColor}
-                                />
-                                <InputRightElement>
-                                    <IconButton
-                                        aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-                                        icon={showPassword ? <FaEyeSlash /> : <FaEye />}
-                                        size="sm"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        variant="ghost"
-                                    />
-                                </InputRightElement>
-                            </InputGroup>
-                            <FormErrorMessage>{errors.password}</FormErrorMessage>
-                        </FormControl>
-
-                        {/* Поле для подтверждения пароля (только для регистрации) */}
-                        {!isLogin && (
-                            <FormControl isInvalid={!!errors.confirmPassword}>
+                            <FormControl isInvalid={!!errors.password}>
                                 <InputGroup>
                                     <Input
                                         maxW="400px"
                                         minW="200px"
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        placeholder="Подтвердите пароль"
-                                        value={credentials.confirmPassword}
-                                        onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })}
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Пароль"
+                                        value={credentials.password}
+                                        onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                                         border="2px solid"
                                         borderColor={borderColor}
                                         boxShadow="lg"
@@ -342,64 +299,90 @@ const Auth = () => {
                                     />
                                     <InputRightElement>
                                         <IconButton
-                                            aria-label={showConfirmPassword ? "Скрыть пароль" : "Показать пароль"}
-                                            icon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                            aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                                            icon={showPassword ? <FaEyeSlash /> : <FaEye />}
                                             size="sm"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            onClick={() => setShowPassword(!showPassword)}
                                             variant="ghost"
                                         />
                                     </InputRightElement>
                                 </InputGroup>
-                                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
+                                <FormErrorMessage>{errors.password}</FormErrorMessage>
                             </FormControl>
-                        )}
 
-                        {/* Кнопка отправки */}
+                            {!isLogin && (
+                                <FormControl isInvalid={!!errors.confirmPassword}>
+                                    <InputGroup>
+                                        <Input
+                                            maxW="400px"
+                                            minW="200px"
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            placeholder="Подтвердите пароль"
+                                            value={credentials.confirmPassword}
+                                            onChange={(e) => setCredentials({ ...credentials, confirmPassword: e.target.value })}
+                                            border="2px solid"
+                                            borderColor={borderColor}
+                                            boxShadow="lg"
+                                            focusBorderColor={accentColor}
+                                        />
+                                        <InputRightElement>
+                                            <IconButton
+                                                aria-label={showConfirmPassword ? "Скрыть пароль" : "Показать пароль"}
+                                                icon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                                size="sm"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                variant="ghost"
+                                            />
+                                        </InputRightElement>
+                                    </InputGroup>
+                                    <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
+                                </FormControl>
+                            )}
+
+                            <Button
+                                type="submit"
+                                w="100%"
+                                isLoading={isLoading}
+                                variant={"solid"}
+                                colorScheme="brand"
+                            >
+                                {isLogin ? "Войти" : "Зарегистрироваться"}
+                            </Button>
+                        </VStack>
+                    </form>
+
+                    <Divider my={4} borderColor={borderColor} />
+
+                    <HStack spacing={4} justify="center">
+                        <IconButton
+                            aria-label="Войти через Google"
+                            icon={<FaGoogle />}
+                            onClick={() => handleOAuth("google")}
+                            colorScheme="red"
+                        />
+                        <IconButton
+                            aria-label="Войти через Yandex"
+                            icon={<FaYandex />}
+                            onClick={() => handleOAuth("yandex")}
+                            colorScheme="yellow"
+                        />
+                    </HStack>
+
+                    <Flex justify="center" mt={4}>
                         <Button
-                            type="submit"
-                            w="100%"
-                            isLoading={isLoading}
-                            variant={"solid"}
+                            onClick={toggleMode}
+                            leftIcon={isLogin ? <FaUserPlus /> : <FaSignInAlt />}
+                            variant="outline"
                             colorScheme="brand"
+                            size="sm"
+                            borderRadius="full"
+                            _hover={{ bg: "brand.50" }}
                         >
-                            {isLogin ? "Войти" : "Зарегистрироваться"}
+                            {isLogin ? "Создать аккаунт" : "Уже есть аккаунт?"}
                         </Button>
-                    </VStack>
-                </form>
-
-                {/* Разделитель */}
-                <Divider my={4} borderColor={borderColor} />
-
-                {/* Кнопки OAuth */}
-                <HStack spacing={4} justify="center">
-                    <IconButton
-                        aria-label="Войти через Google"
-                        icon={<FaGoogle />}
-                        onClick={() => handleOAuth("google")}
-                        colorScheme="red"
-                    />
-                    <IconButton
-                        aria-label="Войти через Yandex"
-                        icon={<FaYandex />}
-                        onClick={() => handleOAuth("yandex")}
-                        colorScheme="yellow"
-                    />
-                </HStack>
-
-                {/* Переключение между входом и регистрацией */}
-                <Button
-                    variant="link"
-                    w="100%"
-                    mt={4}
-                    onClick={toggleMode}
-                    color={textColor}
-                >
-                    {isLogin ? "Нет аккаунта? Зарегистрируйтесь" : "Уже есть аккаунт? Войдите"}
-                </Button>
-            </MotionBox>
-
-            {/* Область с землей */}
-            <LandArea onDigComplete={handleDigComplete} isRegistrationVisible={isRegistrationVisible} onRegisterClick={handleRegisterClick} />
+                    </Flex>
+                </MotionBox>
+            </AnimatePresence>
         </Flex>
     );
 };

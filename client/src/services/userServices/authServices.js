@@ -25,5 +25,6 @@ export const OAuth = async (provider) => {
 };
 
 export const OAuthCallback = async (provider, params) => {
-    return await api.get(`/auth/${provider}/callback`, {params: params});
+    const response = await api.get(`/auth/${provider}/callback`, { params });
+    return response.data;
 };

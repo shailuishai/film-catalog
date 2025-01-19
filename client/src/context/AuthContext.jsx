@@ -1,6 +1,6 @@
-import React, {createContext, useContext, useEffect, useState} from "react";
-import {logout, OAuthCallback, signIn, signUp} from "../services/userServices/authServices";
-import {getProfile} from "../services/userServices/profileSevices";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
+import { getProfile } from "../services/userServices/profileSevices";
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -9,14 +9,12 @@ export const AuthProvider = ({ children, navigate }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Проверка авторизации при загрузке приложения
     useEffect(() => {
         const checkAuth = async () => {
             setIsLoading(true);
             try {
                 const token = Cookies.get("access_token");
                 if (token) {
-                    // Пытаемся получить профиль пользователя
                     const profile = await getProfile();
                     setUser(profile.data);
                 } else {
@@ -24,6 +22,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 }
             } catch (error) {
                 setUser(null);
+                console.error("Auth check error:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -32,14 +31,13 @@ export const AuthProvider = ({ children, navigate }) => {
         checkAuth();
     }, []);
 
-    // Вход в систему
     const handleSignIn = async (credentials) => {
         setIsLoading(true);
         try {
             const response = await signIn(credentials);
             const { access_token } = response.data;
             if (access_token) {
-                Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true  });
+                Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
                 setUser(profile.data);
                 navigate("/profile");
@@ -63,7 +61,6 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
-    // Выход из системы
     const handleLogout = async () => {
         setIsLoading(true);
         try {
@@ -78,31 +75,27 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
-    // Обработка OAuth
-    const handleOAuth = async (provider) => {
+    const handleOAuth = (provider) => {
         window.location.href = `https://film-catalog-8re5.onrender.com/v1/auth/${provider}`;
     };
 
-    // Обработка OAuth callback
     const handleOAuthCallback = async (provider) => {
         const urlParams = new URLSearchParams(window.location.search);
-        const params = {};
+        const params = Object.fromEntries(urlParams.entries());
 
-        for (const [key, value] of urlParams.entries()) {
-            params[key] = value;
-        }
         try {
             const response = await OAuthCallback(provider, params);
             const { access_token } = response.data;
             if (access_token) {
-                Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true  });
+                Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
-                setUser(profile.data);
-                navigate("/profile");
+                setUser(profile.data); // Обновляем состояние пользователя
+                navigate("/profile"); // Перенаправляем на страницу профиля
             }
         } catch (error) {
             setUser(null);
             console.error("OAuth callback error:", error);
+            navigate("/auth");
         }
     };
 

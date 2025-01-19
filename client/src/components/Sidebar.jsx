@@ -24,11 +24,11 @@ import {
     FaAngleDoubleLeft,
 } from "react-icons/fa";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
-import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     const { isOpen, onToggle } = useDisclosure();
-    const { user, isLoading, logout } = useAuth(); // Используем данные из контекста
+    const { user, isLoading, logout } = useAuth();
     const navigate = useNavigate();
     const { colorMode, toggleColorMode } = useColorMode();
     const bgColor = useColorModeValue("white", "brand.900");
@@ -65,7 +65,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             borderRadius="md"
             boxShadow="lg"
         >
-            {/* Логотип и кнопка сворачивания */}
             <Flex
                 alignItems="center"
                 pb={6}
@@ -84,7 +83,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     _hover={{ textDecoration: "none" }}
                     alignItems="center"
                 >
-                    <Image src="./logo.svg" alt="Logo" boxSize="48px" />
+                    <Image src="/logo.svg" alt="Logo" boxSize="48px" />
                     {!isCollapsed && (
                         <Text fontSize="2xl" fontWeight="bold" color={textColor}>
                             PotatoRate
@@ -102,7 +101,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 />
             </Flex>
 
-            {/* Основные ссылки */}
             <VStack
                 spacing={4}
                 align="start"
@@ -166,7 +164,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 </Button>
             </VStack>
             <Spacer />
-            {/* Профиль и кнопка Sign In/Sign Up или Logout */}
             <VStack
                 spacing={4}
                 align="start"
@@ -174,7 +171,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 borderTop="2px solid"
                 borderColor={borderColor}
             >
-                {/* Кнопка смены темы */}
                 <Button
                     variant="ghost"
                     h="48px"

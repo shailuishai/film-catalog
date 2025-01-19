@@ -15,8 +15,6 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-
-        // Проверяем, что ошибка связана с авторизацией (401) и запрос еще не был повторен
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
@@ -28,15 +26,12 @@ api.interceptors.response.use(
                 }
                 return api(originalRequest);
             } catch (refreshError) {
-                // Если обновление токена не удалось, перенаправляем на страницу авторизации
                 if (window.location.pathname !== '/auth') {
                     window.location.href = "/auth";
                 }
                 return Promise.reject(refreshError);
             }
         }
-
-        // Если ошибка не связана с авторизацией, просто возвращаем ошибку
         return Promise.reject(error);
     }
 );

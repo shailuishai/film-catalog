@@ -1,41 +1,108 @@
-import React, {useEffect, useState} from "react";
-import { Box, Flex, Avatar, Text, Button, useColorModeValue, Input, FormControl, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, IconButton, useColorMode, Spinner } from "@chakra-ui/react";
-import { useAuth } from "../context/AuthContext"; // Используем useAuth
+import React, { useState } from "react";
+import {
+    Box,
+    Flex,
+    Avatar,
+    Text,
+    Button,
+    useColorModeValue,
+    Input,
+    FormControl,
+    IconButton,
+    Spinner,
+    useToast,
+} from "@chakra-ui/react";
+import { EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
+import { useAuth } from "../context/AuthContext"; // Импортируем AuthContext
+import { useProfile } from "../context/ProfileContext"; // Импортируем ProfileContext
 
 const Profile = () => {
-    const { user, isLoading, updateProfile, deleteProfile, logout } = useAuth();
+    const { logout } = useAuth(); // Используем AuthContext для выхода
+    const { user, isLoading, updateProfile, deleteProfile } = useProfile(); // Используем ProfileContext для управления профилем
+    const toast = useToast(); // Для уведомлений
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
-    const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
-    const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
-    const [formData, setFormData] = useState({
-        login: user?.login || "",
-        email: user?.email || "",
-    });
+    const [editMode, setEditMode] = useState(null); // null, 'login', или 'avatar'
+    const [login, setLogin] = useState(user?.login || "");
     const [avatarFile, setAvatarFile] = useState(null);
     const [resetAvatar, setResetAvatar] = useState(false);
     const avatarPrefix = useColorModeValue("_Light", "_Dark");
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    // Обработчик изменения логина
+    const handleLoginChange = (e) => {
+        setLogin(e.target.value);
     };
 
+    // Обработчик изменения аватара
     const handleAvatarChange = (e) => {
         setAvatarFile(e.target.files[0]);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        await updateProfile(formData, avatarFile, resetAvatar);
-        onEditClose();
+    // Обработчик подтверждения изменений
+    const handleSubmit = async () => {
+        try {
+            if (editMode === "login") {
+                await updateProfile({ login }, null, false);
+                toast({
+                    title: "Логин обновлен",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                });
+            } else if (editMode === "avatar") {
+                await updateProfile({}, avatarFile, resetAvatar);
+                toast({
+                    title: "Аватар обновлен",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
+            setEditMode(null); // Выход из режима редактирования
+            setAvatarFile(null); // Сброс файла аватара
+            setResetAvatar(false); // Сброс флага сброса аватара
+        } catch (error) {
+            toast({
+                title: "Ошибка",
+                description: "Не удалось обновить данные",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     };
 
-    const handleDelete = async () => {
-        await deleteProfile();
-        onDeleteClose();
+    // Обработчик отмены изменений
+    const handleCancel = () => {
+        setEditMode(null); // Выход из режима редактирования
+        setLogin(user?.login || ""); // Сброс логина к исходному значению
+        setAvatarFile(null); // Сброс файла аватара
+        setResetAvatar(false); // Сброс флага сброса аватара
     };
 
+    // Обработчик удаления профиля
+    const handleDeleteProfile = async () => {
+        try {
+            await deleteProfile();
+            toast({
+                title: "Профиль удален",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            logout(); // Выход после удаления профиля
+        } catch (error) {
+            toast({
+                title: "Ошибка",
+                description: "Не удалось удалить профиль",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
+    // Определение URL аватара
     const isDefaultAvatar = user?.avatar_url?.includes("default");
     const avatarUrl = user
         ? isDefaultAvatar
@@ -60,92 +127,88 @@ const Profile = () => {
                     <Spinner size="xl" aria-label="Loading" />
                 ) : (
                     <>
-                        <Avatar size="2xl" src={avatarUrl} mb={4} />
-                        <Text fontSize="2xl" mb={2}>{user?.login}</Text>
+                        {/* Аватар */}
+                        <Box position="relative" display="inline-block" mb={4}>
+                            <Avatar size="2xl" src={avatarUrl} />
+                            <IconButton
+                                aria-label="Edit Avatar"
+                                icon={<EditIcon />}
+                                position="absolute"
+                                bottom={0}
+                                right={0}
+                                size="sm"
+                                onClick={() => setEditMode("avatar")}
+                            />
+                        </Box>
+
+                        {/* Редактирование аватара */}
+                        {editMode === "avatar" && (
+                            <FormControl id="avatar" mb={4}>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAvatarChange}
+                                />
+                                <Button
+                                    colorScheme="red"
+                                    onClick={() => setResetAvatar(true)}
+                                    mt={2}
+                                >
+                                    Сбросить аватар
+                                </Button>
+                            </FormControl>
+                        )}
+
+                        {/* Редактирование логина */}
+                        <Flex align="center" justify="center" mb={4}>
+                            {editMode === "login" ? (
+                                <Input
+                                    type="text"
+                                    value={login}
+                                    onChange={handleLoginChange}
+                                    mr={2}
+                                />
+                            ) : (
+                                <>
+                                    <Text fontSize="2xl" mr={2}>{user?.login}</Text>
+                                    <IconButton
+                                        aria-label="Edit Login"
+                                        icon={<EditIcon />}
+                                        onClick={() => setEditMode("login")}
+                                    />
+                                </>
+                            )}
+                        </Flex>
+
+                        {/* Общие кнопки подтверждения и отмены */}
+                        {editMode && (
+                            <Flex justify="center" mb={4}>
+                                <Button
+                                    colorScheme="teal"
+                                    onClick={handleSubmit}
+                                    mr={2}
+                                >
+                                    <CheckIcon />
+                                </Button>
+                                <Button
+                                    colorScheme="gray"
+                                    onClick={handleCancel}
+                                >
+                                    <CloseIcon />
+                                </Button>
+                            </Flex>
+                        )}
+
+                        {/* Email (не редактируемый) */}
                         <Text fontSize="md" mb={4}>{user?.email}</Text>
 
-                        <Button colorScheme="teal" onClick={onEditOpen} mb={4}>
-                            Редактировать профиль
-                        </Button>
-
-                        <Button colorScheme="red" onClick={onDeleteOpen} mb={4}>
+                        {/* Кнопки удаления и выхода */}
+                        <Button colorScheme="red" onClick={handleDeleteProfile} mb={4}>
                             Удалить профиль
                         </Button>
-
                         <Button colorScheme="brand" onClick={logout} leftIcon={<i className="fas fa-sign-out-alt"></i>}>
                             Выйти
                         </Button>
-
-                        {/* Модальное окно для редактирования профиля */}
-                        <Modal isOpen={isEditOpen} onClose={onEditClose}>
-                            <ModalOverlay />
-                            <ModalContent>
-                                <ModalHeader>Редактировать профиль</ModalHeader>
-                                <ModalCloseButton />
-                                <ModalBody>
-                                    <FormControl id="login" mb={4}>
-                                        <FormLabel>Логин</FormLabel>
-                                        <Input
-                                            type="text"
-                                            name="login"
-                                            value={formData.login}
-                                            onChange={handleChange}
-                                        />
-                                    </FormControl>
-                                    <FormControl id="email" mb={4}>
-                                        <FormLabel>Email</FormLabel>
-                                        <Input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                        />
-                                    </FormControl>
-                                    <FormControl id="avatar" mb={4}>
-                                        <FormLabel>Аватар</FormLabel>
-                                        <Input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleAvatarChange}
-                                        />
-                                    </FormControl>
-                                    <Button
-                                        colorScheme="red"
-                                        onClick={() => setResetAvatar(true)}
-                                    >
-                                        Сбросить аватар
-                                    </Button>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button colorScheme="teal" mr={3} onClick={handleSubmit}>
-                                        Сохранить
-                                    </Button>
-                                    <Button variant="ghost" onClick={onEditClose}>
-                                        Отмена
-                                    </Button>
-                                </ModalFooter>
-                            </ModalContent>
-                        </Modal>
-
-                        {/* Модальное окно для удаления профиля */}
-                        <AlertDialog isOpen={isDeleteOpen} onClose={onDeleteClose}>
-                            <AlertDialogOverlay>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                                        Удалить профиль
-                                    </AlertDialogHeader>
-                                    <AlertDialogBody>
-                                        Вы уверены, что хотите удалить свой профиль? Это действие нельзя отменить.
-                                    </AlertDialogBody>
-                                    <AlertDialogFooter>
-                                        <Button onClick={onDeleteClose}>Отмена</Button>
-                                        <Button colorScheme="red" onClick={handleDelete} ml={3}>
-                                            Удалить
-                                        </Button>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialogOverlay>
-                        </AlertDialog>
                     </>
                 )}
             </Box>
