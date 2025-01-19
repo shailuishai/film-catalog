@@ -178,7 +178,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "FilmId актера",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -220,7 +220,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "FilmId актера",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {

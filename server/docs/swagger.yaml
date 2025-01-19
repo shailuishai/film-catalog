@@ -252,7 +252,7 @@ paths:
       description: Возвращает информацию об актере по его FilmId
       parameters:
       - description: FilmId актера
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -278,7 +278,7 @@ paths:
       description: Обновляет данные актера, включая аватар
       parameters:
       - description: FilmId актера
-        in: query
+        in: path
         name: id
         required: true
         type: string

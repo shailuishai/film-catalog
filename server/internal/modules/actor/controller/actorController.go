@@ -125,7 +125,7 @@ func (c *ActorController) CreateActor(w http.ResponseWriter, r *http.Request) {
 // @Summary Получить актера по FilmId
 // @Description Возвращает информацию об актере по его FilmId
 // @Tags         actor
-// @Param id query string true "FilmId актера"
+// @Param id path string true "FilmId актера"
 // @Success 200 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -284,7 +284,7 @@ func (c *ActorController) GetActors(w http.ResponseWriter, r *http.Request) {
 // @Tags         actor
 // @Accept json
 // @Produce      json
-// @Param id query string true "FilmId актера"
+// @Param id path string true "FilmId актера"
 // @Param        reset_avatar query     bool   false "Reset avatar to default"
 // @Param        json         formData  string true  "JSON with login data" example={"login":"new_login"}
 // @Param        avatar       formData  file   false "Avatar image file (max 1MB)"

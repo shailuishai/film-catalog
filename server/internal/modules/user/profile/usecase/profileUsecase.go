@@ -43,7 +43,7 @@ func (uc *ProfileUseCase) UpdateUser(user *profile.UserProfile, avatar *multipar
 			return err
 		}
 		user.AvatarUrl = &defaultAvatar
-	} else if avatar != nil {
+	} else if *avatar != nil {
 		smallAvatar, largeAvatar, err := avatarManager.ParsingAvatarImage(avatar)
 		if err != nil {
 			log.Error("failed to parse avatar image", err)

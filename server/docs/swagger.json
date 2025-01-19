@@ -175,7 +175,7 @@
                         "type": "string",
                         "description": "FilmId актера",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -217,7 +217,7 @@
                         "type": "string",
                         "description": "FilmId актера",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
