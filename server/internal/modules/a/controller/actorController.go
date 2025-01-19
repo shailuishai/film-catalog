@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"log/slog"
 	"net/http"
-	act "server/internal/modules/actor"
+	act "server/internal/modules/a"
 	u "server/internal/modules/user"
 	resp "server/pkg/lib/response"
 	"strconv"

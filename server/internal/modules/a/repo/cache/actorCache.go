@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"server/internal/init/cache"
-	act "server/internal/modules/actor"
+	act "server/internal/modules/a"
 	"time"
 )
 

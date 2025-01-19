@@ -1,15 +1,15 @@
 package repo
 
 import (
-	"server/internal/modules/actor"
+	"server/internal/modules/a"
 	"time"
 )
 
 type ActorDb interface {
-	CreateActor(actor *actor.ActorDTO) (uint, error)
-	GetActor(actorId uint) (*actor.ActorDTO, error)
-	GetActors(filter *actor.GetActorsFilter) ([]*actor.ActorDTO, error)
-	UpdateActor(actor *actor.ActorDTO) error
+	CreateActor(actor *a.ActorDTO) (uint, error)
+	GetActor(actorId uint) (*a.ActorDTO, error)
+	GetActors(filter *a.GetActorsFilter) ([]*a.ActorDTO, error)
+	UpdateActor(actor *a.ActorDTO) error
 	DeleteActor(actorId uint) error
 }
 
@@ -21,7 +21,7 @@ type ActorS3 interface {
 
 type ActorCache interface {
 	CacheActor(key string, actor interface{}, ttl time.Duration) error
-	GetActorFromCache(key string) ([]*actor.ActorDTO, error)
+	GetActorFromCache(key string) ([]*a.ActorDTO, error)
 	DeleteActorFromCache(key string) error
 }
 
@@ -39,19 +39,19 @@ func NewActorRepo(db ActorDb, s3 ActorS3, ch ActorCache) *Repo {
 	}
 }
 
-func (r *Repo) CreateActor(actor *actor.ActorDTO) (uint, error) {
+func (r *Repo) CreateActor(actor *a.ActorDTO) (uint, error) {
 	return r.db.CreateActor(actor)
 }
 
-func (r *Repo) GetActor(actorId uint) (*actor.ActorDTO, error) {
+func (r *Repo) GetActor(actorId uint) (*a.ActorDTO, error) {
 	return r.db.GetActor(actorId)
 }
 
-func (r *Repo) GetActors(filter *actor.GetActorsFilter) ([]*actor.ActorDTO, error) {
+func (r *Repo) GetActors(filter *a.GetActorsFilter) ([]*a.ActorDTO, error) {
 	return r.db.GetActors(filter)
 }
 
-func (r *Repo) UpdateActor(actor *actor.ActorDTO) error {
+func (r *Repo) UpdateActor(actor *a.ActorDTO) error {
 	return r.db.UpdateActor(actor)
 }
 
@@ -71,7 +71,7 @@ func (r *Repo) CacheActor(key string, actor interface{}, ttl time.Duration) erro
 	return r.ch.CacheActor(key, actor, ttl)
 }
 
-func (r *Repo) GetActorFromCache(key string) ([]*actor.ActorDTO, error) {
+func (r *Repo) GetActorFromCache(key string) ([]*a.ActorDTO, error) {
 	return r.ch.GetActorFromCache(key)
 }
 

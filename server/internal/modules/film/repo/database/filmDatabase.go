@@ -4,9 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"log/slog"
-	"server/internal/modules/actor"
 	f "server/internal/modules/film"
-	g "server/internal/modules/genre"
 )
 
 type FilmDatabase struct {
@@ -38,30 +36,6 @@ func (db *FilmDatabase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 	}
 
 	filmDTO := film.ToDTO(&stats)
-
-	// Загрузка жанров и актеров
-	if len(filmDTO.GenreIDs) > 0 {
-		var genres []g.Genre
-		if err := db.db.Where("id IN ?", filmDTO.GenreIDs).Find(&genres).Error; err != nil {
-			return nil, err
-		}
-		for _, genre := range genres {
-			gen := g.ToDTO(&genre)
-			filmDTO.Genres = append(filmDTO.Genres, *gen)
-		}
-	}
-
-	if len(filmDTO.ActorIDs) > 0 {
-		var actors []actor.Actor
-		if err := db.db.Where("id IN ?", filmDTO.ActorIDs).Find(&actors).Error; err != nil {
-			return nil, err
-		}
-		for _, act := range actors {
-			actor := actor.ToDTO(&act)
-			filmDTO.Actors = append(filmDTO.Actors, *actor)
-		}
-	}
-
 	return filmDTO, nil
 }
 
@@ -79,8 +53,8 @@ func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 	// Debug: Log the film model before creation
 	db.log.Debug("film model before creation", "film", filmModel)
 
-	// Create the Film record without automatically creating associations
-	if err := tx.Omit("Genres", "Actors").Create(filmModel).Error; err != nil {
+	// Create the Film record with associations
+	if err := tx.Create(filmModel).Error; err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return 0, f.ErrFilmAlreadyExists
@@ -91,36 +65,6 @@ func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 
 	// Debug: Log the film model after creation
 	db.log.Debug("film model after creation", "filmID", filmModel.FilmId, "film", filmModel)
-
-	// Set FilmID for Genres and Actors
-	for i := range filmModel.Genres {
-		filmModel.Genres[i].FilmID = filmModel.FilmId
-	}
-	for i := range filmModel.Actors {
-		filmModel.Actors[i].FilmID = filmModel.FilmId
-	}
-
-	// Debug: Log the genres and actors after setting FilmID
-	db.log.Debug("film genres after setting FilmID", "genres", filmModel.Genres)
-	db.log.Debug("film actors after setting FilmID", "actors", filmModel.Actors)
-
-	// Create associated FilmGenre records
-	if len(filmModel.Genres) > 0 {
-		if err := tx.Create(&filmModel.Genres).Error; err != nil {
-			tx.Rollback()
-			db.log.Error("failed to create film genres", "error", err, "film", film)
-			return 0, f.ErrGenreNotFound
-		}
-	}
-
-	// Create associated FilmActor records
-	if len(filmModel.Actors) > 0 {
-		if err := tx.Create(&filmModel.Actors).Error; err != nil {
-			tx.Rollback()
-			db.log.Error("failed to create film actors", "error", err, "film", film)
-			return 0, f.ErrActorNotFound
-		}
-	}
 
 	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
@@ -151,42 +95,22 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 	}
 
 	// Update Genres
-	if len(film.Genres) > 0 {
-		// Delete existing genres for the film
-		if err := tx.Where("film_id = ?", film.ID).Delete(&f.FilmGenre{}).Error; err != nil {
+	if len(filmModel.Genres) > 0 {
+		// Replace existing genres for the film
+		if err := tx.Model(&filmModel).Association("Genres").Replace(filmModel.Genres); err != nil {
 			tx.Rollback()
-			db.log.Error("failed to delete existing genres", "error", err, "filmID", film.ID)
+			db.log.Error("failed to update film genres", "error", err, "filmID", film.ID)
 			return f.ErrInternal
-		}
-
-		// Add new genres
-		for _, genre := range filmModel.Genres {
-			genre.FilmID = film.ID // Ensure FilmID is set
-			if err := tx.Create(&genre).Error; err != nil {
-				tx.Rollback()
-				db.log.Error("failed to add genre to film", "error", err, "filmID", film.ID, "genreID", genre.GenreID)
-				return f.ErrInternal
-			}
 		}
 	}
 
 	// Update Actors
-	if len(film.Actors) > 0 {
-		// Delete existing actors for the film
-		if err := tx.Where("film_id = ?", film.ID).Delete(&f.FilmActor{}).Error; err != nil {
+	if len(filmModel.Actors) > 0 {
+		// Replace existing actors for the film
+		if err := tx.Model(&filmModel).Association("Actors").Replace(filmModel.Actors); err != nil {
 			tx.Rollback()
-			db.log.Error("failed to delete existing actors", "error", err, "filmID", film.ID)
+			db.log.Error("failed to update film actors", "error", err, "filmID", film.ID)
 			return f.ErrInternal
-		}
-
-		// Add new actors
-		for _, actor := range filmModel.Actors {
-			actor.FilmID = film.ID // Ensure FilmID is set
-			if err := tx.Create(&actor).Error; err != nil {
-				tx.Rollback()
-				db.log.Error("failed to add actor to film", "error", err, "filmID", film.ID, "actorID", actor.ActorID)
-				return f.ErrInternal
-			}
 		}
 	}
 

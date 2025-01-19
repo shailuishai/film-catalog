@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	act "server/internal/modules/actor"
+	act "server/internal/modules/a"
 	f "server/internal/modules/film"
 	g "server/internal/modules/genre"
 	r "server/internal/modules/review"

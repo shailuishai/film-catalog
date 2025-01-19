@@ -2,6 +2,8 @@ package film
 
 import (
 	"fmt"
+	"server/internal/modules/a"
+	g "server/internal/modules/genre"
 	"strconv"
 	"strings"
 	"time"
@@ -41,16 +43,19 @@ func (FilmActor) TableName() string {
 }
 
 type Film struct {
-	FilmId      uint        `gorm:"primaryKey;column:film_id;autoIncrement"`
-	Title       string      `gorm:"column:title;type:text;not null;default:'фильмец под чипсики'"`
-	PosterURL   string      `gorm:"default:'https://filmposter.storage-173.s3hoster.by/default/';column:poster_url"`
-	Synopsis    string      `gorm:"column:synopsis;type:text;not null;default:'-'"`
-	ReleaseDate time.Time   `gorm:"column:release_date;type:date;not null"`
-	Runtime     int         `gorm:"column:runtime;type:int;not null;default:90"`
-	Producer    string      `gorm:"column:producer;type:varchar(255);not null;default:'Неизвестен'"`
-	CreatedAt   time.Time   `gorm:"column:create_at"`
-	Genres      []FilmGenre `gorm:"many2many:film_genre;"` // Связь с жанрами
-	Actors      []FilmActor `gorm:"many2many:film_actor;"` // Связь с актерами
+	FilmId      uint      `gorm:"primaryKey;column:film_id;autoIncrement"`
+	Title       string    `gorm:"column:title;type:text;not null;default:'фильмец под чипсики'"`
+	PosterURL   string    `gorm:"default:'https://filmposter.storage-173.s3hoster.by/default/';column:poster_url"`
+	Synopsis    string    `gorm:"column:synopsis;type:text;not null;default:'-'"`
+	ReleaseDate time.Time `gorm:"column:release_date;type:date;not null"`
+	Runtime     int       `gorm:"column:runtime;type:int;not null;default:90"`
+	Producer    string    `gorm:"column:producer;type:varchar(255);not null;default:'Неизвестен'"`
+	CreatedAt   time.Time `gorm:"column:create_at"`
+	// Связь с жанрами (полноценные модели)
+	Genres []g.Genre `gorm:"many2many:film_genre;joinForeignKey:FilmID;JoinReferences:GenreID"`
+
+	// Связь с актерами (полноценные модели)
+	Actors []a.Actor `gorm:"many2many:film_actor;joinForeignKey:FilmID;JoinReferences:ActorID"`
 }
 
 func (f *Film) ToDTO(stats *FilmStatsModel) *FilmDTO {
@@ -76,11 +81,13 @@ func (f *Film) ToDTO(stats *FilmStatsModel) *FilmDTO {
 	// Сохраняем FilmId жанров
 	for _, genre := range f.Genres {
 		filmDTO.GenreIDs = append(filmDTO.GenreIDs, genre.GenreID)
+		filmDTO.Genres = append(filmDTO.Genres, *g.ToDTO(&genre))
 	}
 
-	// Сохраняем FilmId актеров
+	// Сохраняем ActorID и ActorDTO
 	for _, actor := range f.Actors {
 		filmDTO.ActorIDs = append(filmDTO.ActorIDs, actor.ActorID)
+		filmDTO.Actors = append(filmDTO.Actors, *a.ToDTO(&actor))
 	}
 
 	return filmDTO
@@ -100,16 +107,12 @@ func (f *FilmDTO) ToModel() (*Film, *FilmStatsModel) {
 
 	// Восстанавливаем связи с жанрами
 	for _, genreID := range f.GenreIDs {
-		film.Genres = append(film.Genres, FilmGenre{
-			GenreID: genreID,
-		})
+		film.Genres = append(film.Genres, g.Genre{GenreID: genreID})
 	}
 
 	// Восстанавливаем связи с актерами
 	for _, actorID := range f.ActorIDs {
-		film.Actors = append(film.Actors, FilmActor{
-			ActorID: actorID,
-		})
+		film.Actors = append(film.Actors, a.Actor{ActorID: actorID})
 	}
 
 	filmStats := &FilmStatsModel{

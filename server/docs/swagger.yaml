@@ -186,7 +186,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Получить список актеров с фильтрацией по различным параметрам
       tags:
-      - actor
+      - a
     post:
       consumes:
       - application/json
@@ -222,7 +222,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Создание нового актера
       tags:
-      - actor
+      - a
   /actors/{id}:
     delete:
       description: Удаляет актера по его FilmId
@@ -247,7 +247,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Удалить актера по FilmId
       tags:
-      - actor
+      - a
     get:
       description: Возвращает информацию об актере по его FilmId
       parameters:
@@ -271,7 +271,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Получить актера по FilmId
       tags:
-      - actor
+      - a
     put:
       consumes:
       - application/json
@@ -320,7 +320,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Обновить информацию об актере
       tags:
-      - actor
+      - a
   /auth/{provider}:
     get:
       consumes:

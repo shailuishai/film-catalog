@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"mime/multipart"
-	act "server/internal/modules/actor"
+	act "server/internal/modules/a"
 	avatarManager "server/pkg/lib/avatarMenager"
 	"strconv"
 	"strings"

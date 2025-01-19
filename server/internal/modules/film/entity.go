@@ -3,7 +3,7 @@ package film
 import (
 	"mime/multipart"
 	"net/http"
-	"server/internal/modules/actor"
+	"server/internal/modules/a"
 	g "server/internal/modules/genre"
 	"time"
 )
@@ -29,8 +29,8 @@ type FilmDTO struct {
 	GenreIDs []uint `json:"genre_ids"` // Только ID жанров
 	ActorIDs []uint `json:"actor_ids"` // Только ID актеров
 
-	Genres []g.GenreDTO     `json:"genres"`
-	Actors []actor.ActorDTO `json:"actors"`
+	Genres []g.GenreDTO `json:"genres"`
+	Actors []a.ActorDTO `json:"actors"`
 
 	RemovePoster bool `json:"remove_poster"`
 }

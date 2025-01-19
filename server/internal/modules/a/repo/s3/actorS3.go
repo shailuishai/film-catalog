@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"log/slog"
 	s3Storage "server/internal/init/s3"
-	"server/internal/modules/actor"
+	"server/internal/modules/a"
 	"strings"
 )
 
@@ -72,7 +72,7 @@ func (s *ActorS3) RenameAvatar(oldName string, actorId uint, newName string) err
 	_, err := s.s3.Client.CopyObject(context.TODO(), copyInput)
 	if err != nil {
 		s.log.Error("failed to copy object", slog.String("error", err.Error()))
-		return actor.ErrInternal
+		return a.ErrInternal
 	}
 
 	deleteInput := &s3.DeleteObjectInput{
@@ -82,7 +82,7 @@ func (s *ActorS3) RenameAvatar(oldName string, actorId uint, newName string) err
 	_, err = s.s3.Client.DeleteObject(context.TODO(), deleteInput)
 	if err != nil {
 		s.log.Error("failed to delete old object", slog.String("error", err.Error()))
-		return actor.ErrInternal
+		return a.ErrInternal
 	}
 
 	s.log.Info("object renamed successfully",

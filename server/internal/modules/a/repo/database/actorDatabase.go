@@ -4,7 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"log/slog"
-	act "server/internal/modules/actor"
+	act "server/internal/modules/a"
 )
 
 type ActorDatabase struct {
