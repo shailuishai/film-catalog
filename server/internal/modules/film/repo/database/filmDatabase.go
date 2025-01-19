@@ -23,7 +23,7 @@ func NewFilmDatabase(db *gorm.DB, log *slog.Logger) *FilmDatabase {
 
 func (db *FilmDatabase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 	var film f.Film
-	if err := db.db.First(&film, id).Error; err != nil {
+	if err := db.db.Preload("Genres").Preload("Actors").First(&film, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, f.ErrFilmNotFound
 		}
@@ -39,6 +39,7 @@ func (db *FilmDatabase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 
 	filmDTO := film.ToDTO(&stats)
 
+	// Загрузка жанров и актеров
 	if len(filmDTO.GenreIDs) > 0 {
 		var genres []g.Genre
 		if err := db.db.Where("id IN ?", filmDTO.GenreIDs).Find(&genres).Error; err != nil {
