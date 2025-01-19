@@ -1,37 +1,24 @@
 import React from "react";
 import { Box, Image, Text, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
+import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils"; // Импортируем функции
 
 const FilmCard = ({ film }) => {
     const posterPrefix = useColorModeValue("_Light", "_Dark");
-    const isDefaultPoster = film?.poster_url?.includes("default");
-    const posterUrl = film
-        ? isDefaultPoster
-            ? `${film.poster_url}800x1200${posterPrefix}.webp`
-            : `${film.poster_url}`
-        : null;
+    const posterUrl = getPosterUrl(film?.poster_url, posterPrefix); // Используем функцию
 
-    // Цвета и тени
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const boxShadow = useColorModeValue("lg", "dark-lg");
 
-    // Определяем цвет рейтинга в зависимости от значения
-    const getRatingColorScheme = (rating) => {
-        if (rating >= 80) return "green"; // Высокий рейтинг
-        if (rating >= 50) return "yellow"; // Средний рейтинг
-        return "red"; // Низкий рейтинг
-    };
-
     return (
         <Box
-            as={RouterLink} // Делаем всю карточку кликабельной
+            as={RouterLink}
             to={`/films/${film.id}`}
             borderWidth="2px"
             borderRadius="md"
             overflow="hidden"
-            w="100%"
             maxW="300px"
             bg={bgColor}
             boxShadow={boxShadow}
@@ -40,17 +27,23 @@ const FilmCard = ({ film }) => {
             _hover={{
                 transform: "scale(1.05)",
                 boxShadow: "xl",
-                textDecoration: "none", // Убираем подчеркивание при наведении
+                textDecoration: "none",
             }}
         >
-            <Image
-                src={posterUrl}
-                alt={film.title}
-                w="100%"
-                h="450px" // Соотношение 2:3 (300px * 1.5 = 450px)
-                objectFit="cover"
-            />
-            <Box p={4}>
+            <Box position="relative" width="100%" paddingTop="150%">
+                <Image
+                    src={posterUrl}
+                    alt={film.title}
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    width="100%"
+                    height="100%"
+                    objectFit="cover"
+                />
+            </Box>
+
+            <Box bg={bgColor} borderRadius="md" mt="-16px" position="relative" zIndex="1" p={4}>
                 <Text fontWeight="bold" fontSize="lg" mb={2}>
                     {film.title}
                 </Text>
@@ -58,13 +51,16 @@ const FilmCard = ({ film }) => {
                     {film.synopsis}
                 </Text>
                 <Flex align="center" justify="space-between" mb={2}>
-                    {/* Рейтинг с цветом, зависящим от значения */}
                     <Badge colorScheme={getRatingColorScheme(film.avg_rating)} fontSize="sm">
                         Rating: {film.avg_rating}%
                     </Badge>
-                    {/* Время в том же стиле, что и рейтинг */}
                     <Badge colorScheme="teal" fontSize="sm">
-                        Runtime: {film.runtime}
+                        Runtime: {film.runtime} min
+                    </Badge>
+                </Flex>
+                <Flex align="center" justify="space-between">
+                    <Badge colorScheme="purple" fontSize="sm">
+                        Release: {formatReleaseDate(film.release_date)}
                     </Badge>
                 </Flex>
             </Box>

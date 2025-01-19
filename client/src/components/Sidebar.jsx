@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Box,
     Flex,
@@ -28,8 +28,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     const { isOpen, onToggle } = useDisclosure();
-    const { user, isLoading, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user, isLoading } = useAuth();
     const { colorMode, toggleColorMode } = useColorMode();
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
@@ -143,24 +142,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 >
                     <FaUser size={24} />
                     {!isCollapsed && "Актеры"}
-                </Button>
-                <Button
-                    as={RouterLink}
-                    to="/genres"
-                    variant="ghost"
-                    h="48px"
-                    w={isCollapsed ? "48px" : "100%"}
-                    justifyContent={isCollapsed ? "center" : "start"}
-                    gap={4}
-                    p={isCollapsed ? 0 : 4}
-                    color={textColor}
-                    _activeLink={{
-                        bg: "rgba(255, 165, 0, 0.1)",
-                        color: accentColor,
-                    }}
-                >
-                    <FaList size={24} />
-                    {!isCollapsed && "Жанры"}
                 </Button>
             </VStack>
             <Spacer />

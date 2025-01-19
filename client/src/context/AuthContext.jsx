@@ -104,8 +104,9 @@ export const AuthProvider = ({ children, navigate }) => {
     const handleUpdateProfile = async (data, avatarFile, resetAvatar) => {
         setIsLoading(true);
         try {
-            const updatedUser = await updateProfile(data, avatarFile, resetAvatar);
-            setUser(updatedUser.data);
+            await updateProfile(data, avatarFile, resetAvatar);
+            const profile = await getProfile();
+            setUser(profile.data);
         } catch (error) {
             console.error("Failed to update profile:", error);
             throw error;

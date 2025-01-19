@@ -125,11 +125,15 @@ const theme = extendTheme({
             },
         },
         Input: {
-            baseStyle: {
-                field: {
-                    borderWidth:"2px",
-                    borderRadius: "md",
-                    focusBorderColor: "accent.400",
+            variants: {
+                outline: {
+                    field: {
+                        borderWidth:"2px",
+                        borderRadius: "md",
+                        focusBorderColor: "accent.400",
+                    },
+                },
+                flushed:{
                 },
             },
         },
