@@ -32,8 +32,9 @@ func (c *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	})
-
+	
 	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, r, resp.OK())
 	return
