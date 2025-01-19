@@ -37,7 +37,7 @@ func (uc *ProfileUseCase) UpdateUser(user *profile.UserProfile, avatar *multipar
 	}
 
 	if user.ResetAvatar {
-		defaultAvatar := "https://useravatar.storage-173.s3hoster.by/default"
+		defaultAvatar := "https://useravatar.storage-173.s3hoster.by/default/"
 		if err := uc.rp.DeleteAvatar(findUser.Login, user.UserId); err != nil {
 			log.Error("failed to delete avatar", err)
 			return err
