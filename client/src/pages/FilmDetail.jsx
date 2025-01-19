@@ -18,7 +18,7 @@ import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
-import { getActorById } from "../services/actorServices.js"; // Импортируем новый сервис
+import ActorCard from "../components/ActorCard"; // Импортируем компонент ActorCard
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -40,9 +40,7 @@ const FilmDetail = () => {
                 const response = await getFilmById(id);
                 if (response.status === "success") {
                     setFilm(response.data);
-                    // Загружаем актеров для фильма
-                    const actorsResponse = await getActorsByFilmId(id);
-                    setActors(actorsResponse.data);
+                    setActors(response.data.actors);
                 } else {
                     setError("Фильм не найден");
                 }
@@ -141,6 +139,18 @@ const FilmDetail = () => {
                         <strong>Продюсер:</strong> {film.producer}
                     </Text>
 
+                    {/* Вывод жанров */}
+                    <HStack spacing={2}>
+                        <Text fontSize="md">
+                            <strong>Жанры:</strong>
+                        </Text>
+                        {film.genres.map((genre) => (
+                            <Badge key={genre.genre_id} colorScheme="blue">
+                                {genre.name}
+                            </Badge>
+                        ))}
+                    </HStack>
+
                     {film.total_reviews > 0 && (
                         <Text fontSize="md">
                             <strong>Количество отзывов:</strong> {film.total_reviews}
@@ -149,45 +159,14 @@ const FilmDetail = () => {
                 </Flex>
             </Flex>
 
-            {/* Слайдер с актерами */}
+            {/* Карусель с актерами */}
             <Box mt={8}>
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <Slider
-                    aria-label="slider-ex-1"
-                    defaultValue={30}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onChange={(val) => console.log(val)}
-                >
-                    <SliderTrack>
-                        <SliderFilledTrack />
-                    </SliderTrack>
-                    <SliderThumb />
-                </Slider>
                 <HStack spacing={4} overflowX="auto" py={4}>
                     {actors.map((actor) => (
-                        <Box
-                            key={actor.id}
-                            width="150px"
-                            textAlign="center"
-                            borderRadius="md"
-                            overflow="hidden"
-                            boxShadow="md"
-                        >
-                            <Image
-                                src={actor.avatar_url}
-                                alt={actor.name}
-                                width="100%"
-                                height="200px"
-                                objectFit="cover"
-                            />
-                            <Text mt={2} fontWeight="bold">
-                                {actor.name}
-                            </Text>
-                        </Box>
+                        <ActorCard key={actor.actor_id} actor={actor} />
                     ))}
                 </HStack>
             </Box>
