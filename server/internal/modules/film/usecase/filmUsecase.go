@@ -88,7 +88,7 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 	}
 
 	if *poster != nil {
-		_, posterBytes, err := avatarManager.ParsingAvatarImage(poster)
+		_, posterBytes, err := avatarManager.ParsingPosterImage(poster)
 		if err != nil {
 			return err
 		}
