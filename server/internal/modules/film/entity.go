@@ -50,7 +50,7 @@ type FilmFilters struct {
 }
 
 type FilmSort struct {
-	By    string `validate:"omitempty,oneof=rating release_date runtime"`
+	By    string `validate:"omitempty,oneof=avg_rating release_date runtime"`
 	Order string `validate:"omitempty,oneof=asc desc"`
 }
 
