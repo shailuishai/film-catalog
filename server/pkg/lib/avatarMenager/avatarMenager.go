@@ -10,6 +10,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"sync"
@@ -141,8 +142,14 @@ func ParsingPosterImage(file *multipart.File) ([]byte, []byte, error) {
 	width := bounds.Dx()
 	height := bounds.Dy()
 
-	// Проверка на минимальное разрешение постера
-	if width < 800 || height < 1200 {
+	// Проверка на соотношение сторон 2:3
+	expectedRatio := float64(2) / float64(3)
+	actualRatio := float64(width) / float64(height)
+
+	// Допустимая погрешность для учета округлений и небольших отклонений
+	tolerance := 0.01
+
+	if math.Abs(actualRatio-expectedRatio) > tolerance {
 		return nil, nil, ErrInvalidResolutionPoster
 	}
 
