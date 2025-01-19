@@ -34,17 +34,23 @@ func (db *ProfileFDatabase) GetUserById(userId uint) (*profile.UserProfile, erro
 }
 
 func (db *ProfileFDatabase) UpdateUser(user *profile.UserProfile) error {
-	var NowUser u.User
+	var nowUser u.User
 
-	if err := db.db.First(&NowUser, user.UserId).Error; err != nil {
+	// Получаем текущего пользователя из базы данных
+	if err := db.db.First(&nowUser, user.UserId).Error; err != nil {
 		return err
 	}
 
-	updatedUser := u.FromProfileUser(user)
+	// Обновляем только те поля, которые были переданы в запросе
+	if user.Login != nil {
+		nowUser.Login = *user.Login
+	}
+	if user.AvatarUrl != nil {
+		nowUser.AvatarURL = *user.AvatarUrl
+	}
 
-	updatedUser.Email = NowUser.Email
-
-	if err := db.db.Save(updatedUser).Error; err != nil {
+	// Сохраняем обновленного пользователя
+	if err := db.db.Save(&nowUser).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return u.ErrUserNotFound
 		}
