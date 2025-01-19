@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
-import { getProfile } from "../services/userServices/profileSevices";
+import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -9,25 +9,27 @@ export const AuthProvider = ({ children, navigate }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            setIsLoading(true);
-            try {
-                const token = Cookies.get("access_token");
-                if (token) {
-                    const profile = await getProfile();
-                    setUser(profile.data);
-                } else {
-                    setUser(null);
-                }
-            } catch (error) {
-                setUser(null);
-                console.error("Auth check error:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
 
+    const checkAuth = async () => {
+        setIsLoading(true);
+        try {
+            const token = Cookies.get("access_token");
+            if (token) {
+                const profile = await getProfile();
+                setUser(profile.data);
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            setUser(null);
+            console.error("Auth check error:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
         checkAuth();
     }, []);
 
@@ -89,8 +91,8 @@ export const AuthProvider = ({ children, navigate }) => {
             if (access_token) {
                 Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
-                setUser(profile.data); // Обновляем состояние пользователя
-                navigate("/profile"); // Перенаправляем на страницу профиля
+                setUser(profile.data);
+                navigate("/profile");
             }
         } catch (error) {
             setUser(null);
@@ -99,16 +101,45 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    const handleUpdateProfile = async (data, avatarFile, resetAvatar) => {
+        setIsLoading(true);
+        try {
+            const updatedUser = await updateProfile(data, avatarFile, resetAvatar);
+            setUser(updatedUser.data);
+        } catch (error) {
+            console.error("Failed to update profile:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteProfile = async () => {
+        setIsLoading(true);
+        try {
+            await deleteProfile();
+            setUser(null);
+        } catch (error) {
+            console.error("Failed to delete profile:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <AuthContext.Provider
             value={{
                 user,
                 isLoading,
+                checkAuth,
                 signIn: handleSignIn,
                 signUp: handleSignUp,
                 logout: handleLogout,
                 handleOAuth,
                 handleOAuthCallback,
+                updateProfile: handleUpdateProfile,
+                deleteProfile: handleDeleteProfile,
             }}
         >
             {children}

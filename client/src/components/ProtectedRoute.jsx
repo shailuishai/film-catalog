@@ -7,39 +7,19 @@ const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
     const toast = useToast();
     const [isLoading, setIsLoading] = useState(true); // Состояние загрузки
-    const { user, isLoading: authLoading } = useAuth(); // Используем данные из контекста
+    const { user, isLoading: authLoading, checkAuth } = useAuth(); // Используем данные из контекста
 
     useEffect(() => {
-        const checkAuth = async () => {
-            setIsLoading(true);
-            try {
-                if (!user) {
-                    // Попробуем обновить токен, если пользователь не авторизован
-                    try {
-                        const response = await refreshToken();
-                        const { access_token } = response.data;
-                        if (access_token) {
-                            Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true  });
-                            const profile = await getProfile();
-                            setUser(profile.data);
-                        } else {
-                            navigate("/auth");
-                        }
-                    } catch (refreshError) {
-                        navigate("/auth");
-                    }
-                }
-            } catch (error) {
-                navigate("/auth");
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        try {
+            checkAuth()
+        } catch (error) {
+            setIsLoading(false);
+            navigate("/auth")
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-        checkAuth();
-    }, [navigate, user]);
-
-    // Если идет загрузка, показываем спиннер или заглушку
     if (isLoading || authLoading) {
         return (
             <Flex w="100%" h="100vh" alignItems="center" justifyContent="center">
@@ -48,7 +28,6 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    // Если загрузка завершена и пользователь авторизован, показываем children
     return children;
 };
 
