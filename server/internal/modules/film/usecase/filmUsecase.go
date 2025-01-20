@@ -204,11 +204,11 @@ func generateCacheKey(filters f.FilmFilters, sort f.FilmSort) string {
 	if !filters.MaxDate.IsZero() {
 		keyParts = append(keyParts, fmt.Sprintf("max_date=%s", filters.MaxDate.Format(time.RFC3339)))
 	}
-	if filters.MinDuration > 0 {
-		keyParts = append(keyParts, fmt.Sprintf("min_duration=%s", filters.MinDuration.String()))
+	if f.DurationStringToMinutes(filters.MinDuration) > 0 {
+		keyParts = append(keyParts, fmt.Sprintf("min_duration=%s", filters.MinDuration))
 	}
-	if filters.MaxDuration > 0 {
-		keyParts = append(keyParts, fmt.Sprintf("max_duration=%s", filters.MaxDuration.String()))
+	if f.DurationStringToMinutes(filters.MaxDuration) > 0 {
+		keyParts = append(keyParts, fmt.Sprintf("max_duration=%s", filters.MaxDuration))
 	}
 	if sort.By != "" {
 		keyParts = append(keyParts, fmt.Sprintf("sort_by=%s", sort.By))

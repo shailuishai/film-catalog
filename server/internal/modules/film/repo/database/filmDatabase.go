@@ -172,7 +172,7 @@ func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.F
 	if sort.By != "" {
 		order := sort.By
 		if sort.Order != "" {
-			order += " " + sort.Order
+			order += " " + "DESC"
 		}
 		query = query.Order(order)
 	}

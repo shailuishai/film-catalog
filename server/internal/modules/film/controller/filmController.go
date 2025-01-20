@@ -450,23 +450,11 @@ func (c *Controller) GetFilms(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if minDuration := r.URL.Query().Get("min_duration"); minDuration != "" {
-		duration, err := time.ParseDuration(minDuration)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error("invalid min_duration format, examples: 2h30m, 90m"))
-			return
-		}
-		filters.MinDuration = duration
+		filters.MinDuration = minDuration
 	}
 
 	if maxDuration := r.URL.Query().Get("max_duration"); maxDuration != "" {
-		duration, err := time.ParseDuration(maxDuration)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error("invalid max_duration format, examples: 2h30m, 90m"))
-			return
-		}
-		filters.MaxDuration = duration
+		filters.MaxDuration = maxDuration
 	}
 
 	if page := r.URL.Query().Get("page"); page != "" {
