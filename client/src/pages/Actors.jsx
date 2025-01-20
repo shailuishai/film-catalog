@@ -32,13 +32,13 @@ const Actors = () => {
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState({
         name: "",
-        created_at: "",
+        create_at: "",
         min_year: "",
         max_year: "",
         min_movies_count: "",
         max_movies_count: "",
         sort_by: "",
-        order: "desc",
+        order: "asc", // Изменено на "asc"
         page: 1,
         page_size: 9,
     });
@@ -52,13 +52,13 @@ const Actors = () => {
     const resetFilters = () => {
         setFilters({
             name: "",
-            created_at: "",
+            create_at: "",
             min_year: "",
             max_year: "",
             min_movies_count: "",
             max_movies_count: "",
             sort_by: "",
-            order: "desc",
+            order: "asc",
             page: 1,
             page_size: 9,
         });
@@ -70,13 +70,13 @@ const Actors = () => {
 
         const defaultFilters = {
             name: "",
-            created_at: "",
+            create_at: "",
             min_year: "",
             max_year: "",
             min_movies_count: "",
             max_movies_count: "",
             sort_by: "",
-            order: "desc",
+            order: "asc",
             page: 1,
             page_size: 9,
         };
@@ -164,9 +164,13 @@ const Actors = () => {
             ...cleanedFilters,
             page: cleanedFilters.page || 1,
             page_size: cleanedFilters.page_size || 9,
-        }).toString();
+        });
 
-        navigate(`/actors?${queryParams}`);
+        if (cleanedFilters.order === "desc") { // Только если order равен "desc"
+            queryParams.set("order", cleanedFilters.order);
+        }
+
+        navigate(`/actors?${queryParams.toString()}`);
     };
 
     const handlePageChange = (newPage) => {
@@ -178,9 +182,13 @@ const Actors = () => {
             ...cleanedFilters,
             page: newPage,
             page_size: cleanedFilters.page_size || 9,
-        }).toString();
+        });
 
-        navigate(`/actors?${queryParams}`);
+        if (cleanedFilters.order === "desc") { // Только если order равен "desc"
+            queryParams.set("order", cleanedFilters.order);
+        }
+
+        navigate(`/actors?${queryParams.toString()}`);
     };
 
     const handlePageInputChange = (e) => {
@@ -305,7 +313,7 @@ const Actors = () => {
                                         >
                                             <option value="">Без сортировки</option>
                                             <option value="name">По имени</option>
-                                            <option value="created_at">По дате добавления</option>
+                                            <option value="create_at">По дате добавления</option>
                                             <option value="movies_count">По количеству фильмов</option>
                                         </Select>
                                         <IconButton

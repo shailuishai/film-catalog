@@ -62,7 +62,7 @@ const Films = () => {
         min_duration: 0,
         max_duration: 300,
         sort_by: "",
-        order: "desc",
+        order: "asc", // Изменено на "asc"
         page: 1,
         page_size: 9,
         query: "",
@@ -217,7 +217,7 @@ const Films = () => {
         if (cleanedFilters.sort_by) {
             queryParams.set("sort_by", cleanedFilters.sort_by);
         }
-        if (cleanedFilters.order !== "desc") {
+        if (cleanedFilters.order === "desc") { // Только если order равен "desc"
             queryParams.set("order", cleanedFilters.order);
         }
         if (cleanedFilters.query) {
@@ -271,7 +271,7 @@ const Films = () => {
         if (cleanedFilters.sort_by) {
             queryParams.set("sort_by", cleanedFilters.sort_by);
         }
-        if (cleanedFilters.order !== "desc") {
+        if (cleanedFilters.order === "desc") { // Только если order равен "desc"
             queryParams.set("order", cleanedFilters.order);
         }
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
-import { getReviewsByReviewerId } from "../services/userServices/reviewServices.js"; // Импортируем сервис для отзывов
+import { getReviewsByFilmId, getReviewsByReviewerId, createReview, updateReview, deleteReview } from "../services/userServices/reviewServices";
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -38,6 +38,65 @@ export const AuthProvider = ({ children, navigate }) => {
             }
         } catch (error) {
             console.error("Ошибка при загрузке отзывов:", error);
+        }
+    };
+
+    const fetchReviewsByFilmId = async (filmId) => {
+        try {
+            const response = await getReviewsByFilmId(filmId);
+            if (response.status === "success") {
+                return response.data;
+            }
+        } catch (error) {
+            console.error("Ошибка при загрузке отзывов:", error);
+        }
+        return [];
+    };
+
+    const handleCreateReview = async (filmId, rating, reviewText) => {
+        try {
+            const reviewData = {
+                user_id: user.user_id,
+                film_id: filmId,
+                rating: rating,
+                review_text: reviewText,
+            };
+            const response = await createReview(reviewData);
+            if (response.status === "success") {
+                await fetchReviewsByFilmId(filmId); // Обновляем отзывы после создания
+                return response.data;
+            }
+        } catch (error) {
+            console.error("Ошибка при создании отзыва:", error);
+        }
+    };
+
+    const handleUpdateReview = async (reviewId, rating, reviewText) => {
+        try {
+            const reviewData = {
+                review_id: reviewId,
+                user_id: user.user_id,
+                rating: rating,
+                review_text: reviewText,
+            };
+            const response = await updateReview(reviewId, reviewData);
+            if (response.status === "success") {
+                await fetchReviews(); // Обновляем отзывы после обновления
+                return response.data;
+            }
+        } catch (error) {
+            console.error("Ошибка при обновлении отзыва:", error);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        try {
+            const response = await deleteReview(reviewId);
+            if (response.status === "success") {
+                await fetchReviews(); // Обновляем отзывы после удаления
+            }
+        } catch (error) {
+            console.error("Ошибка при удалении отзыва:", error);
         }
     };
 
@@ -149,7 +208,7 @@ export const AuthProvider = ({ children, navigate }) => {
             value={{
                 user,
                 isLoading,
-                reviews, // Передаем отзывы в контекст
+                reviews,
                 checkAuth,
                 signIn: handleSignIn,
                 signUp: handleSignUp,
@@ -158,7 +217,11 @@ export const AuthProvider = ({ children, navigate }) => {
                 handleOAuthCallback,
                 updateProfile: handleUpdateProfile,
                 deleteProfile: handleDeleteProfile,
-                fetchReviews, // Передаем метод для загрузки отзывов
+                fetchReviews,
+                fetchReviewsByFilmId,
+                createReview: handleCreateReview,
+                updateReview: handleUpdateReview,
+                deleteReview: handleDeleteReview,
             }}
         >
             {children}

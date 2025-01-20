@@ -14,7 +14,7 @@ export const getReviewsById = async (reviewId) => {
 export const getReviewsByReviewerId = async () => {
     const token = Cookies.get("access_token");
 
-    const response = await api.get(`/reviews3/user`, {
+    const response = await api.get(`/reviews/user`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

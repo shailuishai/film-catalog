@@ -10,14 +10,18 @@ import {
     useColorModeValue,
     Wrap,
     WrapItem,
+    Button,
+    useToast,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
 import ActorCard from "../components/cards/ActorCard";
-import { getReviewsByFilmId } from "../services/userServices/reviewServices.js";
 import ReviewCard from "../components/cards/ReviewCard";
+import Carousel from "../components/Carousel";
+import { useAuth } from "../context/AuthContext";
+import CreateReviewForm from "../components/CreateReviewForm";
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -26,6 +30,9 @@ const FilmDetail = () => {
     const [error, setError] = useState(null);
     const [actors, setActors] = useState([]);
     const [reviews, setReviews] = useState([]);
+    const [isCreatingReview, setIsCreatingReview] = useState(false); // Состояние для создания отзыва
+    const { user, createReview, fetchReviewsByFilmId } = useAuth();
+    const toast = useToast();
 
     const posterPrefix = useColorModeValue("_Light", "_Dark");
     const bgColor = useColorModeValue("white", "brand.900");
@@ -41,7 +48,8 @@ const FilmDetail = () => {
                 if (response.status === "success") {
                     setFilm(response.data);
                     setActors(response.data.actors);
-                    fetchReviews(id); // Загружаем отзывы для фильма
+                    const reviews = await fetchReviewsByFilmId(id);
+                    setReviews(reviews);
                 } else {
                     setError("Фильм не найден");
                 }
@@ -53,16 +61,32 @@ const FilmDetail = () => {
         };
 
         fetchFilm();
-    }, [id]);
+    }, [id, fetchReviewsByFilmId]);
 
-    const fetchReviews = async (filmId) => {
+    const handleCreateReviewClick = () => {
+        setIsCreatingReview(true); // Активируем режим создания отзыва
+    };
+
+    const handleSubmitReview = async (filmId, rating, reviewText) => {
         try {
-            const response = await getReviewsByFilmId(filmId);
-            if (response.status === "success") {
-                setReviews(response.data);
-            }
+            await createReview(filmId, rating, reviewText);
+            toast({
+                title: "Отзыв успешно добавлен",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            setIsCreatingReview(false); // Отключаем режим создания отзыва
+            const updatedReviews = await fetchReviewsByFilmId(id);
+            setReviews(updatedReviews);
         } catch (error) {
-            console.error("Ошибка при загрузке отзывов:", error);
+            toast({
+                title: "Ошибка",
+                description: "Не удалось добавить отзыв",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
         }
     };
 
@@ -177,27 +201,49 @@ const FilmDetail = () => {
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <Flex wrap="wrap" gap={4}>
-                    {actors.map((actor) => (
-                        <ActorCard key={actor.actor_id} actor={actor} />
-                    ))}
-                </Flex>
+                <Carousel
+                    items={actors}
+                    renderItem={(actor) => <ActorCard actor={actor} />}
+                    itemsPerPage={4}
+                />
             </Box>
 
-            {/* Отображение отзывов */}
-            <Box mt={8}>
-                <Text fontSize="2xl" fontWeight="bold" mb={4}>
-                    Отзывы
-                </Text>
-                <Flex wrap="wrap" gap={4}>
-                    {reviews.map((review) => (
-                        <ReviewCard key={review.review_id} review={review} />
-                    ))}
-                </Flex>
-            </Box>
+            {/* Диаграмма и карусель с отзывами в одном Flex */}
+            <Flex mt={8} direction={{ base: "column", md: "row" }} gap={8}>
+                {/* Диаграмма распределения рейтингов */}
+                <Box flex={1}>
+                    <RatingDistributionChart data={film} />
+                </Box>
 
-            {/* График распределения рейтингов */}
-            <RatingDistributionChart data={film} />
+                {/* Карусель с отзывами */}
+                <Box flex={1}>
+                    <Flex align="center" justify="space-between" mb={4}>
+                        <Text fontSize="2xl" fontWeight="bold">
+                            Отзывы ({reviews.length})
+                        </Text>
+                        {user ? (
+                            <Button colorScheme="teal" size="sm" onClick={handleCreateReviewClick}>
+                                Оставить отзыв
+                            </Button>
+                        ) : (
+                            <Text fontSize="sm" color="gray.500">
+                                Войдите, чтобы оставить отзыв
+                            </Text>
+                        )}
+                    </Flex>
+                    <Carousel
+                        items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
+                        renderItem={(item) => {
+                            if (item.type === "form") {
+                                return <CreateReviewForm onSubmit={handleSubmitReview} filmId={id} />;
+                            }
+                            return <ReviewCard review={item} />;
+                        }}
+                        itemsPerPage={3}
+                        isDisabled={isCreatingReview} // Блокировка стрелок при создании отзыва
+                    />
+                </Box>
+            </Flex>
         </Box>
     );
 };

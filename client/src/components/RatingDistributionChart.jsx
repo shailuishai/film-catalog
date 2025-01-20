@@ -16,10 +16,7 @@ const RatingDistributionChart = ({ data }) => {
     const borderColor = useColorModeValue("gray.200", "brand.800");
 
     return (
-        <Box width="100%" height={{ base: "300px", md: "400px" }} mt={6} borderRadius="md" borderWidth="2px" borderColor={borderColor}>
-            <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
-                Распределение отзывов по рейтингам
-            </Text>
+        <Box width="100%" height={{ base: "300px", md: "400px" }} borderRadius="md" borderWidth="2px" borderColor={borderColor}>
             <ResponsiveContainer width="100%" height="100%">
                 <RadarChart outerRadius={150} data={chartData}>
                     <PolarGrid />

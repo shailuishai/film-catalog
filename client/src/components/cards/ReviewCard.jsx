@@ -1,9 +1,9 @@
 import React from "react";
-import { Box, Image, Text, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
+import {Box, Image, Text, Badge, Flex, useColorModeValue, Spacer} from "@chakra-ui/react";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../../utils";
 
 const ReviewCard = ({ review, usePoster = false }) => {
-    const imageUrl = usePoster ? getPosterUrl(review?.poster_url) : review?.avatar_url;
+    const imageUrl = usePoster ? getPosterUrl(review?.film_poster_url) : review?.user_avatar_url;
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
     const borderColor = useColorModeValue("gray.200", "brand.800");
@@ -31,7 +31,7 @@ const ReviewCard = ({ review, usePoster = false }) => {
             {usePoster ? (
                 // Формат для общего использования (с постером фильма)
                 <Flex>
-                    <Box position="relative" width="40%" paddingTop="60%">
+                    <Box position="relative" width="50%" paddingTop="60%">
                         <Image
                             src={imageUrl}
                             alt={review.review_text}
@@ -47,7 +47,7 @@ const ReviewCard = ({ review, usePoster = false }) => {
                     </Box>
                     <Box width="60%" p={4}>
                         <Text fontWeight="bold" fontSize="lg" mb={2}>
-                            {review.movie_title}
+                            {review.film_title}
                         </Text>
                         <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm" mb={2}>
                             Rating: {review.rating}%
@@ -56,7 +56,7 @@ const ReviewCard = ({ review, usePoster = false }) => {
                             {review.review_text}
                         </Text>
                         <Text fontSize="xs" color={secondaryTextColor} textAlign="right">
-                            {formatReleaseDate(review.create_at)}
+                            {formatReleaseDate(review.created_at)}
                         </Text>
                     </Box>
                 </Flex>
@@ -66,8 +66,8 @@ const ReviewCard = ({ review, usePoster = false }) => {
                     <Flex align="center" mb={4}>
                         <Box position="relative" width="40px" height="40px" borderRadius="full" overflow="hidden" mr={2}>
                             <Image
-                                src={imageUrl}
-                                alt={review.user_name}
+                                src={`${imageUrl}64x64.webp`}
+                                alt={review.user_login}
                                 position="absolute"
                                 top="0"
                                 left="0"
@@ -79,17 +79,18 @@ const ReviewCard = ({ review, usePoster = false }) => {
                             />
                         </Box>
                         <Text fontWeight="bold" fontSize="md" mr={2}>
-                            {review.user_name}
+                            {review.user_login}
                         </Text>
-                        <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm">
-                            {review.rating}%
+                        <Spacer/>
+                        <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm" mb={2}>
+                            Rating: {review.rating}%
                         </Badge>
                     </Flex>
                     <Text fontSize="sm" color={textColor} noOfLines={5} mb={2}>
                         {review.review_text}
                     </Text>
                     <Text fontSize="xs" color={secondaryTextColor} textAlign="right">
-                        {formatReleaseDate(review.create_at)}
+                        {formatReleaseDate(review.created_at)}
                     </Text>
                 </Box>
             )}

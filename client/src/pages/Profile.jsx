@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     Box,
     Flex,
@@ -16,18 +16,18 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    Divider,
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSignOutAlt } from "react-icons/fa";
 import ReviewCard from "../components/cards/ReviewCard";
+import { useAuth } from "../context/AuthContext";
+import Carousel from "../components/Carousel";
 
 const MotionBox = motion(Box);
 
 const Profile = () => {
-    const { user, isLoading, logout, updateProfile, deleteProfile, reviews, fetchReviews } = useAuth();
+    const { user, isLoading, logout, updateProfile, deleteProfile, reviews, fetchReviews, updateReview, deleteReview } = useAuth();
     const toast = useToast();
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
@@ -115,6 +115,48 @@ const Profile = () => {
         }
     };
 
+    const handleEditReview = async (reviewId, updatedText, updatedRating) => {
+        try {
+            await updateReview(reviewId, updatedRating, updatedText);
+            toast({
+                title: "Отзыв обновлен",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            await fetchReviews();
+        } catch (error) {
+            toast({
+                title: "Ошибка",
+                description: "Не удалось обновить отзыв",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        try {
+            await deleteReview(reviewId);
+            toast({
+                title: "Отзыв удален",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            await fetchReviews();
+        } catch (error) {
+            toast({
+                title: "Ошибка",
+                description: "Не удалось удалить отзыв",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
     const isDefaultAvatar = user?.avatar_url?.includes("default");
     const avatarUrl = user
         ? isDefaultAvatar
@@ -142,6 +184,8 @@ const Profile = () => {
                     textAlign="center"
                     maxW="600px"
                     w="100%"
+                    maxH="60vh"
+                    overflowY="auto"
                 >
                     {isLoading ? (
                         <Spinner size="xl" aria-label="Loading" />
@@ -288,15 +332,23 @@ const Profile = () => {
                                 />
                             </Flex>
 
-                            <Box mt={8}>
-                                <Text fontSize="2xl" fontWeight="bold" mb={4}>
+                            {/* Отзывы */}
+                            <Box mt={6}>
+                                <Text fontSize="2xl" fontWeight="bold">
                                     Мои отзывы
                                 </Text>
-                                <Flex wrap="wrap" gap={4}>
-                                    {reviews.map((review) => (
-                                        <ReviewCard key={review.review_id} review={review} usePoster={true}/>
-                                    ))}
-                                </Flex>
+                                <Carousel
+                                    items={reviews}
+                                    renderItem={(review) => (
+                                        <ReviewCard
+                                            review={review}
+                                            usePoster={true}
+                                            onEdit={handleEditReview}
+                                            onDelete={handleDeleteReview}
+                                        />
+                                    )}
+                                    itemsPerPage={1}
+                                />
                             </Box>
                         </>
                     )}
