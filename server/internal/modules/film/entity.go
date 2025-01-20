@@ -36,17 +36,17 @@ type FilmDTO struct {
 }
 
 type FilmFilters struct {
-	GenreIDs    []uint        `validate:"omitempty,dive,min=1"`
-	ActorIDs    []uint        `validate:"omitempty,dive,min=1"`
-	Producer    string        `validate:"omitempty,min=1"`
-	MinRating   float64       `validate:"omitempty,min=0,max=100"`
-	MaxRating   float64       `validate:"omitempty,min=0,max=100"`
-	MinDate     time.Time     `validate:"omitempty"`
-	MaxDate     time.Time     `validate:"omitempty"`
-	MinDuration time.Duration `validate:"omitempty"`
-	MaxDuration time.Duration `validate:"omitempty"`
-	Page        int           `validate:"required,min=1"`
-	PageSize    int           `validate:"required,min=1,max=100"`
+	GenreIDs    []uint    `validate:"omitempty,dive,min=1"`
+	ActorIDs    []uint    `validate:"omitempty,dive,min=1"`
+	Producer    string    `validate:"omitempty,min=1"`
+	MinRating   float64   `validate:"omitempty,min=0,max=100"`
+	MaxRating   float64   `validate:"omitempty,min=0,max=100"`
+	MinDate     time.Time `validate:"omitempty"`
+	MaxDate     time.Time `validate:"omitempty"`
+	MinDuration string    `validate:"omitempty"`
+	MaxDuration string    `validate:"omitempty"`
+	Page        int       `validate:"required,min=1"`
+	PageSize    int       `validate:"required,min=1,max=100"`
 }
 
 type FilmSort struct {

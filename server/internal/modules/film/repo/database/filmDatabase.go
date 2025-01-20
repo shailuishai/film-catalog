@@ -162,11 +162,11 @@ func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.F
 	if !filters.MaxDate.IsZero() {
 		query = query.Where("release_date <= ?", filters.MaxDate)
 	}
-	if filters.MinDuration > 0 {
-		query = query.Where("runtime >= ?", filters.MinDuration)
+	if f.DurationStringToMinutes(filters.MinDuration) > 0 {
+		query = query.Where("runtime >= ?", f.DurationStringToMinutes(filters.MinDuration))
 	}
-	if filters.MaxDuration > 0 {
-		query = query.Where("runtime <= ?", filters.MaxDuration)
+	if f.DurationStringToMinutes(filters.MaxDuration) > 0 {
+		query = query.Where("runtime <= ?", f.DurationStringToMinutes(filters.MaxDuration))
 	}
 
 	if sort.By != "" {

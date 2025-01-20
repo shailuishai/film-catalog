@@ -100,7 +100,7 @@ func (f *FilmDTO) ToModel() (*Film, *FilmStatsModel) {
 		PosterURL:   f.PosterURL,
 		Synopsis:    f.Synopsis,
 		ReleaseDate: f.ReleaseDate,
-		Runtime:     durationStringToMinutes(f.Runtime),
+		Runtime:     DurationStringToMinutes(f.Runtime),
 		Producer:    f.Producer,
 		CreatedAt:   f.CreateAt,
 	}
@@ -136,7 +136,7 @@ func minutesToDurationString(minutes int) string {
 	return fmt.Sprintf("%dh%dm", hours, remainingMinutes)
 }
 
-func durationStringToMinutes(durationString string) int {
+func DurationStringToMinutes(durationString string) int {
 	durationString = strings.ReplaceAll(durationString, " ", "")
 	hours := 0
 	minutes := 0
