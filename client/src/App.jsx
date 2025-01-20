@@ -11,7 +11,8 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 import Profile from "./pages/Profile.jsx";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
 import Films from "./pages/Films";
-import FilmDetail from "./pages/FilmDetail"; // Импортируем компонент FilmDetail
+import FilmDetail from "./pages/FilmDetail";
+import Actors from "./pages/Actors.jsx"; // Импортируем компонент FilmDetail
 
 const App = () => {
     const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -33,8 +34,8 @@ const App = () => {
                     <Box
                         flex={1}
                         ml={{ base: 0, md: isCollapsed ? "116px" : "366px" }}
-                        transition="margin-left 0.3s"
                         px={{ base: 0, md: isCollapsed ? "100px" : "175px" }}
+                        transition="margin-left 0.3s"
                     >
                         <Routes>
                             <Route path="/" element={<Home />} />
@@ -44,6 +45,7 @@ const App = () => {
                             <Route path="/auth/:provider/callback" element={<OAuthCallbackPage />} />
                             <Route path="/films" element={<Films />} />
                             <Route path="/films/:id" element={<FilmDetail />} /> {/* Добавляем маршрут для деталей фильма */}
+                            <Route path="/actors" element={<Actors />} />
                         </Routes>
                     </Box>
                 </Flex>

@@ -1,42 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Text, Flex, Button, useColorModeValue, Spinner } from "@chakra-ui/react";
+import { Box, Heading, Text, Flex, Button, useColorModeValue, Grid } from "@chakra-ui/react"; // Импортируем Grid из Chakra UI
 import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
-import FilmCard from "../components/FilmCard";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import { getFilms } from "../services/filmServices";
+import { getActors } from "../services/actorServices";
+import FilmCard from "../components/FilmCard";
+import ActorCard from "../components/ActorCard";
 
 const Home = () => {
     const [popularFilms, setPopularFilms] = useState([]);
+    const [popularActors, setPopularActors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const sliderSettings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        initialSlide: 0,
-        responsive: [
-            {
-                breakpoint: 1024,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                },
-            },
-            {
-                breakpoint: 600,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                },
-            },
-        ],
-    };
 
     useEffect(() => {
         const fetchPopularFilms = async () => {
@@ -45,27 +20,42 @@ const Home = () => {
                     sort_by: "avg_rating",
                     order: "desc",
                     page: 1,
-                    page_size: 5,
+                    page_size: 3,
                 };
                 const response = await getFilms(params);
-                console.log("Данные с сервера:", response.data); // Логируем данные
-
                 if (Array.isArray(response.data)) {
                     setPopularFilms(response.data);
                 } else {
-                    console.error("Ошибка: данные не являются массивом");
                     setError("Ошибка: данные не являются массивом");
                 }
             } catch (err) {
-                console.error("Ошибка при получении популярных фильмов:", err);
                 setError(err.message);
             } finally {
-                console.log("Загрузка завершена"); // Логируем завершение загрузки
                 setLoading(false);
             }
         };
 
+        const fetchPopularActors = async () => {
+            try {
+                const params = {
+                    sort_by: "movies_count",
+                    order: "desc",
+                    page: 1,
+                    page_size: 5,
+                };
+                const response = await getActors(params);
+                if (Array.isArray(response.data)) {
+                    setPopularActors(response.data);
+                } else {
+                    setError("Ошибка: данные не являются массивом");
+                }
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
         fetchPopularFilms();
+        fetchPopularActors();
     }, []);
 
     const bgColor = useColorModeValue("white", "brand.900");
@@ -74,15 +64,15 @@ const Home = () => {
     return (
         <>
             <Header />
-            <Box py={4} px={{ base: 4, md: 8 }} bg={bgColor} color={textColor}>
+            <Box py={4} bg={bgColor} color={textColor} width="100%">
                 <Heading as="h1" size="xl" mb={4}>
                     Добро пожаловать на PatatoRates!
                 </Heading>
-                <Text fontSize="lg" mb={6}>
+                <Text fontSize="lg" mb={4}>
                     Откройте для себя лучшие фильмы, актеров и рецензии в нашем каталоге.
                 </Text>
 
-                <Flex mb={8} gap={4} flexWrap="wrap">
+                <Flex mb={4} gap={4} flexWrap="wrap">
                     <Button as={RouterLink} to="/films" colorScheme="accent">
                         Смотреть фильмы
                     </Button>
@@ -91,48 +81,33 @@ const Home = () => {
                     </Button>
                 </Flex>
 
-                <Heading as="h2" size="lg" mb={4}>
+                <Heading as="h1" size="xl" mb={4}>
                     Популярные фильмы
                 </Heading>
-                {loading ? (
-                    <Flex justify="center" align="center" h="200px">
-                        <Spinner size="xl" />
-                    </Flex>
-                ) : error ? (
-                    <Text color="red.500">Ошибка: {error}</Text>
-                ) : popularFilms.length > 0 ? (
-                    <Box
-                        sx={{
-                            width: "100%",
-                            maxWidth: "1200px",
-                            margin: "0 auto",
-                            overflow: "hidden",
-                            ".slick-slide > div": {
-                                margin: "0 10px", // Отступы между слайдами
-                            },
-                            ".slick-list": {
-                                margin: "0 -10px", // Компенсируем отступы для первого и последнего слайда
-                            },
-                        }}
-                    >
-                        <Slider {...sliderSettings}>
-                            {popularFilms.map((film) => (
-                                <Box key={film.id} sx={{ width: "100%", maxWidth: "300px", margin: "0 auto" }}>
-                                    <FilmCard film={film} />
-                                </Box>
-                            ))}
-                        </Slider>
-                    </Box>
-                ) : (
-                    <Text>Нет данных для отображения</Text>
-                )}
+                <Grid
+                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                    gap={4}
+                    mb={4}
+                    justifyContent="space-between"
+                >
+                    {popularFilms.map((film) => (
+                        <FilmCard key={film.id} film={film} />
+                    ))}
+                </Grid>
 
-                <Heading as="h2" size="lg" mb={4} mt={8}>
+                <Heading as="h1" size="xl" mb={4}>
                     Популярные актеры
                 </Heading>
-                <Text fontSize="lg" mb={6}>
-                    Скоро здесь появятся популярные актеры...
-                </Text>
+
+                <Grid
+                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
+                    gap={4}
+                    justifyContent="space-between"
+                >
+                    {popularActors.map((actor) => (
+                        <ActorCard key={actor.id} actor={actor} />
+                    ))}
+                </Grid>
             </Box>
         </>
     );

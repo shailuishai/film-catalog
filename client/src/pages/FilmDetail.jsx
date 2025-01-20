@@ -6,13 +6,11 @@ import {
     Text,
     Image,
     Badge,
-    VStack,
     HStack,
     useColorModeValue,
-    Slider,
-    SliderTrack,
-    SliderFilledTrack,
-    SliderThumb,
+    Wrap,
+    WrapItem,
+    SimpleGrid,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
@@ -140,16 +138,18 @@ const FilmDetail = () => {
                     </Text>
 
                     {/* Вывод жанров */}
-                    <HStack spacing={2}>
-                        <Text fontSize="md">
-                            <strong>Жанры:</strong>
+                    <Box>
+                        <Text fontSize="md" fontWeight="bold" mb={2}>
+                            Жанры:
                         </Text>
-                        {film.genres.map((genre) => (
-                            <Badge key={genre.genre_id} colorScheme="blue">
-                                {genre.name}
-                            </Badge>
-                        ))}
-                    </HStack>
+                        <Wrap spacing={2}>
+                            {film.genres.map((genre) => (
+                                <WrapItem key={genre.genre_id}>
+                                    <Badge colorScheme="blue">{genre.name}</Badge>
+                                </WrapItem>
+                            ))}
+                        </Wrap>
+                    </Box>
 
                     {film.total_reviews > 0 && (
                         <Text fontSize="md">
@@ -164,11 +164,11 @@ const FilmDetail = () => {
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <HStack spacing={4} overflowX="auto" py={4}>
+                <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4}>
                     {actors.map((actor) => (
                         <ActorCard key={actor.actor_id} actor={actor} />
                     ))}
-                </HStack>
+                </SimpleGrid>
             </Box>
 
             <RatingDistributionChart data={film} />

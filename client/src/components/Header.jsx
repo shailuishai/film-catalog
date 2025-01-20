@@ -36,7 +36,7 @@ const Header = () => {
                 focusBorderColor={accentColor}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
+                onKeyDown={(e) => {
                     if (e.key === "Enter") {
                         handleSearch();
                     }

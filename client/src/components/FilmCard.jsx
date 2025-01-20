@@ -19,7 +19,9 @@ const FilmCard = ({ film }) => {
             borderWidth="2px"
             borderRadius="md"
             overflow="hidden"
-            maxW="300px"
+            maxW="350px"
+            w="100%" // Добавьте фиксированную ширину
+            h="auto" // Автоматическая высота
             bg={bgColor}
             boxShadow={boxShadow}
             borderColor={borderColor}
@@ -40,30 +42,41 @@ const FilmCard = ({ film }) => {
                     width="100%"
                     height="100%"
                     objectFit="cover"
+                    maxWidth="100%" // Ограничение по ширине
+                    maxHeight="100%" // Ограничение по высоте
                 />
             </Box>
 
-            <Box bg={bgColor} borderRadius="md" mt="-16px" position="relative" zIndex="1" p={4}>
-                <Text fontWeight="bold" fontSize="lg" mb={2}>
+            <Flex
+                bg={bgColor}
+                borderColor={borderColor}
+                borderRadius="md"
+                borderTopWidth="2px"
+                mt="-16px"
+                position="relative"
+                zIndex="1"
+                p={4}
+                gap={4}
+                flexDirection="column"
+            >
+                <Text fontWeight="bold" fontSize="lg">
                     {film.title}
                 </Text>
-                <Text fontSize="sm" color={textColor} noOfLines={3} mb={2}>
+                <Text fontSize="sm" color={textColor} noOfLines={3}>
                     {film.synopsis}
                 </Text>
-                <Flex align="center" justify="space-between" mb={2}>
+                <Flex align="center" flexWrap="wrap" gap={2}>
                     <Badge colorScheme={getRatingColorScheme(film.avg_rating)} fontSize="sm">
                         Rating: {film.avg_rating}%
                     </Badge>
                     <Badge colorScheme="teal" fontSize="sm">
                         Runtime: {film.runtime} min
                     </Badge>
-                </Flex>
-                <Flex align="center" justify="space-between">
                     <Badge colorScheme="purple" fontSize="sm">
                         Release: {formatReleaseDate(film.release_date)}
                     </Badge>
                 </Flex>
-            </Box>
+            </Flex>
         </Box>
     );
 };
