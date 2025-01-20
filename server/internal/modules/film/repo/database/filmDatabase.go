@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"log/slog"
 	f "server/internal/modules/film"
+	"fmt"
 )
 
 type FilmDatabase struct {
