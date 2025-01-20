@@ -1,9 +1,8 @@
 import React from "react";
 import { Box, Image, Text, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
-import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../../utils.jsx"; // Импортируем функции
+import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../../utils";
 
-const ReviewCard = ({ key, review, usePoster = false }) => {
+const ReviewCard = ({ review, usePoster = false }) => {
     const imageUrl = usePoster ? getPosterUrl(review?.poster_url) : review?.avatar_url;
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
@@ -16,8 +15,8 @@ const ReviewCard = ({ key, review, usePoster = false }) => {
             borderRadius="md"
             overflow="hidden"
             maxW="300px"
-            w="100%" // Добавьте фиксированную ширину
-            h="auto" // Автоматическая высота
+            w="100%"
+            h="auto"
             bg={bgColor}
             boxShadow={boxShadow}
             borderColor={borderColor}
@@ -38,8 +37,8 @@ const ReviewCard = ({ key, review, usePoster = false }) => {
                     width="100%"
                     height="100%"
                     objectFit="cover"
-                    maxWidth="100%" // Ограничение по ширине
-                    maxHeight="100%" // Ограничение по высоте
+                    maxWidth="100%"
+                    maxHeight="100%"
                 />
             </Box>
 

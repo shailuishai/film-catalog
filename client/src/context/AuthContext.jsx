@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
+import { getReviewsByReviewerId } from "../services/reviewServices"; // Импортируем сервис для отзывов
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -8,7 +9,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children, navigate }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-
+    const [reviews, setReviews] = useState([]); // Состояние для отзывов
 
     const checkAuth = async () => {
         setIsLoading(true);
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children, navigate }) => {
             if (token) {
                 const profile = await getProfile();
                 setUser(profile.data);
+                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешной авторизации
             } else {
                 setUser(null);
             }
@@ -28,6 +30,16 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    const fetchReviews = async (userId) => {
+        try {
+            const response = await getReviewsByReviewerId(userId);
+            if (response.status === "success") {
+                setReviews(response.data); // Сохраняем отзывы в состоянии
+            }
+        } catch (error) {
+            console.error("Ошибка при загрузке отзывов:", error);
+        }
+    };
 
     useEffect(() => {
         checkAuth();
@@ -42,6 +54,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
                 setUser(profile.data);
+                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешного входа
                 navigate("/profile");
             }
         } catch (error) {
@@ -70,6 +83,7 @@ export const AuthProvider = ({ children, navigate }) => {
             await logout();
             navigate("/auth");
             setUser(null);
+            setReviews([]); // Очищаем отзывы при выходе
         } catch (error) {
             throw error;
         } finally {
@@ -92,6 +106,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 Cookies.set("access_token", access_token, { expires: 480 / (60 * 60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
                 setUser(profile.data);
+                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешной OAuth авторизации
                 navigate("/profile");
             }
         } catch (error) {
@@ -120,6 +135,7 @@ export const AuthProvider = ({ children, navigate }) => {
         try {
             await deleteProfile();
             setUser(null);
+            setReviews([]); // Очищаем отзывы при удалении профиля
         } catch (error) {
             console.error("Failed to delete profile:", error);
             throw error;
@@ -133,6 +149,7 @@ export const AuthProvider = ({ children, navigate }) => {
             value={{
                 user,
                 isLoading,
+                reviews, // Передаем отзывы в контекст
                 checkAuth,
                 signIn: handleSignIn,
                 signUp: handleSignUp,
@@ -141,6 +158,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 handleOAuthCallback,
                 updateProfile: handleUpdateProfile,
                 deleteProfile: handleDeleteProfile,
+                fetchReviews, // Передаем метод для загрузки отзывов
             }}
         >
             {children}

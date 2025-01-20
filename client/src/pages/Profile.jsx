@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Flex,
@@ -21,12 +21,13 @@ import {
 import { EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaSignOutAlt } from "react-icons/fa"; // Импортируем иконку выхода
+import { FaSignOutAlt } from "react-icons/fa";
+import ReviewCard from "../components/cards/ReviewCard";
 
-const MotionBox = motion.create(Box);
+const MotionBox = motion(Box);
 
 const Profile = () => {
-    const { user, isLoading, logout, updateProfile, deleteProfile } = useAuth();
+    const { user, isLoading, logout, updateProfile, deleteProfile, reviews, fetchReviews } = useAuth();
     const toast = useToast();
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
@@ -45,14 +46,14 @@ const Profile = () => {
         const file = e.target.files[0];
         if (file) {
             try {
-                await updateProfile({}, file, false); // Загружаем новый аватар
+                await updateProfile({}, file, false);
                 toast({
                     title: "Аватар обновлен",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
                 });
-                setAvatarFile(file); // Обновляем состояние
+                setAvatarFile(file);
             } catch (error) {
                 toast({
                     title: "Ошибка",
@@ -75,7 +76,7 @@ const Profile = () => {
                     duration: 3000,
                     isClosable: true,
                 });
-                setEditMode(null); // Выход из режима редактирования
+                setEditMode(null);
             }
         } catch (error) {
             toast({
@@ -90,7 +91,7 @@ const Profile = () => {
 
     const handleCancel = () => {
         setEditMode(null);
-        setLogin(user?.login || ""); // Сбрасываем логин к исходному значению
+        setLogin(user?.login || "");
     };
 
     const handleDeleteProfile = async () => {
@@ -181,7 +182,7 @@ const Profile = () => {
                                             _focus={{ bg: useColorModeValue("gray.100", "brand.700") }}
                                             onClick={async () => {
                                                 try {
-                                                    await updateProfile({}, null, true); // Удаляем аватар
+                                                    await updateProfile({}, null, true);
                                                     toast({
                                                         title: "Аватар удален",
                                                         status: "success",
@@ -213,7 +214,6 @@ const Profile = () => {
                                 display="none"
                             />
 
-                            {/* Логин с подписью */}
                             <FormControl py={4} borderColor={borderColor} borderBottomWidth="2px">
                                 <FormLabel fontWeight="bold" mb={2}>
                                     Логин
@@ -262,7 +262,6 @@ const Profile = () => {
                                 </Flex>
                             </FormControl>
 
-                            {/* Email с подписью */}
                             <FormControl py={4} borderColor={borderColor} borderBottomWidth="2px">
                                 <FormLabel fontWeight="bold" mb={2}>
                                     Email
@@ -272,7 +271,6 @@ const Profile = () => {
                                 </Text>
                             </FormControl>
 
-                            {/* Кнопки "Удалить профиль" и "Выйти" */}
                             <Flex justify="space-between" mt={6}>
                                 <Button
                                     bg={bgColor}
@@ -284,11 +282,22 @@ const Profile = () => {
                                 <IconButton
                                     bg={bgColor}
                                     aria-label="Выйти"
-                                    icon={<FaSignOutAlt />} // Иконка выхода
+                                    icon={<FaSignOutAlt />}
                                     color="red"
                                     onClick={logout}
                                 />
                             </Flex>
+
+                            <Box mt={8}>
+                                <Text fontSize="2xl" fontWeight="bold" mb={4}>
+                                    Мои отзывы
+                                </Text>
+                                <Flex wrap="wrap" gap={4}>
+                                    {reviews.map((review) => (
+                                        <ReviewCard key={review.review_id} review={review} />
+                                    ))}
+                                </Flex>
+                            </Box>
                         </>
                     )}
                 </MotionBox>

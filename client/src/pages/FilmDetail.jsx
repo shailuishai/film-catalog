@@ -15,7 +15,9 @@ import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
-import ActorCard from "../components/cards/ActorCard.jsx";
+import ActorCard from "../components/cards/ActorCard";
+import { getReviewsByFilmId } from "../services/reviewServices";
+import ReviewCard from "../components/cards/ReviewCard";
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -23,6 +25,7 @@ const FilmDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [actors, setActors] = useState([]);
+    const [reviews, setReviews] = useState([]);
 
     const posterPrefix = useColorModeValue("_Light", "_Dark");
     const bgColor = useColorModeValue("white", "brand.900");
@@ -38,6 +41,7 @@ const FilmDetail = () => {
                 if (response.status === "success") {
                     setFilm(response.data);
                     setActors(response.data.actors);
+                    fetchReviews(id); // Загружаем отзывы для фильма
                 } else {
                     setError("Фильм не найден");
                 }
@@ -50,6 +54,17 @@ const FilmDetail = () => {
 
         fetchFilm();
     }, [id]);
+
+    const fetchReviews = async (filmId) => {
+        try {
+            const response = await getReviewsByFilmId(filmId);
+            if (response.status === "success") {
+                setReviews(response.data);
+            }
+        } catch (error) {
+            console.error("Ошибка при загрузке отзывов:", error);
+        }
+    };
 
     if (loading) {
         return (
@@ -169,6 +184,19 @@ const FilmDetail = () => {
                 </Flex>
             </Box>
 
+            {/* Отображение отзывов */}
+            <Box mt={8}>
+                <Text fontSize="2xl" fontWeight="bold" mb={4}>
+                    Отзывы
+                </Text>
+                <Flex wrap="wrap" gap={4}>
+                    {reviews.map((review) => (
+                        <ReviewCard key={review.review_id} review={review} />
+                    ))}
+                </Flex>
+            </Box>
+
+            {/* График распределения рейтингов */}
             <RatingDistributionChart data={film} />
         </Box>
     );
