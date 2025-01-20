@@ -296,8 +296,10 @@ type ReviewData struct {
 	ReviewID      uint       `json:"review_id"`
 	UserID        uint       `json:"user_id"`
 	UserAvatarURL string     `json:"user_avatar_url"`
+	UserLogin     string     `json:"user_login"`
 	FilmID        uint       `json:"film_id"`
 	FilmPosterURL string     `json:"film_poster_url"`
+	FilmTitle     string     `json:"film_title"`
 	Rating        int        `json:"rating"`
 	ReviewText    string     `json:"review_text"`
 	CreatedAt     *time.Time `json:"created_at,omitempty"`
@@ -312,8 +314,10 @@ func Reviews(reviews interface{}) Response {
 				ReviewID:      v.ReviewID,
 				UserID:        v.UserID,
 				UserAvatarURL: v.UserAvatarURL,
+				UserLogin:     v.UserLogin,
 				FilmID:        v.FilmID,
 				FilmPosterURL: v.FilmPosterURL,
+				FilmTitle:     v.FilmTitle,
 				Rating:        v.Rating,
 				ReviewText:    v.ReviewText,
 				CreatedAt:     &v.CreateAt,
@@ -326,8 +330,10 @@ func Reviews(reviews interface{}) Response {
 				ReviewID:      review.ReviewID,
 				UserID:        review.UserID,
 				UserAvatarURL: review.UserAvatarURL,
+				UserLogin:     review.UserLogin,
 				FilmID:        review.FilmID,
 				FilmPosterURL: review.FilmPosterURL,
+				FilmTitle:     review.FilmTitle,
 				Rating:        review.Rating,
 				ReviewText:    review.ReviewText,
 				CreatedAt:     &review.CreateAt,

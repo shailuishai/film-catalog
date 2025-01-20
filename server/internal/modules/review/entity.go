@@ -9,8 +9,10 @@ type ReviewDTO struct {
 	ReviewID      uint      `json:"review_id"`
 	UserID        uint      `json:"user_id"`
 	UserAvatarURL string    `json:"user_avatar_url"`
+	UserLogin     string    `json:"user_login"`
 	FilmID        uint      `json:"film_id"`
 	FilmPosterURL string    `json:"film_poster_url"`
+	FilmTitle     string    `json:"film_title"`
 	Rating        int       `json:"rating"`
 	ReviewText    string    `json:"review_text"`
 	CreateAt      time.Time `json:"create_at"`
