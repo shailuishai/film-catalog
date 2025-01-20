@@ -144,7 +144,7 @@ func (uc *FilmUseCase) SearchFilms(query string) ([]*f.FilmDTO, error) {
 
 	// Если фильмы не найдены, возвращаем пустой список
 	if len(ids) == 0 {
-		return []*f.FilmDTO{}, f.ErrFilmNotFound
+		return []*f.FilmDTO{}, nil
 	}
 
 	// Получаем полные данные фильмов по FilmId
