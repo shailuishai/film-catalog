@@ -135,26 +135,31 @@ func (db *FilmDatabase) DeleteFilm(id uint) error {
 	}
 	return nil
 }
-
 func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error) {
     query := db.db.Model(&f.Film{}).
-        Select("DISTINCT films.film_id, films.*, film_stats.avg_rating").
+        Select("films.film_id, films.*, film_stats.avg_rating").
         Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id")
 
     // Фильтрация по жанрам (все указанные жанры должны быть у фильма)
     if len(filters.GenreIDs) > 0 {
-        query = query.Joins("JOIN film_genre ON film_genre.film_id = films.film_id").
-            Where("film_genre.genre_id IN ?", filters.GenreIDs).
-            Group("films.film_id").
-            Having("COUNT(DISTINCT film_genre.genre_id) = ?", len(filters.GenreIDs))
+        for _, genreID := range filters.GenreIDs {
+            alias := fmt.Sprintf("fg%d", genreID) // Уникальный алиас для каждого JOIN
+            query = query.Joins(
+                fmt.Sprintf("JOIN film_genre AS %s ON %s.film_id = films.film_id AND %s.genre_id = %d",
+                    alias, alias, alias, genreID),
+            )
+        }
     }
 
     // Фильтрация по актерам (все указанные актеры должны быть у фильма)
     if len(filters.ActorIDs) > 0 {
-        query = query.Joins("JOIN film_actor ON film_actor.film_id = films.film_id").
-            Where("film_actor.actor_id IN ?", filters.ActorIDs).
-            Group("films.film_id").
-            Having("COUNT(DISTINCT film_actor.actor_id) = ?", len(filters.ActorIDs))
+        for _, actorID := range filters.ActorIDs {
+            alias := fmt.Sprintf("fa%d", actorID) // Уникальный алиас для каждого JOIN
+            query = query.Joins(
+                fmt.Sprintf("JOIN film_actor AS %s ON %s.film_id = films.film_id AND %s.actor_id = %d",
+                    alias, alias, alias, actorID),
+            )
+        }
     }
 
     // Остальные фильтры
