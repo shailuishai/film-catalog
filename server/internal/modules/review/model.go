@@ -11,14 +11,16 @@ type Review struct {
 	CreatedAt  time.Time `gorm:"column:create_at"`
 }
 
-func (r *Review) ToDTO() *ReviewDTO {
+func (r *Review) ToDTO(userAvatarURL, filmPosterURL string) *ReviewDTO {
 	return &ReviewDTO{
-		ReviewID:   r.ReviewID,
-		UserID:     r.UserID,
-		FilmID:     r.FilmID,
-		Rating:     r.Rating,
-		ReviewText: r.ReviewText,
-		CreateAt:   r.CreatedAt,
+		ReviewID:      r.ReviewID,
+		UserID:        r.UserID,
+		UserAvatarURL: userAvatarURL,
+		FilmID:        r.FilmID,
+		FilmPosterURL: filmPosterURL,
+		Rating:        r.Rating,
+		ReviewText:    r.ReviewText,
+		CreateAt:      r.CreatedAt,
 	}
 }
 
@@ -33,10 +35,10 @@ func (r *ReviewDTO) ToModel() *Review {
 	}
 }
 
-func ToDTOList(reviews []*Review) []*ReviewDTO {
+func ToDTOList(reviews []*Review, userAvatarURLs []string, filmPosterURLs []string) []*ReviewDTO {
 	var dtos []*ReviewDTO
-	for _, review := range reviews {
-		dtos = append(dtos, review.ToDTO())
+	for i, review := range reviews {
+		dtos = append(dtos, review.ToDTO(userAvatarURLs[i], filmPosterURLs[i]))
 	}
 	return dtos
 }

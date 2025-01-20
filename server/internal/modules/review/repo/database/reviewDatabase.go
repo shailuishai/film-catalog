@@ -49,35 +49,67 @@ func (db *ReviewDatabase) UpdateReview(review *r.ReviewDTO) error {
 
 func (db *ReviewDatabase) GetReview(reviewID uint) (*r.ReviewDTO, error) {
 	var review r.Review
-	if err := db.db.First(&review, reviewID).Error; err != nil {
+	var userAvatarURL string
+	var filmPosterURL string
+
+	// Выполняем JOIN с таблицами user и film
+	if err := db.db.Table("reviews").
+		Select("reviews.*, user.avatar_url as user_avatar_url, film.poster_url as film_poster_url").
+		Joins("JOIN user ON reviews.user_id = user.user_id").
+		Joins("JOIN film ON reviews.film_id = film.film_id").
+		Where("reviews.review_id = ?", reviewID).
+		First(&review).Scan(&userAvatarURL).Scan(&filmPosterURL).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, r.ErrNoSuchReview
 		}
 		return nil, err
 	}
-	return review.ToDTO(), nil
+
+	return review.ToDTO(userAvatarURL, filmPosterURL), nil
 }
 
 func (db *ReviewDatabase) GetReviewsByFilmID(filmID uint) ([]*r.ReviewDTO, error) {
 	var reviews []*r.Review
-	if err := db.db.Where("film_id = ?", filmID).Find(&reviews).Error; err != nil {
+	var userAvatarURLs []string
+	var filmPosterURLs []string
+
+	// Выполняем JOIN с таблицами user и film
+	if err := db.db.Table("reviews").
+		Select("reviews.*, user.avatar_url as user_avatar_url, film.poster_url as film_poster_url").
+		Joins("JOIN user ON reviews.user_id = user.user_id").
+		Joins("JOIN film ON reviews.film_id = film.film_id").
+		Where("reviews.film_id = ?", filmID).
+		Find(&reviews).Scan(&userAvatarURLs).Scan(&filmPosterURLs).Error; err != nil {
 		return nil, err
 	}
+
 	if len(reviews) == 0 {
 		return nil, r.ErrNoSuchReview
 	}
-	return r.ToDTOList(reviews), nil
+
+	return r.ToDTOList(reviews, userAvatarURLs, filmPosterURLs), nil
 }
 
 func (db *ReviewDatabase) GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDTO, error) {
 	var reviews []*r.Review
-	if err := db.db.Where("user_id = ?", reviewerID).Find(&reviews).Error; err != nil {
+	var userAvatarURLs []string
+	var filmPosterURLs []string
+
+	// Выполняем JOIN с таблицами user и film
+	if err := db.db.Table("reviews").
+		Select("reviews.*, user.avatar_url as user_avatar_url, film.poster_url as film_poster_url").
+		Joins("JOIN user ON reviews.user_id = user.user_id").
+		Joins("JOIN film ON reviews.film_id = film.film_id").
+		Where("reviews.user_id = ?", reviewerID).
+		Find(&reviews).Scan(&userAvatarURLs).Scan(&filmPosterURLs).Error; err != nil {
 		return nil, err
 	}
+
 	if len(reviews) == 0 {
 		return nil, r.ErrNoSuchReview
 	}
-	return r.ToDTOList(reviews), nil
+
+	return r.ToDTOList(reviews, userAvatarURLs, filmPosterURLs), nil
 }
 
 func (db *ReviewDatabase) DeleteReview(reviewID uint) error {

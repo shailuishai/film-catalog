@@ -6,12 +6,14 @@ import (
 )
 
 type ReviewDTO struct {
-	ReviewID   uint      `json:"review_id"`
-	UserID     uint      `json:"user_id"`
-	FilmID     uint      `json:"film_id"`
-	Rating     int       `json:"rating"`
-	ReviewText string    `json:"review_text"`
-	CreateAt   time.Time `json:"create_at"`
+	ReviewID      uint      `json:"review_id"`
+	UserID        uint      `json:"user_id"`
+	UserAvatarURL string    `json:"user_avatar_url"`
+	FilmID        uint      `json:"film_id"`
+	FilmPosterURL string    `json:"film_poster_url"`
+	Rating        int       `json:"rating"`
+	ReviewText    string    `json:"review_text"`
+	CreateAt      time.Time `json:"create_at"`
 }
 
 type Controller interface {
