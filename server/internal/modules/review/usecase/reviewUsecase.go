@@ -108,3 +108,25 @@ func (uc *ReviewUseCase) GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDTO
 
 	return reviews, nil
 }
+
+// GetAllReviews возвращает все отзывы в системе
+func (uc *ReviewUseCase) GetAllReviews() ([]*r.ReviewDTO, error) {
+	cacheKey := "reviews_all"
+
+	// Попытка получить данные из кэша
+	reviews, err := uc.rp.GetCache(cacheKey)
+	if err == nil && reviews != nil {
+		return reviews, nil
+	}
+
+	// Если данных в кэше нет, запрашиваем из базы
+	reviews, err = uc.rp.GetAllReviews()
+	if err != nil {
+		return nil, err
+	}
+
+	// Кэшируем результат
+	_ = uc.rp.SetCache(cacheKey, reviews, time.Hour*24)
+
+	return reviews, nil
+}

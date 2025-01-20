@@ -81,12 +81,12 @@ func (c *ReviewController) CreateReview(w http.ResponseWriter, req *http.Request
 	return
 }
 
-// GetReview - Получение отзыва по FilmId
-// @Summary Получение отзыва по FilmId
-// @Description Возвращает информацию о отзыве по указанному FilmId
+// GetReview - Получение отзыва по ID
+// @Summary Получение отзыва по ID
+// @Description Возвращает информацию о отзыве по указанному ID
 // @Tags         review
 // @Produce      json
-// @Param        id query string true "FilmId отзыва"
+// @Param        id path string true "ID отзыва"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
@@ -95,11 +95,11 @@ func (c *ReviewController) CreateReview(w http.ResponseWriter, req *http.Request
 func (c *ReviewController) GetReview(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "GetReview")
 
-	reviewIDStr := req.URL.Query().Get("id")
+	reviewIDStr := chi.URLParam(req, "id")
 	reviewID, err := strconv.ParseUint(reviewIDStr, 10, 32)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid review FilmId"))
+		render.JSON(w, req, resp.Error("invalid review ID"))
 		return
 	}
 
@@ -119,7 +119,6 @@ func (c *ReviewController) GetReview(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, req, resp.Reviews(review))
-	return
 }
 
 // UpdateReview - Обновление отзыва
@@ -128,14 +127,23 @@ func (c *ReviewController) GetReview(w http.ResponseWriter, req *http.Request) {
 // @Tags         review
 // @Accept       json
 // @Produce      json
+// @Param        id path string true "ID отзыва"
 // @Param        json body UpdateReviewRequest true "Данные отзыва"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /reviews [put]
+// @Router /reviews/{id} [put]
 func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "UpdateReview")
+
+	reviewIDStr := chi.URLParam(req, "id")
+	reviewID, err := strconv.ParseUint(reviewIDStr, 10, 32)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("invalid review ID"))
+		return
+	}
 
 	var request UpdateReviewRequest
 	if err := render.DecodeJSON(req.Body, &request); err != nil {
@@ -153,7 +161,7 @@ func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request
 	}
 
 	review := &r.ReviewDTO{
-		ReviewID:   request.ReviewID,
+		ReviewID:   uint(reviewID), // Используем ID из URL
 		UserID:     request.UserID,
 		FilmID:     request.FilmID,
 		Rating:     request.Rating,
@@ -175,7 +183,6 @@ func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request
 
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, req, resp.OK())
-	return
 }
 
 // DeleteReview - Удаление отзыва
@@ -249,30 +256,192 @@ func (c *ReviewController) GetReviewsByFilmID(w http.ResponseWriter, req *http.R
 	render.JSON(w, req, resp.Reviews(reviews))
 }
 
-// GetReviewsByReviewerID - Получение отзывов по FilmId пользователя
-// @Summary Получение отзывов по FilmId пользователя
-// @Description Возвращает список отзывов, оставленных указанным пользователем
+// GetReviewsByReviewerID - Получение отзывов текущего пользователя
+// @Summary Получение отзывов текущего пользователя
+// @Description Возвращает список отзывов, оставленных текущим пользователем
 // @Tags         review
 // @Produce      json
-// @Param        reviewer_id query string true "FilmId пользователя"
 // @Success 200 {array} response.Response
-// @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /reviews/reviewer/{user_id} [get]
+// @Router /reviews/user [get]
 func (c *ReviewController) GetReviewsByReviewerID(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "GetReviewsByReviewerID")
 
-	reviewerIDStr := chi.URLParam(req, "user_id")
-	reviewerID, err := strconv.ParseUint(reviewerIDStr, 10, 32)
+	// Получаем userId из контекста
+	userID := req.Context().Value("userId").(uint)
+
+	reviews, err := c.uc.GetReviewsByReviewerID(userID)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid reviewer UserId"))
+		log.Error("failed to get reviews by reviewer FilmId", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
 		return
 	}
 
-	reviews, err := c.uc.GetReviewsByReviewerID(uint(reviewerID))
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, req, resp.Reviews(reviews))
+}
+
+// AdminCreateReview - Создание отзыва администратором
+// @Summary Создание отзыва администратором
+// @Description Создает отзыв от имени любого пользователя
+// @Tags         admin/review
+// @Accept       json
+// @Produce      json
+// @Param        json body CreateReviewRequest true "Данные отзыва"
+// @Success 201 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/reviews [post]
+func (c *ReviewController) AdminCreateReview(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "AdminCreateReview")
+
+	var request CreateReviewRequest
+	if err := render.DecodeJSON(req.Body, &request); err != nil {
+		log.Error("failed to decode request body", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("failed to decode request"))
+		return
+	}
+
+	if err := c.validate.Struct(request); err != nil {
+		log.Error("failed to validate request", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.ValidationError(err))
+		return
+	}
+
+	review := &r.ReviewDTO{
+		UserID:     request.UserID, // Администратор может указать любой UserID
+		FilmID:     request.FilmID,
+		Rating:     request.Rating,
+		ReviewText: request.ReviewText,
+	}
+
+	if err := c.uc.CreateReview(review); err != nil {
+		switch {
+		case errors.Is(err, r.ErrReviewExists):
+			w.WriteHeader(http.StatusBadRequest)
+			render.JSON(w, req, resp.Error(r.ErrReviewExists.Error()))
+		default:
+			log.Error("failed to create review", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	render.JSON(w, req, resp.OK())
+}
+
+// AdminUpdateReview - Обновление отзыва администратором
+// @Summary Обновление отзыва администратором
+// @Description Обновляет любой отзыв в системе
+// @Tags         admin/review
+// @Accept       json
+// @Produce      json
+// @Param        json body UpdateReviewRequest true "Данные отзыва"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/reviews [put]
+func (c *ReviewController) AdminUpdateReview(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "AdminUpdateReview")
+
+	var request UpdateReviewRequest
+	if err := render.DecodeJSON(req.Body, &request); err != nil {
+		log.Error("failed to decode request body", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("failed to decode request"))
+		return
+	}
+
+	if err := c.validate.Struct(request); err != nil {
+		log.Error("failed to validate request", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.ValidationError(err))
+		return
+	}
+
+	review := &r.ReviewDTO{
+		ReviewID:   request.ReviewID,
+		UserID:     request.UserID, // Администратор может обновить отзыв любого пользователя
+		FilmID:     request.FilmID,
+		Rating:     request.Rating,
+		ReviewText: request.ReviewText,
+	}
+
+	if err := c.uc.UpdateReview(review); err != nil {
+		switch {
+		case errors.Is(err, r.ErrNoSuchReview):
+			w.WriteHeader(http.StatusNotFound)
+			render.JSON(w, req, resp.Error(r.ErrNoSuchReview.Error()))
+		default:
+			log.Error("failed to update review", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, req, resp.OK())
+}
+
+// AdminDeleteReview - Удаление отзыва администратором
+// @Summary Удаление отзыва администратором
+// @Description Удаляет любой отзыв в системе
+// @Tags         admin/review
+// @Param        id query string true "ID отзыва"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/reviews/{id} [delete]
+func (c *ReviewController) AdminDeleteReview(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "AdminDeleteReview")
+
+	reviewIDStr := chi.URLParam(req, "id")
+	reviewID, err := strconv.ParseUint(reviewIDStr, 10, 32)
 	if err != nil {
-		log.Error("failed to get reviews by reviewer FilmId", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("invalid review ID"))
+		return
+	}
+
+	if err := c.uc.DeleteReview(uint(reviewID)); err != nil {
+		switch {
+		case errors.Is(err, r.ErrNoSuchReview):
+			w.WriteHeader(http.StatusNotFound)
+			render.JSON(w, req, resp.Error(r.ErrNoSuchReview.Error()))
+		default:
+			log.Error("failed to delete review", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, req, resp.OK())
+}
+
+// AdminGetAllReviews - Получение всех отзывов администратором
+// @Summary Получение всех отзывов администратором
+// @Description Возвращает все отзывы в системе
+// @Tags         admin/review
+// @Produce      json
+// @Success 200 {array} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/reviews [get]
+func (c *ReviewController) AdminGetAllReviews(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "AdminGetAllReviews")
+
+	reviews, err := c.uc.GetAllReviews()
+	if err != nil {
+		log.Error("failed to get all reviews", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
 		return

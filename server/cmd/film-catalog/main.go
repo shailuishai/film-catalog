@@ -219,7 +219,6 @@ func (app *App) SetupRoutes() {
 
 	var AuthMiddleware = middleAuth.NewUserAuth(app.Log)
 	var AuthAdminMiddleware = middleAuth.NewAdminAuth(app.Log)
-	_ = AuthAdminMiddleware
 
 	app.Router.Route(apiVersion+"/profile", func(r chi.Router) {
 		r.Use(AuthMiddleware)
@@ -239,7 +238,7 @@ func (app *App) SetupRoutes() {
 		r.Get("/", ActorC.GetActors)
 		r.Get("/{id}", ActorC.GetActor)
 		r.Group(func(r chi.Router) {
-			//r.Use(AuthAdminMiddleware)
+			r.Use(AuthAdminMiddleware)
 			r.Post("/", ActorC.CreateActor)
 			r.Put("/{id}", ActorC.UpdateActor)
 			r.Delete("/{id}", ActorC.DeleteActor)
@@ -256,7 +255,7 @@ func (app *App) SetupRoutes() {
 		r.Get("/", GenreC.GetGenres)
 		r.Get("/{id}", GenreC.GetGenre)
 		r.Group(func(r chi.Router) {
-			//r.Use(AuthAdminMiddleware)
+			r.Use(AuthAdminMiddleware)
 			r.Post("/", GenreC.CreateGenre)
 			r.Put("/", GenreC.UpdateGenre)
 			r.Delete("/{id}", GenreC.DeleteGenre)
@@ -270,16 +269,25 @@ func (app *App) SetupRoutes() {
 	ReviewC := reviewC.NewReviewController(app.Log, ReviewUC)
 
 	app.Router.Route(apiVersion+"/reviews", func(r chi.Router) {
-		r.Get("/", ReviewC.GetReviewsByFilmID)
-		r.Get("/user/{user_id}", ReviewC.GetReviewsByReviewerID)
+		r.Get("/{id}", ReviewC.GetReview)
 		r.Get("/film/{film_id}", ReviewC.GetReviewsByFilmID)
 		r.Group(func(r chi.Router) {
-			//r.Use(AuthMiddleware)
+			r.Use(AuthMiddleware)
 			r.Post("/", ReviewC.CreateReview)
-			r.Put("/", ReviewC.UpdateReview)
+			r.Put("/{id}", ReviewC.UpdateReview)
 			r.Delete("/{id}", ReviewC.DeleteReview)
+			r.Get("/user", ReviewC.GetReviewsByReviewerID)
 		})
 	})
+
+	app.Router.Route(apiVersion+"/admin/reviews", func(r chi.Router) {
+		r.Use(AuthAdminMiddleware) // Только администраторы
+		r.Post("/", ReviewC.AdminCreateReview)
+		r.Put("/", ReviewC.AdminUpdateReview)
+		r.Delete("/{id}", ReviewC.AdminDeleteReview)
+		r.Get("/", ReviewC.AdminGetAllReviews)
+	})
+
 	FilmDB := filmDb.NewFilmDatabase(app.Storage.Db, app.Log)
 	FilmCH := filmCh.NewFilmCache(app.Cache)
 	FilmS3 := filmS3.NewFilmS3(app.Log, app.S3)
@@ -295,7 +303,7 @@ func (app *App) SetupRoutes() {
 		r.Get("/search", FilmC.SearchFilms)
 
 		r.Group(func(r chi.Router) {
-			//r.Use(AuthAdminMiddleware)
+			r.Use(AuthAdminMiddleware)
 			r.Post("/", FilmC.CreateFilm)
 			r.Put("/{id}", FilmC.UpdateFilm)
 			r.Delete("/{id}", FilmC.DeleteFilm)

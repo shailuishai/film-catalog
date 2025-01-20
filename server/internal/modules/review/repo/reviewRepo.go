@@ -12,6 +12,7 @@ type ReviewDB interface {
 	GetReviewsByFilmID(filmID uint) ([]*r.ReviewDTO, error)
 	GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDTO, error)
 	DeleteReview(reviewID uint) error
+	GetAllReviews() ([]*r.ReviewDTO, error)
 }
 
 type ReviewCache interface {
@@ -63,4 +64,8 @@ func (r *Repo) GetCache(key string) ([]*r.ReviewDTO, error) {
 
 func (r *Repo) DeleteCache(key string) error {
 	return r.ch.DeleteCache(key)
+}
+
+func (r *Repo) GetAllReviews() ([]*r.ReviewDTO, error) {
+	return r.db.GetAllReviews()
 }

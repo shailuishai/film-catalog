@@ -124,3 +124,25 @@ func (db *ReviewDatabase) DeleteReview(reviewID uint) error {
 
 	return nil
 }
+
+// GetAllReviews возвращает все отзывы из базы данных
+func (db *ReviewDatabase) GetAllReviews() ([]*r.ReviewDTO, error) {
+	var reviews []*r.Review
+	var userAvatarURLs []string
+	var filmPosterURLs []string
+
+	// Выполняем JOIN с таблицами user и film
+	if err := db.db.Table("reviews").
+		Select("reviews.*, user.avatar_url as user_avatar_url, film.poster_url as film_poster_url").
+		Joins("JOIN user ON reviews.user_id = user.user_id").
+		Joins("JOIN film ON reviews.film_id = film.film_id").
+		Find(&reviews).Scan(&userAvatarURLs).Scan(&filmPosterURLs).Error; err != nil {
+		return nil, err
+	}
+
+	if len(reviews) == 0 {
+		return nil, r.ErrNoSuchReview
+	}
+
+	return r.ToDTOList(reviews, userAvatarURLs, filmPosterURLs), nil
+}
