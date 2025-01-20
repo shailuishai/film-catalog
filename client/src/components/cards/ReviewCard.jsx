@@ -8,6 +8,7 @@ const ReviewCard = ({ review, usePoster = false }) => {
     const textColor = useColorModeValue("brand.900", "white");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const boxShadow = useColorModeValue("lg", "dark-lg");
+    const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
 
     return (
         <Box
@@ -27,48 +28,71 @@ const ReviewCard = ({ review, usePoster = false }) => {
                 textDecoration: "none",
             }}
         >
-            <Box position="relative" width="100%" paddingTop="150%">
-                <Image
-                    src={imageUrl}
-                    alt={review.review_text}
-                    position="absolute"
-                    top="0"
-                    left="0"
-                    width="100%"
-                    height="100%"
-                    objectFit="cover"
-                    maxWidth="100%"
-                    maxHeight="100%"
-                />
-            </Box>
-
-            <Flex
-                bg={bgColor}
-                borderColor={borderColor}
-                borderRadius="md"
-                borderTopWidth="2px"
-                mt="-16px"
-                position="relative"
-                zIndex="1"
-                p={4}
-                gap={4}
-                flexDirection="column"
-            >
-                <Text fontWeight="bold" fontSize="lg">
-                    Review
-                </Text>
-                <Text fontSize="sm" color={textColor} noOfLines={3}>
-                    {review.review_text}
-                </Text>
-                <Flex align="center" flexWrap="wrap" gap={2}>
-                    <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm">
-                        Rating: {review.rating}%
-                    </Badge>
-                    <Badge colorScheme="teal" fontSize="sm">
-                        Created: {formatReleaseDate(review.create_at)}
-                    </Badge>
+            {usePoster ? (
+                // Формат для общего использования (с постером фильма)
+                <Flex>
+                    <Box position="relative" width="40%" paddingTop="60%">
+                        <Image
+                            src={imageUrl}
+                            alt={review.review_text}
+                            position="absolute"
+                            top="0"
+                            left="0"
+                            width="100%"
+                            height="100%"
+                            objectFit="cover"
+                            maxWidth="100%"
+                            maxHeight="100%"
+                        />
+                    </Box>
+                    <Box width="60%" p={4}>
+                        <Text fontWeight="bold" fontSize="lg" mb={2}>
+                            {review.movie_title}
+                        </Text>
+                        <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm" mb={2}>
+                            Rating: {review.rating}%
+                        </Badge>
+                        <Text fontSize="sm" color={textColor} noOfLines={5} mb={2}>
+                            {review.review_text}
+                        </Text>
+                        <Text fontSize="xs" color={secondaryTextColor} textAlign="right">
+                            {formatReleaseDate(review.create_at)}
+                        </Text>
+                    </Box>
                 </Flex>
-            </Flex>
+            ) : (
+                // Формат для профиля фильма (с аватаром пользователя)
+                <Box p={4}>
+                    <Flex align="center" mb={4}>
+                        <Box position="relative" width="40px" height="40px" borderRadius="full" overflow="hidden" mr={2}>
+                            <Image
+                                src={imageUrl}
+                                alt={review.user_name}
+                                position="absolute"
+                                top="0"
+                                left="0"
+                                width="100%"
+                                height="100%"
+                                objectFit="cover"
+                                maxWidth="100%"
+                                maxHeight="100%"
+                            />
+                        </Box>
+                        <Text fontWeight="bold" fontSize="md" mr={2}>
+                            {review.user_name}
+                        </Text>
+                        <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm">
+                            {review.rating}%
+                        </Badge>
+                    </Flex>
+                    <Text fontSize="sm" color={textColor} noOfLines={5} mb={2}>
+                        {review.review_text}
+                    </Text>
+                    <Text fontSize="xs" color={secondaryTextColor} textAlign="right">
+                        {formatReleaseDate(review.create_at)}
+                    </Text>
+                </Box>
+            )}
         </Box>
     );
 };

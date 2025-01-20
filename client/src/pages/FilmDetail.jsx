@@ -16,7 +16,7 @@ import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
 import ActorCard from "../components/cards/ActorCard";
-import { getReviewsByFilmId } from "../services/reviewServices";
+import { getReviewsByFilmId } from "../services/userServices/reviewServices.js";
 import ReviewCard from "../components/cards/ReviewCard";
 
 const FilmDetail = () => {

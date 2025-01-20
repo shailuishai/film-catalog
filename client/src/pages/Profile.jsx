@@ -294,7 +294,7 @@ const Profile = () => {
                                 </Text>
                                 <Flex wrap="wrap" gap={4}>
                                     {reviews.map((review) => (
-                                        <ReviewCard key={review.review_id} review={review} />
+                                        <ReviewCard key={review.review_id} review={review} usePoster={true}/>
                                     ))}
                                 </Flex>
                             </Box>

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
-import { getReviewsByReviewerId } from "../services/reviewServices"; // Импортируем сервис для отзывов
+import { getReviewsByReviewerId } from "../services/userServices/reviewServices.js"; // Импортируем сервис для отзывов
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children, navigate }) => {
             if (token) {
                 const profile = await getProfile();
                 setUser(profile.data);
-                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешной авторизации
+                await fetchReviews();
             } else {
                 setUser(null);
             }
@@ -30,11 +30,11 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
-    const fetchReviews = async (userId) => {
+    const fetchReviews = async () => {
         try {
-            const response = await getReviewsByReviewerId(userId);
+            const response = await getReviewsByReviewerId();
             if (response.status === "success") {
-                setReviews(response.data); // Сохраняем отзывы в состоянии
+                setReviews(response.data);
             }
         } catch (error) {
             console.error("Ошибка при загрузке отзывов:", error);
