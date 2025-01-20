@@ -49,18 +49,26 @@ func (c *ReviewController) CreateReview(w http.ResponseWriter, req *http.Request
 		return
 	}
 
+	userId, ok := req.Context().Value("userId").(uint)
+	if !ok {
+		log.Error("failed to get userId from context")
+		w.WriteHeader(http.StatusUnauthorized)
+		render.JSON(w, req, resp.Error("unauthorized"))
+		return
+	}
+
+	review := &r.ReviewDTO{
+		UserID:     userId,
+		FilmID:     request.FilmID,
+		Rating:     request.Rating,
+		ReviewText: request.ReviewText,
+	}
+
 	if err := c.validate.Struct(request); err != nil {
 		log.Error("failed to validate request", err)
 		w.WriteHeader(http.StatusBadRequest)
 		render.JSON(w, req, resp.ValidationError(err))
 		return
-	}
-
-	review := &r.ReviewDTO{
-		UserID:     request.UserID,
-		FilmID:     request.FilmID,
-		Rating:     request.Rating,
-		ReviewText: request.ReviewText,
 	}
 
 	if err := c.uc.CreateReview(review); err != nil {
