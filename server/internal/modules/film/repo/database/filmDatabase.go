@@ -140,11 +140,11 @@ func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.F
 	query := db.db.Model(&f.Film{}).Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id")
 
 	if len(filters.GenreIDs) > 0 {
-		query = query.Joins("JOIN film_genre ON film_genre.film_id = films.id").
+		query = query.Joins("JOIN film_genre ON film_genre.film_id = films.film_id").
 			Where("film_genre.genre_id IN ?", filters.GenreIDs)
 	}
 	if len(filters.ActorIDs) > 0 {
-		query = query.Joins("JOIN film_actor ON film_actor.film_id = films.id").
+		query = query.Joins("JOIN film_actor ON film_actor.film_id = films.film_id").
 			Where("film_actor.actor_id IN ?", filters.ActorIDs)
 	}
 	if filters.Producer != "" {
