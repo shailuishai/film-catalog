@@ -485,7 +485,7 @@ func (c *Controller) GetFilms(w http.ResponseWriter, r *http.Request) {
 
 	sort := f.FilmSort{
 		By:    r.URL.Query().Get("sort_by"),
-		Order: r.URL.Query().Get("sort_order"),
+		Order: r.URL.Query().Get("order"),
 	}
 
 	if err := c.validate.Struct(sort); err != nil {
