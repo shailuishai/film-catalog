@@ -87,8 +87,7 @@ const Home = () => {
                 <Heading as="h1" size="xl" mb={4}>
                     Популярные фильмы
                 </Heading>
-                <Grid
-                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                <Flex
                     gap={4}
                     mb={4}
                     justifyContent="space-between"
@@ -102,13 +101,13 @@ const Home = () => {
                             <FilmCard key={film.id} film={film} />
                         ))
                     )}
-                </Grid>
+                </Flex>
 
                 <Heading as="h1" size="xl" mb={4}>
                     Популярные актеры
                 </Heading>
-                <Grid
-                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
+                <Flex
+
                     gap={4}
                     justifyContent="space-between"
                 >
@@ -121,7 +120,7 @@ const Home = () => {
                             <ActorCard key={actor.actor_id} actor={actor} />
                         ))
                     )}
-                </Grid>
+                </Flex>
             </Box>
         </>
     );

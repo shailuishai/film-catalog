@@ -10,20 +10,19 @@ import {
     useColorModeValue,
     Wrap,
     WrapItem,
-    SimpleGrid,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
-import ActorCard from "../components/cards/ActorCard.jsx"; // Импортируем компонент ActorCard
+import ActorCard from "../components/cards/ActorCard.jsx";
 
 const FilmDetail = () => {
     const { id } = useParams();
     const [film, setFilm] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [actors, setActors] = useState([]); // Состояние для актеров
+    const [actors, setActors] = useState([]);
 
     const posterPrefix = useColorModeValue("_Light", "_Dark");
     const bgColor = useColorModeValue("white", "brand.900");
@@ -163,11 +162,11 @@ const FilmDetail = () => {
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4}>
+                <Flex wrap="wrap" gap={4}>
                     {actors.map((actor) => (
                         <ActorCard key={actor.actor_id} actor={actor} />
                     ))}
-                </SimpleGrid>
+                </Flex>
             </Box>
 
             <RatingDistributionChart data={film} />

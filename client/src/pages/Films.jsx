@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
     Box,
     Flex,
-    SimpleGrid,
     Spinner,
     Text,
     useToast,
@@ -28,18 +27,15 @@ import DurationFilter from "../components/filters/DurationFilter";
 import DateFilter from "../components/filters/DateFilter";
 
 const Films = () => {
-    // Цветовые переменные
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const textColor = useColorModeValue("brand.900", "white");
 
-    // Состояние для выбранных жанров и актеров
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedActors, setSelectedActors] = useState([]);
     const [genreSearchQuery, setGenreSearchQuery] = useState("");
     const [actorSearchQuery, setActorSearchQuery] = useState("");
 
-    // Состояние для управления раскрытием списков
     const { isOpen: isGenreOpen, onToggle: onToggleGenre } = useDisclosure();
     const { isOpen: isActorOpen, onToggle: onToggleActor } = useDisclosure();
     const { isOpen: isRatingOpen, onToggle: onToggleRating } = useDisclosure();
@@ -48,16 +44,13 @@ const Films = () => {
     const { isOpen: isSortOpen, onToggle: onToggleSort } = useDisclosure();
     const { isOpen: isProducerOpen, onToggle: onToggleProducer } = useDisclosure();
 
-    // Состояние для списков жанров и актеров
     const [allGenres, setAllGenres] = useState([]);
     const [allActors, setAllActors] = useState([]);
 
-    // Состояние для фильмов и загрузки
     const [films, setFilms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Состояние для фильтров
     const [filters, setFilters] = useState({
         genre_ids: [],
         actor_ids: [],
@@ -81,7 +74,6 @@ const Films = () => {
     const location = useLocation();
     const toast = useToast();
 
-    // Загрузка жанров и актеров при монтировании компонента
     useEffect(() => {
         const fetchGenresAndActors = async () => {
             try {
@@ -97,7 +89,6 @@ const Films = () => {
         fetchGenresAndActors();
     }, []);
 
-    // Обработчики выбора жанров и актеров
     const handleGenreSelect = (genreId) => {
         if (selectedGenres.includes(genreId)) {
             setSelectedGenres(selectedGenres.filter((id) => id !== genreId));
@@ -114,7 +105,6 @@ const Films = () => {
         }
     };
 
-    // Фильтрация жанров и актеров по поисковому запросу
     const filteredGenres = allGenres.filter((genre) =>
         genre.name.toLowerCase().includes(genreSearchQuery.toLowerCase())
     );
@@ -122,7 +112,6 @@ const Films = () => {
         actor.name.toLowerCase().includes(actorSearchQuery.toLowerCase())
     );
 
-    // Загрузка фильмов при изменении параметров URL
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
         const params = {};
@@ -141,7 +130,6 @@ const Films = () => {
         fetchFilms(params);
     }, [location.search]);
 
-    // Функция для загрузки фильмов
     const fetchFilms = async (params) => {
         setLoading(true);
         try {
@@ -178,13 +166,11 @@ const Films = () => {
         }
     };
 
-    // Обработчик изменения фильтров
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
     };
 
-    // Обработчик изменения направления сортировки
     const toggleSortOrder = () => {
         setFilters((prevFilters) => ({
             ...prevFilters,
@@ -192,7 +178,6 @@ const Films = () => {
         }));
     };
 
-    // Обработчик поиска с применением фильтров
     const handleSearch = () => {
         const cleanedFilters = {
             ...filters,
@@ -200,10 +185,8 @@ const Films = () => {
             actor_ids: selectedActors,
         };
 
-        // Создаем объект для queryParams, исключая пустые значения
         const queryParams = new URLSearchParams();
 
-        // Добавляем только те параметры, которые не пустые
         if (selectedGenres.length > 0) {
             queryParams.set("genre_ids", selectedGenres.join(","));
         }
@@ -241,14 +224,12 @@ const Films = () => {
             queryParams.set("query", cleanedFilters.query);
         }
 
-        // Добавляем пагинацию
         queryParams.set("page", cleanedFilters.page || 1);
         queryParams.set("page_size", cleanedFilters.page_size || 9);
 
         navigate(`/films?${queryParams.toString()}`);
     };
 
-    // Обработчик изменения страницы
     const handlePageChange = (newPage) => {
         setFilters((prevFilters) => ({ ...prevFilters, page: newPage }));
         setPageInput(newPage.toString());
@@ -258,11 +239,7 @@ const Films = () => {
             page: newPage,
         };
 
-        const queryParams = new URLSearchParams({
-            ...cleanedFilters,
-            page: newPage,
-            page_size: cleanedFilters.page_size || 9,
-        });
+        const queryParams = new URLSearchParams();
 
         if (selectedGenres.length > 0) {
             queryParams.set("genre_ids", selectedGenres.join(","));
@@ -270,11 +247,40 @@ const Films = () => {
         if (selectedActors.length > 0) {
             queryParams.set("actor_ids", selectedActors.join(","));
         }
+        if (cleanedFilters.producer) {
+            queryParams.set("producer", cleanedFilters.producer);
+        }
+        if (cleanedFilters.min_rating !== 0) {
+            queryParams.set("min_rating", cleanedFilters.min_rating);
+        }
+        if (cleanedFilters.max_rating !== 100) {
+            queryParams.set("max_rating", cleanedFilters.max_rating);
+        }
+        if (cleanedFilters.min_date) {
+            queryParams.set("min_date", cleanedFilters.min_date);
+        }
+        if (cleanedFilters.max_date) {
+            queryParams.set("max_date", cleanedFilters.max_date);
+        }
+        if (cleanedFilters.min_duration !== 0) {
+            queryParams.set("min_duration", cleanedFilters.min_duration);
+        }
+        if (cleanedFilters.max_duration !== 300) {
+            queryParams.set("max_duration", cleanedFilters.max_duration);
+        }
+        if (cleanedFilters.sort_by) {
+            queryParams.set("sort_by", cleanedFilters.sort_by);
+        }
+        if (cleanedFilters.order !== "desc") {
+            queryParams.set("order", cleanedFilters.order);
+        }
+
+        queryParams.set("page", cleanedFilters.page || 1);
+        queryParams.set("page_size", cleanedFilters.page_size || 9);
 
         navigate(`/films?${queryParams.toString()}`);
     };
 
-    // Обработчик очистки фильтров
     const resetFilters = () => {
         setFilters({
             genre_ids: [],
@@ -318,19 +324,19 @@ const Films = () => {
     return (
         <>
             <Header />
-            <Flex>
+            <Flex direction={{ base: "column", md: "row" }} p={4}>
                 {/* Основная часть с фильмами */}
-                <Box flex={1} py={4} pr={4}>
+                <Box flex={1} pr={{ base: 0, md: 4 }}>
                     {films.length === 0 ? (
                         <Text textAlign="center" fontSize="xl" color={textColor}>
                             Упс... таких фильмов еще не сделали
                         </Text>
                     ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+                        <Flex wrap="wrap" gap={6}>
                             {films.map((film) => (
                                 <FilmCard key={film.id} film={film} />
                             ))}
-                        </SimpleGrid>
+                        </Flex>
                     )}
 
                     {/* Пагинация */}
@@ -338,19 +344,17 @@ const Films = () => {
                         currentPage={filters.page}
                         totalPages={Math.ceil(films.length / filters.page_size)}
                         onPageChange={handlePageChange}
-                        filmsOnCurrentPage={films.length} // Передаем количество фильмов на текущей странице
+                        filmsOnCurrentPage={films.length}
                     />
                 </Box>
 
                 {/* Фильтры сбоку */}
-                <Box width="300px" pl={4} py={4} borderLeft="2px solid" borderColor={borderColor}>
+                <Box width={{ base: "100%", md: "300px" }} pl={{ base: 0, md: 4 }} pt={{ base: 4, md: 0 }}>
                     <VStack spacing={4} align="stretch">
-                        {/* Кнопка очистки фильтров */}
                         <Button onClick={resetFilters} colorScheme="red">
                             Очистить фильтры
                         </Button>
 
-                        {/* Сортировка */}
                         <Sorting
                             sortBy={filters.sort_by}
                             order={filters.order}
@@ -358,7 +362,6 @@ const Films = () => {
                             onOrderToggle={toggleSortOrder}
                         />
 
-                        {/* Жанры */}
                         <GenreFilter
                             genres={allGenres}
                             selectedGenres={selectedGenres}
@@ -367,7 +370,6 @@ const Films = () => {
                             setGenreSearchQuery={setGenreSearchQuery}
                         />
 
-                        {/* Актеры */}
                         <ActorFilter
                             actors={allActors}
                             selectedActors={selectedActors}
@@ -376,28 +378,24 @@ const Films = () => {
                             setActorSearchQuery={setActorSearchQuery}
                         />
 
-                        {/* Рейтинг */}
                         <RatingFilter
                             minRating={filters.min_rating}
                             maxRating={filters.max_rating}
                             onRatingChange={(val) => setFilters((prev) => ({ ...prev, min_rating: val[0], max_rating: val[1] }))}
                         />
 
-                        {/* Длительность */}
                         <DurationFilter
                             minDuration={filters.min_duration}
                             maxDuration={filters.max_duration}
                             onDurationChange={(val) => setFilters((prev) => ({ ...prev, min_duration: val[0], max_duration: val[1] }))}
                         />
 
-                        {/* Дата выхода */}
                         <DateFilter
                             minDate={filters.min_date}
                             maxDate={filters.max_date}
                             onDateChange={(val) => setFilters((prev) => ({ ...prev, min_date: val[0], max_date: val[1] }))}
                         />
 
-                        {/* Кнопка поиска */}
                         <Button onClick={handleSearch} colorScheme="accent">
                             Применить фильтры
                         </Button>

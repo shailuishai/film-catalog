@@ -5,25 +5,15 @@ import {
     Input,
     Select,
     Button,
-    SimpleGrid,
     Spinner,
     Text,
     useToast,
-    Slider,
-    SliderTrack,
-    SliderFilledTrack,
-    SliderThumb,
-    RangeSlider,
-    RangeSliderTrack,
-    RangeSliderFilledTrack,
-    RangeSliderThumb,
     VStack,
     HStack,
     useDisclosure,
     Collapse,
     IconButton,
     useColorModeValue,
-    Checkbox,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon, ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -32,13 +22,11 @@ import { getActors, searchActors } from "../services/actorServices";
 import Header from "../components/Header.jsx";
 
 const Actors = () => {
-    // Цветовые переменные
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const textColor = useColorModeValue("brand.900", "white");
     const accentColor = useColorModeValue("accent.400", "accent.400");
 
-    // Состояние для фильтров
     const [actors, setActors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,7 +49,6 @@ const Actors = () => {
     const location = useLocation();
     const toast = useToast();
 
-    // Функция для очистки фильтров
     const resetFilters = () => {
         setFilters({
             name: "",
@@ -75,7 +62,7 @@ const Actors = () => {
             page: 1,
             page_size: 9,
         });
-        navigate("/actors"); // Переход на страницу без фильтров
+        navigate("/actors");
     };
 
     const cleanFilters = (filters) => {
@@ -105,7 +92,6 @@ const Actors = () => {
             }
         });
 
-        // Удаляем order, если sort_by не выбран
         if (!cleanedFilters.sort_by) {
             delete cleanedFilters.order;
         }
@@ -210,7 +196,6 @@ const Actors = () => {
         }
     };
 
-    // Обработчик изменения направления сортировки
     const toggleSortOrder = () => {
         setFilters((prevFilters) => ({
             ...prevFilters,
@@ -237,19 +222,19 @@ const Actors = () => {
     return (
         <>
             <Header />
-            <Flex>
+            <Flex direction={{ base: "column", md: "row" }} p={4}>
                 {/* Основная часть с актерами */}
-                <Box flex={1} py={4} pr={4}>
+                <Box flex={1} pr={{ base: 0, md: 4 }}>
                     {actors.length === 0 ? (
                         <Text textAlign="center" fontSize="xl" color={textColor}>
                             Упс... таких актеров еще нет
                         </Text>
                     ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                        <Flex wrap="wrap" gap={4}>
                             {actors.map((actor) => (
                                 <ActorCard key={actor.actor_id} actor={actor} />
                             ))}
-                        </SimpleGrid>
+                        </Flex>
                     )}
 
                     {/* Пагинация */}
@@ -287,14 +272,12 @@ const Actors = () => {
                 </Box>
 
                 {/* Фильтры сбоку */}
-                <Box width="300px" pl={4} py={4} borderLeft="2px solid" borderColor={borderColor}>
+                <Box width={{ base: "100%", md: "300px" }} pl={{ base: 0, md: 4 }} pt={{ base: 4, md: 0 }}>
                     <VStack spacing={4} align="stretch">
-                        {/* Кнопка очистки фильтров */}
                         <Button onClick={resetFilters} colorScheme="red">
                             Очистить фильтры
                         </Button>
 
-                        {/* Сортировка */}
                         <Box>
                             <Flex justify="space-between" align="center">
                                 <Text>Сортировка</Text>
@@ -338,7 +321,6 @@ const Actors = () => {
                             </Collapse>
                         </Box>
 
-                        {/* Поиск по имени */}
                         <Box>
                             <Flex justify="space-between" align="center">
                                 <Text>Имя актера</Text>
@@ -364,7 +346,6 @@ const Actors = () => {
                             </Collapse>
                         </Box>
 
-                        {/* Кнопка поиска */}
                         <Button onClick={handleSearch} colorScheme="accent">
                             Применить фильтры
                         </Button>
