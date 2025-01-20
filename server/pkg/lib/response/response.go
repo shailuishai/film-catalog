@@ -293,12 +293,14 @@ func Films(films interface{}) Response {
 }
 
 type ReviewData struct {
-	ReviewID   uint       `json:"review_id"`
-	UserID     uint       `json:"user_id"`
-	FilmID     uint       `json:"film_id"`
-	Rating     int        `json:"rating"`
-	ReviewText string     `json:"review_text"`
-	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	ReviewID      uint       `json:"review_id"`
+	UserID        uint       `json:"user_id"`
+	UserAvatarURL string     `json:"user_avatar_url"`
+	FilmID        uint       `json:"film_id"`
+	FilmPosterURL string     `json:"film_poster_url"`
+	Rating        int        `json:"rating"`
+	ReviewText    string     `json:"review_text"`
+	CreatedAt     *time.Time `json:"created_at,omitempty"`
 }
 
 func Reviews(reviews interface{}) Response {
@@ -307,24 +309,28 @@ func Reviews(reviews interface{}) Response {
 		return Response{
 			Status: StatusOK,
 			Data: ReviewData{
-				ReviewID:   v.ReviewID,
-				UserID:     v.UserID,
-				FilmID:     v.FilmID,
-				Rating:     v.Rating,
-				ReviewText: v.ReviewText,
-				CreatedAt:  &v.CreateAt,
+				ReviewID:      v.ReviewID,
+				UserID:        v.UserID,
+				UserAvatarURL: v.UserAvatarURL,
+				FilmID:        v.FilmID,
+				FilmPosterURL: v.FilmPosterURL,
+				Rating:        v.Rating,
+				ReviewText:    v.ReviewText,
+				CreatedAt:     &v.CreateAt,
 			},
 		}
 	case []*r.ReviewDTO:
 		var reviewList []ReviewData
 		for _, review := range v {
 			reviewList = append(reviewList, ReviewData{
-				ReviewID:   review.ReviewID,
-				UserID:     review.UserID,
-				FilmID:     review.FilmID,
-				Rating:     review.Rating,
-				ReviewText: review.ReviewText,
-				CreatedAt:  &review.CreateAt,
+				ReviewID:      review.ReviewID,
+				UserID:        review.UserID,
+				UserAvatarURL: review.UserAvatarURL,
+				FilmID:        review.FilmID,
+				FilmPosterURL: review.FilmPosterURL,
+				Rating:        review.Rating,
+				ReviewText:    review.ReviewText,
+				CreatedAt:     &review.CreateAt,
 			})
 		}
 		return Response{
