@@ -137,7 +137,9 @@ func (db *FilmDatabase) DeleteFilm(id uint) error {
 }
 
 func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error) {
-	query := db.db.Model(&f.Film{}).Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id")
+	query := db.db.Model(&f.Film{}).
+		Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id").
+		Distinct("films.film_id") // Добавляем DISTINCT для устранения дублирования
 
 	if len(filters.GenreIDs) > 0 {
 		query = query.Joins("JOIN film_genre ON film_genre.film_id = films.film_id").
