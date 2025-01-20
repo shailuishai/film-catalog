@@ -1,9 +1,9 @@
 import React from "react";
 import { Box, Image, Text, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils"; // Импортируем функции
+import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../../utils.jsx"; // Импортируем функции
 
-const FilmCard = ({ film }) => {
+const FilmCard = ({ key, film }) => {
     const posterPrefix = useColorModeValue("_Light", "_Dark");
     const posterUrl = getPosterUrl(film?.poster_url, posterPrefix); // Используем функцию
 

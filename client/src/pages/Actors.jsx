@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon, ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import ActorCard from "../components/ActorCard";
+import ActorCard from "../components/cards/ActorCard.jsx";
 import { getActors, searchActors } from "../services/actorServices";
 import Header from "../components/Header.jsx";
 

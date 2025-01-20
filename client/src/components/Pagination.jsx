@@ -1,9 +1,9 @@
-import React from "react";
-import { Button, HStack, Input, Flex, useToast } from "@chakra-ui/react";
+import {Button, Flex, HStack, Input, useToast} from "@chakra-ui/react";
+import { useState } from "react";
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange, filmsOnCurrentPage }) => {
     const toast = useToast();
-    const [pageInput, setPageInput] = React.useState(currentPage.toString());
+    const [pageInput, setPageInput] = useState(currentPage.toString());
 
     const handlePageInputChange = (e) => {
         setPageInput(e.target.value);
@@ -25,6 +25,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         }
     };
 
+    // Определяем, нужно ли блокировать кнопку "Вперед"
+    const isNextButtonDisabled = filmsOnCurrentPage < 9;
+
     return (
         <Flex justify="center" mt={4}>
             <HStack spacing={4}>
@@ -44,14 +47,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         fontWeight="bold"
                         borderRadius="md"
                         border="2px solid"
-                        borderColor="gray.200"
+                        borderColor="brand.800"
                         boxShadow="lg"
                         focusBorderColor="accent.400"
                     />
                 </form>
                 <Button
                     onClick={() => onPageChange(currentPage + 1)}
-                    isDisabled={currentPage === totalPages}
+                    isDisabled={isNextButtonDisabled} // Блокируем кнопку, если это последняя страница или фильмов меньше 9
                 >
                     Вперед
                 </Button>

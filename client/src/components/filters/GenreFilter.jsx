@@ -46,10 +46,16 @@ const GenreFilter = ({ genres, selectedGenres, onGenreSelect, genreSearchQuery, 
                         <HStack wrap="wrap">
                             {genres.slice(0, 4).map((genre) => (
                                 <Checkbox
-                                    key={genre.id}
-                                    isChecked={selectedGenres.includes(genre.id)}
-                                    onChange={() => onGenreSelect(genre.id)}
+                                    key={genre.genre_id}
+                                    isChecked={selectedGenres.includes(genre.genre_id)}
+                                    onChange={() => onGenreSelect(genre.genre_id)}
                                     colorScheme="accent"
+                                    sx={{
+                                        "span[data-checked]": {
+                                            bg: "accent.400", // Фон выбранного чекбокса
+                                            borderColor: "accent.400", // Цвет границы выбранного чекбокса
+                                        },
+                                    }}
                                 >
                                     {genre.name}
                                 </Checkbox>
@@ -84,10 +90,16 @@ const GenreFilter = ({ genres, selectedGenres, onGenreSelect, genreSearchQuery, 
                                         )
                                         .map((genre) => (
                                             <Checkbox
-                                                key={genre.id}
-                                                isChecked={selectedGenres.includes(genre.id)}
-                                                onChange={() => onGenreSelect(genre.id)}
+                                                key={genre.genre_id}
+                                                isChecked={selectedGenres.includes(genre.genre_id)}
+                                                onChange={() => onGenreSelect(genre.genre_id)}
                                                 colorScheme="accent"
+                                                sx={{
+                                                    "span[data-checked]": {
+                                                        bg: "accent.400", // Фон выбранного чекбокса
+                                                        borderColor: "accent.400", // Цвет границы выбранного чекбокса
+                                                    },
+                                                }}
                                             >
                                                 {genre.name}
                                             </Checkbox>
@@ -102,7 +114,7 @@ const GenreFilter = ({ genres, selectedGenres, onGenreSelect, genreSearchQuery, 
                         <Text fontWeight="bold" color={textColor}>Выбранные жанры:</Text>
                         <HStack wrap="wrap">
                             {selectedGenres.map((genreId) => {
-                                const genre = genres.find((g) => g.id === genreId);
+                                const genre = genres.find((g) => g.genre_id === genreId);
                                 return (
                                     <Box
                                         key={genreId}

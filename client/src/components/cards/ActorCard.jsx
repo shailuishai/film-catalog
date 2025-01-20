@@ -7,7 +7,7 @@ const fadeIn = keyframes`
     to { opacity: 1; transform: translateY(0); }
 `;
 
-const ActorCard = ({ actor }) => {
+const ActorCard = ({ key ,actor }) => {
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const boxShadow = useColorModeValue("lg", "dark-lg");
     const avatarPrefix = useColorModeValue("_Light", "_Dark");

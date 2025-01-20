@@ -14,13 +14,13 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import FilmCard from "../components/FilmCard";
+import FilmCard from "../components/cards/FilmCard.jsx";
 import { getFilms, searchFilms } from "../services/filmServices";
 import { getActors } from "../services/actorServices";
 import { getGenres } from "../services/genreServices";
 import Header from "../components/Header.jsx";
 import Pagination from "../components/Pagination";
-import Sorting from "../components/Sorting";
+import Sorting from "../components/filters/Sorting.jsx";
 import GenreFilter from "../components/filters/GenreFilter";
 import ActorFilter from "../components/filters/ActorFilter";
 import RatingFilter from "../components/filters/RatingFilter";
@@ -338,6 +338,7 @@ const Films = () => {
                         currentPage={filters.page}
                         totalPages={Math.ceil(films.length / filters.page_size)}
                         onPageChange={handlePageChange}
+                        filmsOnCurrentPage={films.length} // Передаем количество фильмов на текущей странице
                     />
                 </Box>
 

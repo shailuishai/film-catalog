@@ -16,7 +16,7 @@ import { useParams } from "react-router-dom";
 import { getFilmById } from "../services/filmServices";
 import { getPosterUrl, getRatingColorScheme, formatReleaseDate } from "../utils";
 import RatingDistributionChart from "../components/RatingDistributionChart";
-import ActorCard from "../components/ActorCard"; // Импортируем компонент ActorCard
+import ActorCard from "../components/cards/ActorCard.jsx"; // Импортируем компонент ActorCard
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -93,7 +93,6 @@ const FilmDetail = () => {
                 direction={{ base: "column", md: "row" }}
                 gap={8}
                 maxW="1200px"
-                mx="auto"
                 bg={bgColor}
             >
                 {/* Постер */}

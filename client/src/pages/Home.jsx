@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Text, Flex, Button, useColorModeValue, Grid } from "@chakra-ui/react"; // Импортируем Grid из Chakra UI
+import { Box, Heading, Text, Flex, Button, useColorModeValue, Grid, Spinner, Center } from "@chakra-ui/react"; // Импортируем Spinner и Center из Chakra UI
 import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
 import { getFilms } from "../services/filmServices";
 import { getActors } from "../services/actorServices";
-import FilmCard from "../components/FilmCard";
-import ActorCard from "../components/ActorCard";
+import FilmCard from "../components/cards/FilmCard.jsx";
+import ActorCard from "../components/cards/ActorCard.jsx";
 
 const Home = () => {
     const [popularFilms, setPopularFilms] = useState([]);
     const [popularActors, setPopularActors] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [filmsLoading, setFilmsLoading] = useState(true); // Отдельное состояние для загрузки фильмов
+    const [actorsLoading, setActorsLoading] = useState(true); // Отдельное состояние для загрузки актеров
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -31,7 +32,7 @@ const Home = () => {
             } catch (err) {
                 setError(err.message);
             } finally {
-                setLoading(false);
+                setFilmsLoading(false); // Загрузка фильмов завершена
             }
         };
 
@@ -51,6 +52,8 @@ const Home = () => {
                 }
             } catch (err) {
                 setError(err.message);
+            } finally {
+                setActorsLoading(false); // Загрузка актеров завершена
             }
         };
 
@@ -90,23 +93,34 @@ const Home = () => {
                     mb={4}
                     justifyContent="space-between"
                 >
-                    {popularFilms.map((film) => (
-                        <FilmCard key={film.id} film={film} />
-                    ))}
+                    {filmsLoading ? ( // Если фильмы загружаются, показываем спиннер
+                        <Center width="100%">
+                            <Spinner size="xl" />
+                        </Center>
+                    ) : (
+                        popularFilms.map((film) => (
+                            <FilmCard key={film.id} film={film} />
+                        ))
+                    )}
                 </Grid>
 
                 <Heading as="h1" size="xl" mb={4}>
                     Популярные актеры
                 </Heading>
-
                 <Grid
                     templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
                     gap={4}
                     justifyContent="space-between"
                 >
-                    {popularActors.map((actor) => (
-                        <ActorCard key={actor.id} actor={actor} />
-                    ))}
+                    {actorsLoading ? ( // Если актеры загружаются, показываем спиннер
+                        <Center width="100%">
+                            <Spinner size="xl" />
+                        </Center>
+                    ) : (
+                        popularActors.map((actor) => (
+                            <ActorCard key={actor.actor_id} actor={actor} />
+                        ))
+                    )}
                 </Grid>
             </Box>
         </>
