@@ -137,78 +137,88 @@ func (db *FilmDatabase) DeleteFilm(id uint) error {
 }
 
 func (db *FilmDatabase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error) {
-	db.db = db.db.Debug()
-	query := db.db.Model(&f.Film{}).
-		Select("DISTINCT films.film_id, films.*, film_stats.avg_rating"). // Включаем avg_rating в SELECT
-		Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id")
+    query := db.db.Model(&f.Film{}).
+        Select("DISTINCT films.film_id, films.*, film_stats.avg_rating").
+        Joins("LEFT JOIN film_stats ON film_stats.film_id = films.film_id")
 
-	if len(filters.GenreIDs) > 0 {
-		query = query.Joins("JOIN film_genre ON film_genre.film_id = films.film_id").
-			Where("film_genre.genre_id IN ?", filters.GenreIDs)
-	}
-	if len(filters.ActorIDs) > 0 {
-		query = query.Joins("JOIN film_actor ON film_actor.film_id = films.film_id").
-			Where("film_actor.actor_id IN ?", filters.ActorIDs)
-	}
-	if filters.Producer != "" {
-		query = query.Where("producer = ?", filters.Producer)
-	}
-	if filters.MinRating > 0 {
-		query = query.Where("film_stats.avg_rating >= ?", filters.MinRating)
-	}
-	if filters.MaxRating > 0 {
-		query = query.Where("film_stats.avg_rating <= ?", filters.MaxRating)
-	}
-	if !filters.MinDate.IsZero() {
-		query = query.Where("release_date >= ?", filters.MinDate)
-	}
-	if !filters.MaxDate.IsZero() {
-		query = query.Where("release_date <= ?", filters.MaxDate)
-	}
-	if f.DurationStringToMinutes(filters.MinDuration) > 0 {
-		query = query.Where("runtime >= ?", f.DurationStringToMinutes(filters.MinDuration))
-	}
-	if f.DurationStringToMinutes(filters.MaxDuration) > 0 {
-		query = query.Where("runtime <= ?", f.DurationStringToMinutes(filters.MaxDuration))
-	}
+    // Фильтрация по жанрам (все указанные жанры должны быть у фильма)
+    if len(filters.GenreIDs) > 0 {
+        query = query.Joins("JOIN film_genre ON film_genre.film_id = films.film_id").
+            Where("film_genre.genre_id IN ?", filters.GenreIDs).
+            Group("films.film_id").
+            Having("COUNT(DISTINCT film_genre.genre_id) = ?", len(filters.GenreIDs))
+    }
 
-	if sort.By != "" {
-		order := sort.By
-		if sort.Order != "" {
-			order += " " + sort.Order
-		}
-		query = query.Order(order)
-	}
+    // Фильтрация по актерам (все указанные актеры должны быть у фильма)
+    if len(filters.ActorIDs) > 0 {
+        query = query.Joins("JOIN film_actor ON film_actor.film_id = films.film_id").
+            Where("film_actor.actor_id IN ?", filters.ActorIDs).
+            Group("films.film_id").
+            Having("COUNT(DISTINCT film_actor.actor_id) = ?", len(filters.ActorIDs))
+    }
 
-	if filters.Page > 0 && filters.PageSize > 0 {
-		offset := (filters.Page - 1) * filters.PageSize
-		query = query.Offset(offset).Limit(filters.PageSize)
-	}
+    // Остальные фильтры
+    if filters.Producer != "" {
+        query = query.Where("producer = ?", filters.Producer)
+    }
+    if filters.MinRating > 0 {
+        query = query.Where("film_stats.avg_rating >= ?", filters.MinRating)
+    }
+    if filters.MaxRating > 0 {
+        query = query.Where("film_stats.avg_rating <= ?", filters.MaxRating)
+    }
+    if !filters.MinDate.IsZero() {
+        query = query.Where("release_date >= ?", filters.MinDate)
+    }
+    if !filters.MaxDate.IsZero() {
+        query = query.Where("release_date <= ?", filters.MaxDate)
+    }
+    if f.DurationStringToMinutes(filters.MinDuration) > 0 {
+        query = query.Where("runtime >= ?", f.DurationStringToMinutes(filters.MinDuration))
+    }
+    if f.DurationStringToMinutes(filters.MaxDuration) > 0 {
+        query = query.Where("runtime <= ?", f.DurationStringToMinutes(filters.MaxDuration))
+    }
 
-	var films []*f.Film
-	if err := query.Find(&films).Error; err != nil {
-		db.log.Error("failed to get films", "error", err, "filters", filters, "sort", sort)
-		return nil, f.ErrInternal
-	}
+    // Сортировка
+    if sort.By != "" {
+        order := sort.By
+        if sort.Order != "" {
+            order += " " + sort.Order
+        }
+        query = query.Order(order)
+    }
 
-	var filmDTOs []*f.FilmDTO
-	for _, film := range films {
-		var stats f.FilmStatsModel
-		if err := db.db.Model(&f.FilmStatsModel{}).Where("film_id = ?", film.FilmId).First(&stats).Error; err != nil {
-			db.log.Error("failed to get film stats", "error", err, "filmID", film.FilmId)
-			return nil, f.ErrInternal
-		}
+    // Пагинация
+    if filters.Page > 0 && filters.PageSize > 0 {
+        offset := (filters.Page - 1) * filters.PageSize
+        query = query.Offset(offset).Limit(filters.PageSize)
+    }
 
-		filmDTO := film.ToDTO(&stats)
-		for _, genre := range film.Genres {
-			filmDTO.GenreIDs = append(filmDTO.GenreIDs, genre.GenreID)
-		}
-		for _, actor := range film.Actors {
-			filmDTO.ActorIDs = append(filmDTO.ActorIDs, actor.ActorID)
-		}
+    var films []*f.Film
+    if err := query.Find(&films).Error; err != nil {
+        db.log.Error("failed to get films", "error", err, "filters", filters, "sort", sort)
+        return nil, f.ErrInternal
+    }
 
-		filmDTOs = append(filmDTOs, filmDTO)
-	}
+    var filmDTOs []*f.FilmDTO
+    for _, film := range films {
+        var stats f.FilmStatsModel
+        if err := db.db.Model(&f.FilmStatsModel{}).Where("film_id = ?", film.FilmId).First(&stats).Error; err != nil {
+            db.log.Error("failed to get film stats", "error", err, "filmID", film.FilmId)
+            return nil, f.ErrInternal
+        }
 
-	return filmDTOs, nil
+        filmDTO := film.ToDTO(&stats)
+        for _, genre := range film.Genres {
+            filmDTO.GenreIDs = append(filmDTO.GenreIDs, genre.GenreID)
+        }
+        for _, actor := range film.Actors {
+            filmDTO.ActorIDs = append(filmDTO.ActorIDs, actor.ActorID)
+        }
+
+        filmDTOs = append(filmDTOs, filmDTO)
+    }
+
+    return filmDTOs, nil
 }
