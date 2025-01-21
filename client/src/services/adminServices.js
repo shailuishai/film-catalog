@@ -10,7 +10,7 @@ export const createFilm = async (filmData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const updateFilm = async (id, filmData) => {
@@ -20,7 +20,7 @@ export const updateFilm = async (id, filmData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const deleteFilm = async (id) => {
@@ -30,7 +30,7 @@ export const deleteFilm = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminGetAllFilms = async () => {
@@ -40,7 +40,7 @@ export const adminGetAllFilms = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data; // Возвращаем только массив фильмов
 };
 
 export const adminMultiDeleteFilms = async (filmIds) => {
@@ -51,7 +51,7 @@ export const adminMultiDeleteFilms = async (filmIds) => {
         },
         data: filmIds,
     });
-    return response.data;
+    return response.data.data;
 };
 
 // Actors
@@ -62,7 +62,7 @@ export const createActor = async (actorData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const updateActor = async (id, actorData) => {
@@ -72,7 +72,7 @@ export const updateActor = async (id, actorData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const deleteActor = async (id) => {
@@ -82,7 +82,7 @@ export const deleteActor = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminGetAllActors = async () => {
@@ -92,7 +92,7 @@ export const adminGetAllActors = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data; // Возвращаем только массив актеров
 };
 
 export const adminMultiDeleteActors = async (actorIds) => {
@@ -103,7 +103,7 @@ export const adminMultiDeleteActors = async (actorIds) => {
         },
         data: actorIds,
     });
-    return response.data;
+    return response.data.data;
 };
 
 // Users
@@ -114,7 +114,7 @@ export const adminGetAllUsers = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminDeleteUser = async (id) => {
@@ -124,7 +124,7 @@ export const adminDeleteUser = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminMultiDeleteUsers = async (userIds) => {
@@ -135,7 +135,7 @@ export const adminMultiDeleteUsers = async (userIds) => {
         },
         data: userIds,
     });
-    return response.data;
+    return response.data.data;
 };
 
 // Reviews
@@ -146,7 +146,7 @@ export const adminCreateReview = async (reviewData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminUpdateReview = async (reviewData) => {
@@ -156,7 +156,7 @@ export const adminUpdateReview = async (reviewData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminDeleteReview = async (id) => {
@@ -166,7 +166,7 @@ export const adminDeleteReview = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const adminGetAllReviews = async () => {
@@ -176,7 +176,7 @@ export const adminGetAllReviews = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 // Genres
@@ -187,7 +187,7 @@ export const createGenre = async (genreData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const updateGenre = async (genreData) => {
@@ -197,7 +197,7 @@ export const updateGenre = async (genreData) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const deleteGenre = async (id) => {
@@ -207,7 +207,7 @@ export const deleteGenre = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };
 
 export const getGenres = async () => {
@@ -217,5 +217,5 @@ export const getGenres = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data;
+    return response.data.data;
 };

@@ -13,8 +13,8 @@ const Admin = () => {
 
     return (
         <Flex justify="center" align="center" minH="100vh" bg={bgColor}>
-            <Box p={6} borderWidth="2px" borderRadius="md" boxShadow="lg" bg={bgColor} color={textColor} maxW="1200px" w="100%" accentColor="accent.400">
-                <Tabs isFitted variant="enclosed" activeColor="accent.400" accentColor="accent.400">
+            <Box p={6} borderWidth="2px" borderRadius="md" boxShadow="lg" bg={bgColor} color={textColor} maxW="1200px" w="100%">
+                <Tabs isFitted variant="enclosed" colorScheme="brand"> {/* Используем colorScheme вместо activeColor */}
                     <TabList mb="1em">
                         <Tab>Фильмы</Tab>
                         <Tab>Актеры</Tab>
