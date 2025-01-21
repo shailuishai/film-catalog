@@ -1,157 +1,221 @@
-import api from "./api";
+// src/services/adminServices.js
+import api from "./api.js";
 import Cookies from "js-cookie";
 
-// Получение списка фильмов
-export const getAdminFilms = async () => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.get("/admin/films", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении фильмов:", error);
-        throw error;
-    }
-};
-
-// Получение списка актеров
-export const getAdminActors = async () => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.get("/admin/actors", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении актеров:", error);
-        throw error;
-    }
-};
-
-// Получение списка жанров
-export const getAdminGenres = async () => {
-    try {
-        const response = await api.get("/genres");
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении жанров:", error);
-        throw error;
-    }
-};
-
-// Получение списка отзывов
-export const getAdminReviews = async () => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.get("/admin/reviews", {
+// Films
+export const createFilm = async (filmData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.post("/admin/films", filmData, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении отзывов:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Получение списка пользователей
-export const getAdminUsers = async () => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.get("/admin/users", {
+export const updateFilm = async (id, filmData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.put(`/admin/films/${id}`, filmData, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении пользователей:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Удаление фильма
-export const deleteAdminFilm = async (filmId) => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.delete(`/admin/films/${filmId}`, {
+export const deleteFilm = async (id) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete(`/admin/films/${id}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при удалении фильма:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Удаление актера
-export const deleteAdminActor = async (actorId) => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.delete(`/admin/actors/${actorId}`, {
+export const adminGetAllFilms = async () => {
+    const token = Cookies.get("access_token");
+    const response = await api.get("/admin/films", {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при удалении актера:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Удаление жанра
-export const deleteAdminGenre = async (genreId) => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.delete(`/admin/genres/${genreId}`, {
+export const adminMultiDeleteFilms = async (filmIds) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete("/admin/films", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        data: filmIds,
+    });
+    return response.data;
+};
+
+// Actors
+export const createActor = async (actorData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.post("/admin/actors", actorData, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при удалении жанра:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Удаление отзыва
-export const deleteAdminReview = async (reviewId) => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.delete(`/admin/reviews/${reviewId}`, {
+export const updateActor = async (id, actorData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.put(`/admin/actors/${id}`, actorData, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при удалении отзыва:", error);
-        throw error;
-    }
+    return response.data;
 };
 
-// Удаление пользователя
-export const deleteAdminUser = async (userId) => {
-    const token = Cookies.get("access_token")
-    try {
-        const response = await api.delete(`/admin/users/${userId}`, {
+export const deleteActor = async (id) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete(`/admin/actors/${id}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при удалении пользователя:", error);
-        throw error;
-    }
+    return response.data;
+};
+
+export const adminGetAllActors = async () => {
+    const token = Cookies.get("access_token");
+    const response = await api.get("/admin/actors", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminMultiDeleteActors = async (actorIds) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete("/admin/actors", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        data: actorIds,
+    });
+    return response.data;
+};
+
+// Users
+export const adminGetAllUsers = async () => {
+    const token = Cookies.get("access_token");
+    const response = await api.get("/admin/users", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminDeleteUser = async (id) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete(`/admin/users/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminMultiDeleteUsers = async (userIds) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete("/admin/users", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        data: userIds,
+    });
+    return response.data;
+};
+
+// Reviews
+export const adminCreateReview = async (reviewData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.post("/admin/reviews", reviewData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminUpdateReview = async (reviewData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.put("/admin/reviews", reviewData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminDeleteReview = async (id) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete(`/admin/reviews/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const adminGetAllReviews = async () => {
+    const token = Cookies.get("access_token");
+    const response = await api.get("/admin/reviews", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+// Genres
+export const createGenre = async (genreData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.post("/admin/genres", genreData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const updateGenre = async (genreData) => {
+    const token = Cookies.get("access_token");
+    const response = await api.put("/admin/genres", genreData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const deleteGenre = async (id) => {
+    const token = Cookies.get("access_token");
+    const response = await api.delete(`/admin/genres/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const getGenres = async () => {
+    const token = Cookies.get("access_token");
+    const response = await api.get("/admin/genres", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
 };
