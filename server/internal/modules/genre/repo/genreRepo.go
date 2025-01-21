@@ -11,6 +11,7 @@ type GenreDB interface {
 	GetGenre(genreID uint) (*g.GenreDTO, error)
 	GetGenres() ([]*g.GenreDTO, error)
 	DeleteGenre(genreID uint) error
+	MultiDeleteGenre(genreIDs []uint) error
 }
 
 type GenreCh interface {
@@ -59,4 +60,8 @@ func (r *Repo) GetCacheGenre(key string) ([]*g.GenreDTO, error) {
 
 func (r *Repo) DeleteCacheGenre(key string) error {
 	return r.ch.DeleteCacheGenre(key)
+}
+
+func (r *Repo) MultiDeleteGenre(genreIDs []uint) error {
+	return r.db.MultiDeleteGenre(genreIDs)
 }

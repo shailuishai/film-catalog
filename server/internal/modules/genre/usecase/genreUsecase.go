@@ -95,3 +95,13 @@ func (uc *GenreUsecase) DeleteGenre(genreID uint) error {
 
 	return nil
 }
+
+// genreUsecase.go
+func (uc *GenreUsecase) MultiDeleteGenre(genreIDs []uint) error {
+	for _, genreID := range genreIDs {
+		cacheKey := "genre_" + strconv.Itoa(int(genreID))
+		_ = uc.rp.DeleteCacheGenre(cacheKey)
+	}
+	_ = uc.rp.DeleteCacheGenre("genres") // Инвалидация кэша всех жанров
+	return uc.rp.MultiDeleteGenre(genreIDs)
+}

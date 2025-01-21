@@ -237,3 +237,29 @@ func (c *GenreController) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, resp.OK())
 	return
 }
+
+// genreController.go
+func (c *GenreController) AdminMultiDeleteGenre(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("op", "AdminMultiDeleteGenre")
+
+	var request struct {
+		GenreIDs []uint `json:"genre_ids"`
+	}
+
+	if err := render.DecodeJSON(r.Body, &request); err != nil {
+		log.Error("failed to decode request body", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("failed to decode request"))
+		return
+	}
+
+	if err := c.uc.MultiDeleteGenre(request.GenreIDs); err != nil {
+		log.Error("failed to delete genres", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(g.ErrInternalServer.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, r, resp.OK())
+}

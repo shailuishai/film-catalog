@@ -130,3 +130,13 @@ func (uc *ReviewUseCase) GetAllReviews() ([]*r.ReviewDTO, error) {
 
 	return reviews, nil
 }
+
+// reviewUsecase.go
+func (uc *ReviewUseCase) MultiDeleteReview(reviewIDs []uint) error {
+	for _, reviewID := range reviewIDs {
+		cacheKey := "review_" + strconv.Itoa(int(reviewID))
+		_ = uc.rp.DeleteCache(cacheKey)
+	}
+	_ = uc.rp.DeleteCache("reviews_all") // Инвалидация кэша всех отзывов
+	return uc.rp.MultiDeleteReview(reviewIDs)
+}

@@ -142,3 +142,12 @@ func (db *ReviewDatabase) GetAllReviews() ([]*r.ReviewDTO, error) {
 
 	return dtos, nil
 }
+
+// reviewDatabase.go
+func (db *ReviewDatabase) MultiDeleteReview(reviewIDs []uint) error {
+	result := db.db.Where("review_id IN ?", reviewIDs).Delete(&r.Review{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

@@ -31,6 +31,7 @@ type AccessTokenData struct {
 }
 
 type UserProfileData struct {
+	Id        *uint   `json:"id,omitempty"`
 	Email     *string `json:"email,omitempty"`
 	Login     *string `json:"login,omitempty"`
 	AvatarUrl *string `json:"avatar_url"`
@@ -54,6 +55,7 @@ func Users(users interface{}) Response {
 		return Response{
 			Status: StatusOK,
 			Data: UserProfileData{
+				Id:        &v.UserId,
 				Email:     v.Email,
 				Login:     v.Login,
 				AvatarUrl: v.AvatarUrl,
@@ -63,6 +65,7 @@ func Users(users interface{}) Response {
 		var userList []UserProfileData
 		for _, user := range v {
 			userList = append(userList, UserProfileData{
+				Id:        &user.UserId,
 				Email:     user.Email,
 				Login:     user.Login,
 				AvatarUrl: user.AvatarUrl,

@@ -31,6 +31,7 @@ type Controller interface {
 	AdminUpdateReview(w http.ResponseWriter, r *http.Request)  // администратор может обновить любой отзыв
 	AdminDeleteReview(w http.ResponseWriter, r *http.Request)  // администратор может удалить любой отзыв
 	AdminGetAllReviews(w http.ResponseWriter, r *http.Request) // администратор может получить все отзывы в системе
+	AdminMultiDeleteReview(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
@@ -43,6 +44,7 @@ type UseCase interface {
 
 	// Методы для администратора
 	GetAllReviews() ([]*ReviewDTO, error)
+	MultiDeleteReview(reviewIDs []uint) error // удаление нескольких отзывов
 }
 
 type Repo interface {
@@ -58,4 +60,5 @@ type Repo interface {
 
 	// Методы для администратора
 	GetAllReviews() ([]*ReviewDTO, error)
+	MultiDeleteReview(reviewIDs []uint) error // удаление нескольких отзывов
 }

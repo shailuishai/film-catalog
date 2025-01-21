@@ -436,6 +436,32 @@ func (c *ReviewController) AdminDeleteReview(w http.ResponseWriter, req *http.Re
 	render.JSON(w, req, resp.OK())
 }
 
+// reviewController.go
+func (c *ReviewController) AdminMultiDeleteReview(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "AdminMultiDeleteReview")
+
+	var request struct {
+		ReviewIDs []uint `json:"review_ids"`
+	}
+
+	if err := render.DecodeJSON(req.Body, &request); err != nil {
+		log.Error("failed to decode request body", err)
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("failed to decode request"))
+		return
+	}
+
+	if err := c.uc.MultiDeleteReview(request.ReviewIDs); err != nil {
+		log.Error("failed to delete reviews", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, req, resp.OK())
+}
+
 // AdminGetAllReviews - Получение всех отзывов администратором
 // @Summary Получение всех отзывов администратором
 // @Description Возвращает все отзывы в системе

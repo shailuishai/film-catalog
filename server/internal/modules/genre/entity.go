@@ -17,6 +17,7 @@ type Controller interface {
 	GetGenres(w http.ResponseWriter, r *http.Request)
 	GetGenre(w http.ResponseWriter, r *http.Request)
 	DeleteGenre(w http.ResponseWriter, r *http.Request)
+	AdminMultiDeleteGenre(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
@@ -25,6 +26,7 @@ type UseCase interface {
 	GetGenre(genreID uint) (*GenreDTO, error)
 	GetGenres() ([]*GenreDTO, error)
 	DeleteGenre(genreID uint) error
+	MultiDeleteGenre(genreIDs []uint) error
 }
 
 type Repo interface {
@@ -36,4 +38,5 @@ type Repo interface {
 	SetCacheGenre(key string, value interface{}, ttl time.Duration) error
 	GetCacheGenre(key string) ([]*GenreDTO, error)
 	DeleteCacheGenre(key string) error
+	MultiDeleteGenre(genreIDs []uint) error
 }

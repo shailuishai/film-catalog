@@ -13,6 +13,7 @@ type ReviewDB interface {
 	GetReviewsByReviewerID(reviewerID uint) ([]*r.ReviewDTO, error)
 	DeleteReview(reviewID uint) error
 	GetAllReviews() ([]*r.ReviewDTO, error)
+	MultiDeleteReview(reviewIDs []uint) error // удаление нескольких отзывов
 }
 
 type ReviewCache interface {
@@ -68,4 +69,8 @@ func (r *Repo) DeleteCache(key string) error {
 
 func (r *Repo) GetAllReviews() ([]*r.ReviewDTO, error) {
 	return r.db.GetAllReviews()
+}
+
+func (r *Repo) MultiDeleteReview(reviewIDs []uint) error {
+	return r.db.MultiDeleteReview(reviewIDs)
 }

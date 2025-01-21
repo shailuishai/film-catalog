@@ -93,3 +93,12 @@ func (db *GenreDatabase) DeleteGenre(genreID uint) error {
 	}
 	return nil
 }
+
+// genreDatabase.go
+func (db *GenreDatabase) MultiDeleteGenre(genreIDs []uint) error {
+	result := db.db.Where("genre_id IN ?", genreIDs).Delete(&g.Genre{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
