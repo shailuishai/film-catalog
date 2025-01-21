@@ -3,6 +3,7 @@ import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
 import { getReviewsByFilmId, getReviewsByReviewerId, createReview, updateReview, deleteReview } from "../services/userServices/reviewServices";
 import Cookies from "js-cookie";
+import {jwtDecode} from "jwt-decode";
 
 const AuthContext = createContext();
 
@@ -17,6 +18,9 @@ export const AuthProvider = ({ children, navigate }) => {
             const token = Cookies.get("access_token");
             if (token) {
                 const profile = await getProfile();
+                const decoded = jwtDecode(token);
+                profile.data.user_id = decoded.user_id
+                profile.data.is_admin = decoded.is_admin
                 setUser(profile.data);
                 await fetchReviews();
             } else {

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import { Flex, Spinner, useToast } from "@chakra-ui/react";
 import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, adminOnly = false }) => {
     const navigate = useNavigate();
-    const toast = useToast();
-    const [isLoading, setIsLoading] = useState(true); // Состояние загрузки
-    const { user, isLoading: authLoading, checkAuth } = useAuth(); // Используем данные из контекста
+    const [isLoading, setIsLoading] = useState(true);
+    const { user, isLoading: authLoading, checkAuth } = useAuth();
 
     useEffect(() => {
         try {
             checkAuth()
+            if (adminOnly && !user.is_admin)
+            {
+                return <Navigate to="/" />;
+            }
         } catch (error) {
             setIsLoading(false);
             navigate("/auth")

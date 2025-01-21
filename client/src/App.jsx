@@ -12,7 +12,9 @@ import Profile from "./pages/Profile.jsx";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
 import Films from "./pages/Films";
 import FilmDetail from "./pages/FilmDetail";
-import Actors from "./pages/Actors.jsx"; // Импортируем компонент FilmDetail
+import Actors from "./pages/Actors.jsx";
+import Admin from "./pages/Admin.jsx";
+import {AdminProvider} from "./context/AdminContext.jsx"; // Импортируем компонент FilmDetail
 
 const App = () => {
     const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -29,26 +31,29 @@ const App = () => {
     return (
         <ChakraProvider theme={theme}>
             <AuthProvider navigate={navigate}>
-                <Flex>
-                    <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-                    <Box
-                        flex={1}
-                        ml={{ base: 0, md: isCollapsed ? "116px" : "366px" }}
-                        px={{ base: 0, md: isCollapsed ? "100px" : "175px" }}
-                        transition="margin-left 0.3s"
-                    >
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/auth" element={<Auth />} />
-                            <Route path="/confirm-email" element={<ConfirmEmail />} />
-                            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                            <Route path="/auth/:provider/callback" element={<OAuthCallbackPage />} />
-                            <Route path="/films" element={<Films />} />
-                            <Route path="/films/:id" element={<FilmDetail />} /> {/* Добавляем маршрут для деталей фильма */}
-                            <Route path="/actors" element={<Actors />} />
-                        </Routes>
-                    </Box>
-                </Flex>
+                <AdminProvider>
+                    <Flex>
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                        <Box
+                            flex={1}
+                            ml={{ base: 0, md: isCollapsed ? "116px" : "366px" }}
+                            px={{ base: 0, md: isCollapsed ? "100px" : "175px" }}
+                            transition="margin-left 0.3s"
+                        >
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/auth" element={<Auth />} />
+                                <Route path="/confirm-email" element={<ConfirmEmail />} />
+                                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                                <Route path="/admin" element={<ProtectedRoute adminOnly={true}><Admin /></ProtectedRoute>} />
+                                <Route path="/auth/:provider/callback" element={<OAuthCallbackPage />} />
+                                <Route path="/films" element={<Films />} />
+                                <Route path="/films/:id" element={<FilmDetail />} /> {/* Добавляем маршрут для деталей фильма */}
+                                <Route path="/actors" element={<Actors />} />
+                            </Routes>
+                        </Box>
+                    </Flex>
+                </AdminProvider>
             </AuthProvider>
         </ChakraProvider>
     );

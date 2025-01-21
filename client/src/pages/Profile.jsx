@@ -20,7 +20,7 @@ import {
 import { EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSignOutAlt } from "react-icons/fa";
-import ReviewCard from "../components/cards/ReviewCard";
+import ProfileReviewCard from "../components/cards/ProfileReviewCard";
 import { useAuth } from "../context/AuthContext";
 import Carousel from "../components/Carousel";
 
@@ -340,9 +340,8 @@ const Profile = () => {
                                 <Carousel
                                     items={reviews}
                                     renderItem={(review) => (
-                                        <ReviewCard
+                                        <ProfileReviewCard
                                             review={review}
-                                            usePoster={true}
                                             onEdit={handleEditReview}
                                             onDelete={handleDeleteReview}
                                         />

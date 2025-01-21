@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Flex, IconButton, Box } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MotionBox = motion(Box);
 
-const Carousel = ({ items, renderItem, itemsPerPage = 3, isDisabled = false }) => {
+const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled = false }, ref) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const next = () => {
@@ -16,10 +16,19 @@ const Carousel = ({ items, renderItem, itemsPerPage = 3, isDisabled = false }) =
         setCurrentIndex((prevIndex) => (prevIndex - itemsPerPage + items.length) % items.length);
     };
 
+    const resetIndex = () => {
+        setCurrentIndex(0); // Сбрасываем индекс на 0
+    };
+
+    // Используем useImperativeHandle для предоставления метода resetIndex
+    useImperativeHandle(ref, () => ({
+        resetIndex,
+    }));
+
     const visibleItems = items.slice(currentIndex, currentIndex + itemsPerPage);
 
     return (
-        <Flex align="center" justify="center" position="relative" width="100%">
+        <Flex align="center" justify="center" position="relative" width="100%" height="auto">
             {/* Стрелка "Назад" */}
             <IconButton
                 aria-label="Previous"
@@ -30,8 +39,7 @@ const Carousel = ({ items, renderItem, itemsPerPage = 3, isDisabled = false }) =
                 position="absolute"
                 left={0}
                 zIndex={1}
-                h="100%"
-                isDisabled={isDisabled} // Блокировка стрелки
+                isDisabled={isDisabled || currentIndex === 0}
             />
 
             {/* Контейнер для карточек с отступом */}
@@ -39,9 +47,8 @@ const Carousel = ({ items, renderItem, itemsPerPage = 3, isDisabled = false }) =
                 gap={4}
                 overflow="hidden"
                 width="100%"
-                height="80%"
                 justify="center"
-                py="5%"
+                py={4}
             >
                 <AnimatePresence mode="wait">
                     {visibleItems.map((item, index) => (
@@ -66,13 +73,12 @@ const Carousel = ({ items, renderItem, itemsPerPage = 3, isDisabled = false }) =
                 size="sm"
                 variant="ghost"
                 position="absolute"
-                h="100%"
                 right={0}
                 zIndex={1}
-                isDisabled={isDisabled} // Блокировка стрелки
+                isDisabled={isDisabled || currentIndex + itemsPerPage >= items.length}
             />
         </Flex>
     );
-};
+});
 
 export default Carousel;

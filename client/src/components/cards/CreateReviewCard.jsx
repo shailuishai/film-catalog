@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Textarea, Input, Button, Flex, useColorModeValue, useToast } from "@chakra-ui/react";
 
-const CreateReviewForm = ({ onSubmit, filmId }) => {
+const CreateReviewCard = ({ onSubmit, filmId }) => {
     const [reviewText, setReviewText] = useState("");
     const [rating, setRating] = useState(0);
     const toast = useToast();
@@ -98,4 +98,4 @@ const CreateReviewForm = ({ onSubmit, filmId }) => {
     );
 };
 
-export default CreateReviewForm;
+export default CreateReviewCard;

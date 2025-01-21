@@ -12,7 +12,7 @@ import {
     useColorModeValue,
     Button,
     IconButton,
-    Spinner, HStack, Spacer, useColorMode,
+    Spinner, HStack, Spacer, useColorMode, Link,
 } from "@chakra-ui/react";
 import { NavLink as RouterLink, useNavigate } from "react-router-dom";
 import {
@@ -21,7 +21,7 @@ import {
     FaList,
     FaSignInAlt,
     FaAngleDoubleRight,
-    FaAngleDoubleLeft,
+    FaAngleDoubleLeft, FaUserShield,
 } from "react-icons/fa";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
@@ -149,6 +149,33 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 spacing={4}
                 align="start"
                 pt={4}
+            >
+                {user?.is_admin && (
+                    <Button
+                        as={RouterLink}
+                        to="/admin"
+                        variant="ghost"
+                        h="48px"
+                        w={isCollapsed ? "48px" : "100%"}
+                        justifyContent={isCollapsed ? "center" : "start"}
+                        gap={4}
+                        p={isCollapsed ? 0 : 4}
+                        color={textColor}
+                        _activeLink={{
+                            bg: "rgba(255, 165, 0, 0.1)",
+                            color: accentColor,
+                        }}
+                    >
+                        <FaUserShield size={24} />
+                        {!isCollapsed && "Aдминка"}
+                    </Button>
+                )}
+            </VStack>
+            <Spacer />
+            <VStack
+                spacing={4}
+                align="start"
+                pt={4}
                 borderTop="2px solid"
                 borderColor={borderColor}
             >
@@ -174,24 +201,26 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                         <Spinner size="lg" />
                     </Flex>
                 ) : user ? (
-                    <Button
-                        as={RouterLink}
-                        to="/profile"
-                        variant="ghost"
-                        h="48px"
-                        w={isCollapsed ? "48px" : "100%"}
-                        justifyContent={isCollapsed ? "center" : "start"}
-                        gap={4}
-                        p={isCollapsed ? 0 : 4}
-                        color={textColor}
-                        _activeLink={{
-                            bg: "rgba(255, 165, 0, 0.1)",
-                            color: accentColor,
-                        }}
-                    >
-                        <Avatar size="sm" src={avatarUrl} />
-                        {!isCollapsed && `${user.login}`}
-                    </Button>
+                    <>
+                        <Button
+                            as={RouterLink}
+                            to="/profile"
+                            variant="ghost"
+                            h="48px"
+                            w={isCollapsed ? "48px" : "100%"}
+                            justifyContent={isCollapsed ? "center" : "start"}
+                            gap={4}
+                            p={isCollapsed ? 0 : 4}
+                            color={textColor}
+                            _activeLink={{
+                                bg: "rgba(255, 165, 0, 0.1)",
+                                color: accentColor,
+                            }}
+                        >
+                            <Avatar size="sm" src={avatarUrl} />
+                            {!isCollapsed && `${user.login}`}
+                        </Button>
+                    </>
                 ) : (
                     <Button
                         as={RouterLink}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Box,
     Flex,
@@ -21,7 +21,7 @@ import ActorCard from "../components/cards/ActorCard";
 import ReviewCard from "../components/cards/ReviewCard";
 import Carousel from "../components/Carousel";
 import { useAuth } from "../context/AuthContext";
-import CreateReviewForm from "../components/CreateReviewForm";
+import CreateReviewCard from "../components/cards/CreateReviewCard.jsx";
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -30,9 +30,10 @@ const FilmDetail = () => {
     const [error, setError] = useState(null);
     const [actors, setActors] = useState([]);
     const [reviews, setReviews] = useState([]);
-    const [isCreatingReview, setIsCreatingReview] = useState(false); // Состояние для создания отзыва
+    const [isCreatingReview, setIsCreatingReview] = useState(false);
     const { user, createReview, fetchReviewsByFilmId } = useAuth();
     const toast = useToast();
+    const carouselRef = useRef(null); // Добавляем ref для карусели
 
     const posterPrefix = useColorModeValue("_Light", "_Dark");
     const bgColor = useColorModeValue("white", "brand.900");
@@ -64,7 +65,10 @@ const FilmDetail = () => {
     }, [id, fetchReviewsByFilmId]);
 
     const handleCreateReviewClick = () => {
-        setIsCreatingReview(true); // Активируем режим создания отзыва
+        setIsCreatingReview(true);
+        if (carouselRef.current) {
+            carouselRef.current.resetIndex(); // Сбрасываем индекс карусели
+        }
     };
 
     const handleSubmitReview = async (filmId, rating, reviewText) => {
@@ -76,7 +80,7 @@ const FilmDetail = () => {
                 duration: 3000,
                 isClosable: true,
             });
-            setIsCreatingReview(false); // Отключаем режим создания отзыва
+            setIsCreatingReview(false);
             const updatedReviews = await fetchReviewsByFilmId(id);
             setReviews(updatedReviews);
         } catch (error) {
@@ -204,7 +208,7 @@ const FilmDetail = () => {
                 <Carousel
                     items={actors}
                     renderItem={(actor) => <ActorCard actor={actor} />}
-                    itemsPerPage={4}
+                    itemsPerPage={1}
                 />
             </Box>
 
@@ -232,15 +236,16 @@ const FilmDetail = () => {
                         )}
                     </Flex>
                     <Carousel
+                        ref={carouselRef} // Передаем ref в карусель
                         items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
                         renderItem={(item) => {
                             if (item.type === "form") {
-                                return <CreateReviewForm onSubmit={handleSubmitReview} filmId={id} />;
+                                return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
                             }
                             return <ReviewCard review={item} />;
                         }}
-                        itemsPerPage={3}
-                        isDisabled={isCreatingReview} // Блокировка стрелок при создании отзыва
+                        itemsPerPage={1}
+                        isDisabled={isCreatingReview}
                     />
                 </Box>
             </Flex>
