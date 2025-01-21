@@ -21,7 +21,6 @@ definitions:
     - film_id
     - rating
     - review_text
-    - user_id
     type: object
   controller.EmailConfirmedRequest:
     properties:
@@ -186,7 +185,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Получить список актеров с фильтрацией по различным параметрам
       tags:
-      - a
+      - actor
     post:
       consumes:
       - application/json
@@ -222,7 +221,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Создание нового актера
       tags:
-      - a
+      - actor
   /actors/{id}:
     delete:
       description: Удаляет актера по его FilmId
@@ -247,7 +246,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Удалить актера по FilmId
       tags:
-      - a
+      - actor
     get:
       description: Возвращает информацию об актере по его FilmId
       parameters:
@@ -271,7 +270,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Получить актера по FilmId
       tags:
-      - a
+      - actor
     put:
       consumes:
       - application/json
@@ -320,7 +319,307 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: Обновить информацию об актере
       tags:
-      - a
+      - actor
+  /admin/actors:
+    delete:
+      description: Удаляет несколько актеров по их FilmId
+      parameters:
+      - collectionFormat: csv
+        description: Список FilmId актеров
+        in: query
+        items:
+          type: integer
+        name: ids
+        required: true
+        type: array
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Удалить несколько актеров
+      tags:
+      - admin
+    get:
+      description: Возвращает список всех актеров с возможностью пагинации
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы
+        in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получить всех актеров для администратора
+      tags:
+      - admin
+  /admin/films:
+    delete:
+      description: Удаляет несколько фильмов по их FilmId
+      parameters:
+      - collectionFormat: csv
+        description: Список FilmId фильмов
+        in: query
+        items:
+          type: integer
+        name: ids
+        required: true
+        type: array
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Удалить несколько фильмов
+      tags:
+      - admin
+    get:
+      description: Возвращает список всех фильмов с возможностью пагинации
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы
+        in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получить все фильмы для администратора
+      tags:
+      - admin
+  /admin/reviews:
+    get:
+      description: Возвращает все отзывы в системе
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Получение всех отзывов администратором
+      tags:
+      - admin/review
+    post:
+      consumes:
+      - application/json
+      description: Создает отзыв от имени любого пользователя
+      parameters:
+      - description: Данные отзыва
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Создание отзыва администратором
+      tags:
+      - admin/review
+    put:
+      consumes:
+      - application/json
+      description: Обновляет любой отзыв в системе
+      parameters:
+      - description: Данные отзыва
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UpdateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Обновление отзыва администратором
+      tags:
+      - admin/review
+  /admin/reviews/{id}:
+    delete:
+      description: Удаляет любой отзыв в системе
+      parameters:
+      - description: ID отзыва
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Удаление отзыва администратором
+      tags:
+      - admin/review
+  /admin/users:
+    delete:
+      description: Удаляет несколько пользователей по их FilmId
+      parameters:
+      - collectionFormat: csv
+        description: Список FilmId пользователей
+        in: query
+        items:
+          type: integer
+        name: ids
+        required: true
+        type: array
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить несколько пользователей
+      tags:
+      - admin
+    get:
+      description: Возвращает список всех пользователей с возможностью пагинации
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы
+        in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.Response'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить всех пользователей для администратора
+      tags:
+      - admin
+  /admin/users/{id}:
+    delete:
+      description: Удаляет пользователя по его FilmId
+      parameters:
+      - description: FilmId пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить пользователя по FilmId
+      tags:
+      - admin
   /auth/{provider}:
     get:
       consumes:
@@ -1079,39 +1378,6 @@ paths:
       summary: Создание нового отзыва
       tags:
       - review
-    put:
-      consumes:
-      - application/json
-      description: Обновляет данные отзыва
-      parameters:
-      - description: Данные отзыва
-        in: body
-        name: json
-        required: true
-        schema:
-          $ref: '#/definitions/controller.UpdateReviewRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: Обновление отзыва
-      tags:
-      - review
   /reviews/{id}:
     delete:
       description: Удаляет отзыв по указанному FilmId
@@ -1142,10 +1408,10 @@ paths:
       tags:
       - review
     get:
-      description: Возвращает информацию о отзыве по указанному FilmId
+      description: Возвращает информацию о отзыве по указанному ID
       parameters:
-      - description: FilmId отзыва
-        in: query
+      - description: ID отзыва
+        in: path
         name: id
         required: true
         type: string
@@ -1168,7 +1434,45 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение отзыва по FilmId
+      summary: Получение отзыва по ID
+      tags:
+      - review
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные отзыва
+      parameters:
+      - description: ID отзыва
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные отзыва
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UpdateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Обновление отзыва
       tags:
       - review
   /reviews/film/{film_id}:
@@ -1200,15 +1504,9 @@ paths:
       summary: Получение отзывов по FilmId фильма
       tags:
       - review
-  /reviews/reviewer/{user_id}:
+  /reviews/user:
     get:
-      description: Возвращает список отзывов, оставленных указанным пользователем
-      parameters:
-      - description: FilmId пользователя
-        in: query
-        name: reviewer_id
-        required: true
-        type: string
+      description: Возвращает список отзывов, оставленных текущим пользователем
       produces:
       - application/json
       responses:
@@ -1218,15 +1516,11 @@ paths:
             items:
               $ref: '#/definitions/response.Response'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Получение отзывов по FilmId пользователя
+      summary: Получение отзывов текущего пользователя
       tags:
       - review
 schemes:
