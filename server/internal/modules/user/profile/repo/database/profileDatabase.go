@@ -76,3 +76,34 @@ func (db *ProfileFDatabase) DeleteUser(userId uint) error {
 
 	return nil
 }
+
+func (db *ProfileFDatabase) AdminGetAllUsers(page int, pageSize int) ([]*profile.UserProfile, error) {
+	var users []*u.User
+
+	offset := (page - 1) * pageSize
+	if err := db.db.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return u.ToProfileUsers(users), nil
+}
+
+func (db *ProfileFDatabase) AdminDeleteUser(userId uint) error {
+	if err := db.db.Delete(&u.User{}, userId).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return u.ErrUserNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (db *ProfileFDatabase) AdminMultiDeleteUsers(userIds []uint) error {
+	if err := db.db.Delete(&u.User{}, userIds).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return u.ErrUserNotFound
+		}
+		return err
+	}
+	return nil
+}

@@ -180,6 +180,28 @@ func (uc *FilmUseCase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.Fi
 	return films, nil
 }
 
+func (uc *FilmUseCase) DeleteFilms(ids []uint) error {
+	for _, id := range ids {
+		if err := uc.rp.DeleteFilm(id); err != nil {
+			return err
+		}
+
+		if err := uc.rp.DeletePoster(id); err != nil {
+			uc.log.Error("failed to delete poster from S3", "error", err)
+		}
+
+		cacheKey := fmt.Sprintf("film:%d", id)
+		if err := uc.rp.DeleteFilmFromCache(cacheKey); err != nil {
+			uc.log.Error("failed to delete film from cache", "error", err)
+		}
+
+		if err := uc.rp.DeleteFilmFromIndex(id); err != nil {
+			uc.log.Error("failed to delete film from Elasticsearch index", "error", err)
+		}
+	}
+	return nil
+}
+
 func generateCacheKey(filters f.FilmFilters, sort f.FilmSort) string {
 	var keyParts []string
 

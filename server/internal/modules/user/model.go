@@ -55,3 +55,11 @@ func FromProfileUser(user *profile.UserProfile) *User {
 		AvatarURL: *user.AvatarUrl,
 	}
 }
+
+func ToProfileUsers(users []*User) []*profile.UserProfile {
+	var profileUsers []*profile.UserProfile
+	for _, user := range users {
+		profileUsers = append(profileUsers, ToProfileUser(user))
+	}
+	return profileUsers
+}

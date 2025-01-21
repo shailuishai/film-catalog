@@ -226,3 +226,15 @@ func (uc *ActorUseCase) DeleteActor(actorId uint) error {
 
 	return nil
 }
+
+func (uc *ActorUseCase) DeleteActors(ids []uint) error {
+	for _, id := range ids {
+		if err := uc.rp.DeleteActor(id); err != nil {
+			return err
+		}
+
+		cacheKey := "actor_" + strconv.Itoa(int(id))
+		_ = uc.rp.DeleteActorFromCache(cacheKey)
+	}
+	return nil
+}

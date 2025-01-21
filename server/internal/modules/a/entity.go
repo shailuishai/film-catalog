@@ -34,6 +34,8 @@ type Controller interface {
 	GetActors(w http.ResponseWriter, r *http.Request)
 	UpdateActor(w http.ResponseWriter, r *http.Request)
 	DeleteActor(w http.ResponseWriter, r *http.Request)
+	AdminGetAllActors(w http.ResponseWriter, r *http.Request)
+	AdminMultiDeleteActors(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
@@ -42,6 +44,7 @@ type UseCase interface {
 	GetActors(filter *GetActorsFilter) ([]*ActorDTO, error)
 	UpdateActor(actor *ActorDTO, avatar *multipart.File) error
 	DeleteActor(actorId uint) error
+	DeleteActors(ids []uint) error
 }
 
 type Repo interface {

@@ -6,6 +6,9 @@ type ProfileDb interface {
 	GetUserById(userId uint) (*profile.UserProfile, error)
 	UpdateUser(user *profile.UserProfile) error
 	DeleteUser(userId uint) error
+	AdminGetAllUsers(page int, pageSize int) ([]*profile.UserProfile, error)
+	AdminDeleteUser(userId uint) error
+	AdminMultiDeleteUsers(userIds []uint) error
 }
 
 type ProfileS3 interface {
@@ -43,4 +46,16 @@ func (r *Repo) UploadAvatar(avatarSmall []byte, avatarLarge []byte, login *strin
 
 func (r *Repo) DeleteAvatar(login *string, userId uint) error {
 	return r.s3.DeleteAvatar(*login, userId)
+}
+
+func (r *Repo) AdminGetAllUsers(page int, pageSize int) ([]*profile.UserProfile, error) {
+	return r.db.AdminGetAllUsers(page, pageSize)
+}
+
+func (r *Repo) AdminDeleteUser(userId uint) error {
+	return r.db.AdminDeleteUser(userId)
+}
+
+func (r *Repo) AdminMultiDeleteUsers(userIds []uint) error {
+	return r.db.AdminMultiDeleteUsers(userIds)
 }

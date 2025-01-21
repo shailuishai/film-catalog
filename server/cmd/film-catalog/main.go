@@ -237,12 +237,6 @@ func (app *App) SetupRoutes() {
 	app.Router.Route(apiVersion+"/actors", func(r chi.Router) {
 		r.Get("/", ActorC.GetActors)
 		r.Get("/{id}", ActorC.GetActor)
-		r.Group(func(r chi.Router) {
-			r.Use(AuthAdminMiddleware)
-			r.Post("/", ActorC.CreateActor)
-			r.Put("/{id}", ActorC.UpdateActor)
-			r.Delete("/{id}", ActorC.DeleteActor)
-		})
 	})
 
 	GenreDB := genreDb.NewGenreDatabase(app.Storage.Db, app.Log)
@@ -254,12 +248,6 @@ func (app *App) SetupRoutes() {
 	app.Router.Route(apiVersion+"/genres", func(r chi.Router) {
 		r.Get("/", GenreC.GetGenres)
 		r.Get("/{id}", GenreC.GetGenre)
-		r.Group(func(r chi.Router) {
-			r.Use(AuthAdminMiddleware)
-			r.Post("/", GenreC.CreateGenre)
-			r.Put("/", GenreC.UpdateGenre)
-			r.Delete("/{id}", GenreC.DeleteGenre)
-		})
 	})
 
 	ReviewDB := reviewDb.NewReviewDatabase(app.Storage.Db, app.Log)
@@ -280,14 +268,6 @@ func (app *App) SetupRoutes() {
 		})
 	})
 
-	app.Router.Route(apiVersion+"/admin/reviews", func(r chi.Router) {
-		r.Use(AuthAdminMiddleware) // Только администраторы
-		r.Post("/", ReviewC.AdminCreateReview)
-		r.Put("/", ReviewC.AdminUpdateReview)
-		r.Delete("/{id}", ReviewC.AdminDeleteReview)
-		r.Get("/", ReviewC.AdminGetAllReviews)
-	})
-
 	FilmDB := filmDb.NewFilmDatabase(app.Storage.Db, app.Log)
 	FilmCH := filmCh.NewFilmCache(app.Cache)
 	FilmS3 := filmS3.NewFilmS3(app.Log, app.S3)
@@ -301,12 +281,40 @@ func (app *App) SetupRoutes() {
 		r.Get("/", FilmC.GetFilms)
 		r.Get("/{id}", FilmC.GetFilmByID)
 		r.Get("/search", FilmC.SearchFilms)
+	})
 
-		r.Group(func(r chi.Router) {
-			r.Use(AuthAdminMiddleware)
+	app.Router.Route(apiVersion+"/admin", func(r chi.Router) {
+		r.Use(AuthAdminMiddleware)
+		r.Route("/films", func(r chi.Router) {
 			r.Post("/", FilmC.CreateFilm)
 			r.Put("/{id}", FilmC.UpdateFilm)
 			r.Delete("/{id}", FilmC.DeleteFilm)
+			r.Delete("/", FilmC.AdminMultiDeleteFilms)
+			r.Get("/", FilmC.AdminGetAllFilms)
+		})
+		r.Route("/actors", func(r chi.Router) {
+			r.Post("/", ActorC.CreateActor)
+			r.Put("/{id}", ActorC.UpdateActor)
+			r.Delete("/{id}", ActorC.DeleteActor)
+			r.Get("/", ActorC.AdminGetAllActors)
+			r.Delete("/", ActorC.AdminMultiDeleteActors)
+		})
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", ProfileC.AdminGetAllUsers)
+			r.Delete("/{id}", ProfileC.AdminDeleteUser)
+			r.Delete("/", ProfileC.AdminMultiDeleteUsers)
+		})
+		r.Route("/reviews", func(r chi.Router) {
+			r.Post("/", ReviewC.AdminCreateReview)
+			r.Put("/", ReviewC.AdminUpdateReview)
+			r.Delete("/{id}", ReviewC.AdminDeleteReview)
+			r.Get("/", ReviewC.AdminGetAllReviews)
+		})
+		r.Route("/genres", func(r chi.Router) {
+			r.Post("/", GenreC.CreateGenre)
+			r.Put("/", GenreC.UpdateGenre)
+			r.Delete("/{id}", GenreC.DeleteGenre)
+			r.Get("/", GenreC.GetGenres)
 		})
 	})
 }

@@ -82,3 +82,28 @@ func (uc *ProfileUseCase) GetUser(userId uint) (*profile.UserProfile, error) {
 func (uc *ProfileUseCase) DeleteUser(userId uint) error {
 	return uc.rp.DeleteUser(userId)
 }
+
+func (uc *ProfileUseCase) AdminGetAllUsers(page int, pageSize int) ([]*profile.UserProfile, error) {
+	users, err := uc.rp.AdminGetAllUsers(page, pageSize)
+	if err != nil {
+		uc.log.Error("failed to get all users", err)
+		return nil, u.ErrInternal
+	}
+	return users, nil
+}
+
+func (uc *ProfileUseCase) AdminDeleteUser(userId uint) error {
+	if err := uc.rp.AdminDeleteUser(userId); err != nil {
+		uc.log.Error("failed to delete user", err)
+		return u.ErrInternal
+	}
+	return nil
+}
+
+func (uc *ProfileUseCase) AdminMultiDeleteUsers(userIds []uint) error {
+	if err := uc.rp.AdminMultiDeleteUsers(userIds); err != nil {
+		uc.log.Error("failed to delete multiple users", err)
+		return u.ErrInternal
+	}
+	return nil
+}

@@ -10,9 +10,9 @@ import (
 	"log/slog"
 	"net/http"
 	f "server/internal/modules/film"
+	"server/pkg/lib"
 	resp "server/pkg/lib/response"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -386,7 +386,7 @@ func (c *Controller) GetFilms(w http.ResponseWriter, r *http.Request) {
 	filters := f.FilmFilters{}
 
 	if genreIDs := r.URL.Query().Get("genre_ids"); genreIDs != "" {
-		ids, err := strToUintSlice(genreIDs)
+		ids, err := lib.StrToUintSlice(genreIDs)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			render.JSON(w, r, resp.Error("invalid genre_ids format"))
@@ -396,7 +396,7 @@ func (c *Controller) GetFilms(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if actorIDs := r.URL.Query().Get("actor_ids"); actorIDs != "" {
-		ids, err := strToUintSlice(actorIDs)
+		ids, err := lib.StrToUintSlice(actorIDs)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			render.JSON(w, r, resp.Error("invalid actor_ids format"))
@@ -506,25 +506,88 @@ func (c *Controller) GetFilms(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, resp.Films(films))
 }
 
+// AdminGetAllFilms - Получение всех фильмов для администратора
+// @Summary Получить все фильмы для администратора
+// @Description Возвращает список всех фильмов с возможностью пагинации
+// @Tags admin
+// @Param page query int false "Номер страницы"
+// @Param page_size query int false "Размер страницы"
+// @Success 200 {array} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/films [get]
+func (c *Controller) AdminGetAllFilms(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("method", "AdminGetAllFilms")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil || pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	filters := f.FilmFilters{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	films, err := c.filmUseCase.GetFilms(filters, f.FilmSort{})
+	if err != nil {
+		log.Error("failed to get films", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(f.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, resp.Films(films))
+}
+
+// AdminMultiDeleteFilms - Удаление нескольких фильмов
+// @Summary Удалить несколько фильмов
+// @Description Удаляет несколько фильмов по их FilmId
+// @Tags admin
+// @Param ids query []uint true "Список FilmId фильмов"
+// @Success 204 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/films [delete]
+func (c *Controller) AdminMultiDeleteFilms(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("method", "AdminMultiDeleteFilms")
+
+	ids := r.URL.Query().Get("ids")
+	if ids == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("ids parameter is required"))
+		return
+	}
+
+	idsSlice, err := lib.StrToUintSlice(ids)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("invalid ids format"))
+		return
+	}
+
+	if err := c.filmUseCase.DeleteFilms(idsSlice); err != nil {
+		log.Error("failed to delete films", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(f.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, r, resp.OK())
+}
+
 func strToUint(s string) (uint, error) {
 	val, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		return 0, err
 	}
 	return uint(val), nil
-}
-
-func strToUintSlice(s string) ([]uint, error) {
-	parts := strings.Split(s, ",")
-	var result []uint
-	for _, part := range parts {
-		val, err := strconv.ParseUint(strings.TrimSpace(part), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, uint(val))
-	}
-	return result, nil
 }
 
 func strToFloat(s string) (float64, error) {

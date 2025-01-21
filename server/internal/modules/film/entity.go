@@ -61,6 +61,8 @@ type Controller interface {
 	DeleteFilm(w http.ResponseWriter, r *http.Request)
 	SearchFilms(w http.ResponseWriter, r *http.Request)
 	GetFilms(w http.ResponseWriter, r *http.Request)
+	AdminGetAllFilms(w http.ResponseWriter, r *http.Request)
+	AdminMultiDeleteFilms(w http.ResponseWriter, r *http.Request)
 }
 
 type UseCase interface {
@@ -70,6 +72,7 @@ type UseCase interface {
 	DeleteFilm(id uint) error
 	SearchFilms(query string) ([]*FilmDTO, error)
 	GetFilms(filters FilmFilters, sort FilmSort) ([]*FilmDTO, error)
+	DeleteFilms(ids []uint) error
 }
 
 type Repo interface {

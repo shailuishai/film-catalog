@@ -10,6 +10,7 @@ import (
 	"net/http"
 	act "server/internal/modules/a"
 	u "server/internal/modules/user"
+	"server/pkg/lib"
 	resp "server/pkg/lib/response"
 	"strconv"
 	"strings"
@@ -418,4 +419,80 @@ func (c *ActorController) DeleteActor(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, r, resp.OK())
 	return
+}
+
+// AdminGetAllActors - Получение всех актеров для администратора
+// @Summary Получить всех актеров для администратора
+// @Description Возвращает список всех актеров с возможностью пагинации
+// @Tags admin
+// @Param page query int false "Номер страницы"
+// @Param page_size query int false "Размер страницы"
+// @Success 200 {array} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/actors [get]
+func (c *ActorController) AdminGetAllActors(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("method", "AdminGetAllActors")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil || pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	filters := &act.GetActorsFilter{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	actors, err := c.uc.GetActors(filters)
+	if err != nil {
+		log.Error("failed to get actors", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(act.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, resp.Actors(actors))
+}
+
+// AdminMultiDeleteActors - Удаление нескольких актеров
+// @Summary Удалить несколько актеров
+// @Description Удаляет несколько актеров по их FilmId
+// @Tags admin
+// @Param ids query []uint true "Список FilmId актеров"
+// @Success 204 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/actors [delete]
+func (c *ActorController) AdminMultiDeleteActors(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("method", "AdminMultiDeleteActors")
+
+	ids := r.URL.Query().Get("ids")
+	if ids == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("ids parameter is required"))
+		return
+	}
+
+	idsSlice, err := lib.StrToUintSlice(ids)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("invalid ids format"))
+		return
+	}
+
+	if err := c.uc.DeleteActors(idsSlice); err != nil {
+		log.Error("failed to delete actors", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(act.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, r, resp.OK())
 }

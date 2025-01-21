@@ -3,13 +3,16 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"log/slog"
 	"net/http"
 	u "server/internal/modules/user"
 	"server/internal/modules/user/profile"
+	"server/pkg/lib"
 	resp "server/pkg/lib/response"
+	"strconv"
 	"time"
 )
 
@@ -228,4 +231,115 @@ func (c *ProfileController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 	render.JSON(w, r, resp.OK())
 	return
+}
+
+// AdminGetAllUsers - Получение всех пользователей для администратора
+// @Summary Получить всех пользователей для администратора
+// @Description Возвращает список всех пользователей с возможностью пагинации
+// @Tags admin
+// @Param page query int false "Номер страницы"
+// @Param page_size query int false "Размер страницы"
+// @Success 200 {array} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/users [get]
+// @Security ApiKeyAuth
+func (c *ProfileController) AdminGetAllUsers(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("op", "AdminGetAllUsers")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil || pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	users, err := c.uc.AdminGetAllUsers(page, pageSize)
+	if err != nil {
+		log.Error("failed to get all users", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(u.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, resp.Users(users))
+}
+
+// AdminDeleteUser - Удаление пользователя администратором
+// @Summary Удалить пользователя по FilmId
+// @Description Удаляет пользователя по его FilmId
+// @Tags admin
+// @Param id path string true "FilmId пользователя"
+// @Success 204 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/users/{id} [delete]
+// @Security ApiKeyAuth
+func (c *ProfileController) AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("op", "AdminDeleteUser")
+
+	userIdStr := chi.URLParam(r, "id")
+	userId, err := strconv.ParseUint(userIdStr, 10, 32)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("invalid user id"))
+		return
+	}
+
+	if err := c.uc.AdminDeleteUser(uint(userId)); err != nil {
+		log.Error("failed to delete user", err)
+		switch {
+		case errors.Is(err, u.ErrUserNotFound):
+			w.WriteHeader(http.StatusNotFound)
+			render.JSON(w, r, resp.Error(u.ErrUserNotFound.Error()))
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, r, resp.Error(u.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, r, resp.OK())
+}
+
+// AdminMultiDeleteUsers - Удаление нескольких пользователей администратором
+// @Summary Удалить несколько пользователей
+// @Description Удаляет несколько пользователей по их FilmId
+// @Tags admin
+// @Param ids query []uint true "Список FilmId пользователей"
+// @Success 204 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /admin/users [delete]
+// @Security ApiKeyAuth
+func (c *ProfileController) AdminMultiDeleteUsers(w http.ResponseWriter, r *http.Request) {
+	log := c.log.With("op", "AdminMultiDeleteUsers")
+
+	ids := r.URL.Query().Get("ids")
+	if ids == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("ids parameter is required"))
+		return
+	}
+
+	idsSlice, err := lib.StrToUintSlice(ids)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, r, resp.Error("invalid ids format"))
+		return
+	}
+
+	if err := c.uc.AdminMultiDeleteUsers(idsSlice); err != nil {
+		log.Error("failed to delete multiple users", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, resp.Error(u.ErrInternal.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	render.JSON(w, r, resp.OK())
 }

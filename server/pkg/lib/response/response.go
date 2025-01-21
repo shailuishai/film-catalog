@@ -47,6 +47,39 @@ func UserProfile(user *u.UserProfile) Response {
 	}
 }
 
+// Users возвращает структуру Response с данными о пользователях
+func Users(users interface{}) Response {
+	switch v := users.(type) {
+	case *u.UserProfile:
+		return Response{
+			Status: StatusOK,
+			Data: UserProfileData{
+				Email:     v.Email,
+				Login:     v.Login,
+				AvatarUrl: v.AvatarUrl,
+			},
+		}
+	case []*u.UserProfile:
+		var userList []UserProfileData
+		for _, user := range v {
+			userList = append(userList, UserProfileData{
+				Email:     user.Email,
+				Login:     user.Login,
+				AvatarUrl: user.AvatarUrl,
+			})
+		}
+		return Response{
+			Status: StatusOK,
+			Data:   userList,
+		}
+	default:
+		return Response{
+			Status: StatusError,
+			Error:  "invalid server error",
+		}
+	}
+}
+
 type ActorData struct {
 	Id        uint       `json:"actor_id"`
 	Name      *string    `json:"name,omitempty"`
