@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner } from "@chakra-ui/react";
+import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm.jsx";
+import {DeleteIcon, EditIcon} from "@chakra-ui/icons";
 
 const AdminUsers = () => {
     const { users, fetchUsers, deleteUser } = useAdmin();
@@ -16,16 +17,6 @@ const AdminUsers = () => {
     const handleDelete = async (id) => {
         await deleteUser(id);
         fetchUsers();
-    };
-
-    const handleEdit = (user) => {
-        setSelectedUser(user);
-        setIsModalOpen(true);
-    };
-
-    const handleCreate = () => {
-        setSelectedUser(null);
-        setIsModalOpen(true);
     };
 
     const handleSubmit = async (data) => {
@@ -48,9 +39,6 @@ const AdminUsers = () => {
 
     return (
         <Box>
-            <Button onClick={handleCreate} mb={4}>
-                Create User
-            </Button>
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -60,13 +48,18 @@ const AdminUsers = () => {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {Array.isArray(users) && users.map((user) => (
+                    {users.map((user) => (
                         <Tr key={user.id}>
                             <Td>{user.login}</Td>
                             <Td>{user.email}</Td>
-                            <Td>
-                                <Button onClick={() => handleEdit(user)}>Edit</Button>
-                                <Button onClick={() => handleDelete(user.id)}>Delete</Button>
+                            <Td width="60px" textAlign="right">
+                                <IconButton
+                                    aria-label="Delete"
+                                    icon={<DeleteIcon />}
+                                    onClick={() => handleDelete(user.id)}
+                                    colorScheme="red"
+                                    size="sm"
+                                />
                             </Td>
                         </Tr>
                     ))}

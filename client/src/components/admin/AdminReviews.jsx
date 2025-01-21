@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner } from "@chakra-ui/react";
+import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm.jsx";
+import {DeleteIcon, EditIcon} from "@chakra-ui/icons";
 
 const AdminReviews = () => {
     const { reviews, fetchReviews, deleteReview } = useAdmin();
@@ -54,21 +55,36 @@ const AdminReviews = () => {
             <Table variant="simple">
                 <Thead>
                     <Tr>
-                        <Th>Film</Th>
-                        <Th>User</Th>
+                        <Th>Film ID</Th>
+                        <Th>User ID</Th>
                         <Th>Rating</Th>
+                        <Th>Create Date</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {Array.isArray(reviews) && reviews.map((review) => (
+                    {reviews.map((review) => (
                         <Tr key={review.id}>
-                            <Td>{review.film?.title || "N/A"}</Td>
-                            <Td>{review.user?.login || "N/A"}</Td>
+                            <Td>{review.film_id}</Td>
+                            <Td>{review.user_id}</Td>
                             <Td>{review.rating}</Td>
-                            <Td>
-                                <Button onClick={() => handleEdit(review)}>Edit</Button>
-                                <Button onClick={() => handleDelete(review.id)}>Delete</Button>
+                            <Td>{new Date(review.created_at).toLocaleDateString()}</Td>
+                            <Td width="120px" textAlign="right">
+                                <IconButton
+                                    aria-label="Edit"
+                                    icon={<EditIcon />}
+                                    onClick={() => handleEdit(review)}
+                                    colorScheme="teal"
+                                    size="sm"
+                                    mr={2}
+                                />
+                                <IconButton
+                                    aria-label="Delete"
+                                    icon={<DeleteIcon />}
+                                    onClick={() => handleDelete(review.id)}
+                                    colorScheme="red"
+                                    size="sm"
+                                />
                             </Td>
                         </Tr>
                     ))}

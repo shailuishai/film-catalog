@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner } from "@chakra-ui/react";
+import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm.jsx";
+import {DeleteIcon, EditIcon} from "@chakra-ui/icons";
 
 const AdminGenres = () => {
     const { genres, fetchGenres, deleteGenre } = useAdmin();
@@ -54,17 +55,34 @@ const AdminGenres = () => {
             <Table variant="simple">
                 <Thead>
                     <Tr>
+                        <Th>ID</Th>
                         <Th>Name</Th>
+                        <Th>Create Date</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {Array.isArray(genres) && genres.map((genre) => (
+                    {genres.map((genre) => (
                         <Tr key={genre.id}>
+                            <Td>{genre.genre_id}</Td>
                             <Td>{genre.name}</Td>
-                            <Td>
-                                <Button onClick={() => handleEdit(genre)}>Edit</Button>
-                                <Button onClick={() => handleDelete(genre.id)}>Delete</Button>
+                            <Td>{new Date(genre.created_at).toLocaleDateString()}</Td>
+                            <Td width="120px" textAlign="right">
+                                <IconButton
+                                    aria-label="Edit"
+                                    icon={<EditIcon />}
+                                    onClick={() => handleEdit(genre)}
+                                    colorScheme="teal"
+                                    size="sm"
+                                    mr={2}
+                                />
+                                <IconButton
+                                    aria-label="Delete"
+                                    icon={<DeleteIcon />}
+                                    onClick={() => handleDelete(genre.id)}
+                                    colorScheme="red"
+                                    size="sm"
+                                />
                             </Td>
                         </Tr>
                     ))}

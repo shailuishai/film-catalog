@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox, Link } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm.jsx";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const AdminActors = () => {
-    const { actors, fetchActors, deleteActor } = useAdmin();
+    const { actors, fetchActors, deleteActor, handleMultiDeleteActors } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActor, setSelectedActor] = useState(null);
+    const [selectedActors, setSelectedActors] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -38,6 +40,27 @@ const AdminActors = () => {
         fetchActors();
     };
 
+    const handleSelectActor = (actorId) => {
+        if (selectedActors.includes(actorId)) {
+            setSelectedActors(selectedActors.filter(id => id !== actorId));
+        } else {
+            setSelectedActors([...selectedActors, actorId]);
+        }
+    };
+
+    const handleSelectAllActors = () => {
+        if (selectedActors.length === actors.length) {
+            setSelectedActors([]);
+        } else {
+            setSelectedActors(actors.map(actor => actor.actor_id));
+        }
+    };
+
+    const handleDeleteSelectedActors = async () => {
+        await handleMultiDeleteActors(selectedActors);
+        setSelectedActors([]);
+    };
+
     if (isLoading) {
         return (
             <Flex justify="center" align="center" minH="100vh">
@@ -48,25 +71,76 @@ const AdminActors = () => {
 
     return (
         <Box>
-            <Button onClick={handleCreate} mb={4}>
-                Create Actor
-            </Button>
+            <Flex justify="space-between" mb={4}>
+                <Button onClick={handleCreate}>
+                    Create Actor
+                </Button>
+                {selectedActors.length > 0 && (
+                    <Button onClick={handleDeleteSelectedActors} colorScheme="red">
+                        Delete Selected Actors
+                    </Button>
+                )}
+            </Flex>
             <Table variant="simple">
                 <Thead>
                     <Tr>
+                        <Th>
+                            <Checkbox
+                                sx={{
+                                    "span[data-checked]": {
+                                        bg: "accent.400",
+                                        borderColor: "accent.400",
+                                    },
+                                }}
+                                colorScheme="accent"
+                                isChecked={selectedActors.length === actors.length && actors.length > 0}
+                                isIndeterminate={selectedActors.length > 0 && selectedActors.length < actors.length}
+                                onChange={handleSelectAllActors}
+                            />
+                        </Th>
+                        <Th>ID</Th>
                         <Th>Name</Th>
                         <Th>Wiki URL</Th>
+                        <Th>Create Date</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
                     {actors.map((actor) => (
-                        <Tr key={actor.id}>
-                            <Td>{actor.name}</Td>
-                            <Td>{actor.wikiUrl}</Td>
+                        <Tr key={actor.actor_id}>
                             <Td>
-                                <Button onClick={() => handleEdit(actor)}>Edit</Button>
-                                <Button onClick={() => handleDelete(actor.id)}>Delete</Button>
+                                <Checkbox
+                                    sx={{
+                                        "span[data-checked]": {
+                                            bg: "accent.400",
+                                            borderColor: "accent.400",
+                                        },
+                                    }}
+                                    colorScheme="accent"
+                                    isChecked={selectedActors.includes(actor.actor_id)}
+                                    onChange={() => handleSelectActor(actor.actor_id)}
+                                />
+                            </Td>
+                            <Td>{actor.actor_id}</Td>
+                            <Td>{actor.name}</Td>
+                            <Td><Link isExternal={true} href={actor.wiki_url}>{actor.wiki_url}</Link></Td>
+                            <Td>{new Date(actor.created_at).toLocaleDateString()}</Td>
+                            <Td width="120px" textAlign="right">
+                                <IconButton
+                                    aria-label="Edit"
+                                    icon={<EditIcon />}
+                                    onClick={() => handleEdit(actor)}
+                                    colorScheme="teal"
+                                    size="sm"
+                                    mr={2}
+                                />
+                                <IconButton
+                                    aria-label="Delete"
+                                    icon={<DeleteIcon />}
+                                    onClick={() => handleDelete(actor.actor_id)}
+                                    colorScheme="red"
+                                    size="sm"
+                                />
                             </Td>
                         </Tr>
                     ))}

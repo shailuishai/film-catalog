@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/authServices";
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
-import { getReviewsByFilmId, getReviewsByReviewerId, createReview, updateReview, deleteReview } from "../services/userServices/reviewServices";
+import { getReviewsByFilmId, getReviewsByReviewerId, createReview, updateReview, deleteReview } from "../services/reviewServices.js";
 import Cookies from "js-cookie";
 import {jwtDecode} from "jwt-decode";
 

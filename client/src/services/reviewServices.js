@@ -1,4 +1,4 @@
-import api from "../api.js";
+import api from "./api.js";
 import Cookies from "js-cookie";
 
 export const getReviewsByFilmId = async (filmId) => {

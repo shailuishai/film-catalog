@@ -148,7 +148,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             <VStack
                 spacing={4}
                 align="start"
-                pt={4}
+                py={4}
             >
                 {user?.is_admin && (
                     <Button

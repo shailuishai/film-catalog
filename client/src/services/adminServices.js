@@ -49,7 +49,7 @@ export const adminMultiDeleteFilms = async (filmIds) => {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        data: filmIds,
+        params: {ids: filmIds.toString()},
     });
     return response.data.data;
 };
@@ -101,7 +101,7 @@ export const adminMultiDeleteActors = async (actorIds) => {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        data: actorIds,
+        params: {ids: actorIds.toString()},
     });
     return response.data.data;
 };
@@ -133,7 +133,7 @@ export const adminMultiDeleteUsers = async (userIds) => {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        data: userIds,
+        params: {ids: userIds.toString()},
     });
     return response.data.data;
 };

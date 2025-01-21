@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {createContext, useContext, useState, useEffect, useCallback} from "react";
 import {
     createFilm,
     updateFilm,
@@ -34,18 +34,18 @@ export const AdminProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Films
-    const fetchFilms = async () => {
+    const fetchFilms = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllFilms();
             setFilms(data);
         } catch (error) {
             console.error("Failed to fetch films:", error);
-            setFilms([]); // Устанавливаем пустой массив в случае ошибки
+            setFilms([]);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleCreateFilm = async (filmData) => {
         try {
@@ -84,7 +84,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Actors
-    const fetchActors = async () => {
+    const fetchActors = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllActors();
@@ -94,7 +94,7 @@ export const AdminProvider = ({ children }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleCreateActor = async (actorData) => {
         try {
@@ -133,7 +133,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Users
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback( async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllUsers();
@@ -143,7 +143,7 @@ export const AdminProvider = ({ children }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleDeleteUser = async (id) => {
         try {
@@ -164,7 +164,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Reviews
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback( async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllReviews();
@@ -174,7 +174,7 @@ export const AdminProvider = ({ children }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleCreateReview = async (reviewData) => {
         try {
@@ -204,7 +204,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Genres
-    const fetchGenres = async () => {
+    const fetchGenres = useCallback( async () => {
         setIsLoading(true);
         try {
             const data = await getGenres();
@@ -214,7 +214,7 @@ export const AdminProvider = ({ children }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleCreateGenre = async (genreData) => {
         try {
