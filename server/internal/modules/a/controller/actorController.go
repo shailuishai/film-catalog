@@ -450,9 +450,15 @@ func (c *ActorController) AdminGetAllActors(w http.ResponseWriter, r *http.Reque
 
 	actors, err := c.uc.GetActors(filters)
 	if err != nil {
-		log.Error("failed to get actors", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, resp.Error(act.ErrInternal.Error()))
+		switch {
+		case errors.Is(err, act.ErrActorNotFound):
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, r, resp.Actors([]*act.ActorDTO{}))
+		default:
+			log.Error("error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, r, resp.Error(act.ErrInternal.Error()))
+		}
 		return
 	}
 
