@@ -5,14 +5,8 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, 'certs/local.dev-key.pem')),
-      cert: fs.readFileSync(path.resolve(__dirname, 'certs/local.dev.pem')),
-    },
-    host: 'local.dev',
-    changeOrigin: true,
-    followRedirects: true,
+  build: {
+    outDir: 'dist', // Указываем папку для сборки
   },
   // proxy: {
   //   '/api': {
