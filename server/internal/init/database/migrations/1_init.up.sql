@@ -79,7 +79,7 @@ CREATE TABLE reviews (
 CREATE MATERIALIZED VIEW film_stats AS
 SELECT
     f.film_id,
-    COALESCE(AVG(r.rating), 0) AS avg_rating,
+    COALESCE(ROUND(AVG(r.rating)), 0) AS avg_rating,
     COALESCE(COUNT(r.rating), 0) AS total_count_reviews,
     COALESCE(COUNT(CASE WHEN r.rating BETWEEN 0 AND 20 THEN 1 END), 0) AS count_0_20,
     COALESCE(COUNT(CASE WHEN r.rating BETWEEN 21 AND 40 THEN 1 END), 0) AS count_21_40,
