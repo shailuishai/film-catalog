@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useState, useEffect, useCallback} from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
     createFilm,
     updateFilm,
@@ -47,9 +47,9 @@ export const AdminProvider = ({ children }) => {
         }
     }, []);
 
-    const handleCreateFilm = async (filmData) => {
+    const handleCreateFilm = async (filmData, poster) => {
         try {
-            await createFilm(filmData);
+            await createFilm(filmData, poster);
             await fetchFilms();
         } catch (error) {
             console.error("Failed to create film:", error);
@@ -133,7 +133,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Users
-    const fetchUsers = useCallback( async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllUsers();
@@ -164,7 +164,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Reviews
-    const fetchReviews = useCallback( async () => {
+    const fetchReviews = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await adminGetAllReviews();
@@ -204,7 +204,7 @@ export const AdminProvider = ({ children }) => {
     };
 
     // Genres
-    const fetchGenres = useCallback( async () => {
+    const fetchGenres = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await getGenres();

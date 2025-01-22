@@ -18,7 +18,7 @@ import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const AdminFilms = () => {
-    const { films, isLoading, fetchFilms, handleCreateFilm, handleUpdateFilm, handleDeleteFilm, handleMultiDeleteFilms } = useAdmin();
+    const { films, genres, actors, isLoading, fetchFilms, handleCreateFilm, handleUpdateFilm, handleDeleteFilm, handleMultiDeleteFilms } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFilm, setSelectedFilm] = useState(null);
     const [selectedFilms, setSelectedFilms] = useState([]);
@@ -28,20 +28,20 @@ const AdminFilms = () => {
     }, [fetchFilms]);
 
     const handleEdit = (film) => {
-        setSelectedFilm(film);
+        setSelectedFilm(film); // Устанавливаем данные фильма для редактирования
         setIsModalOpen(true);
     };
 
     const handleCreate = () => {
-        setSelectedFilm(null);
+        setSelectedFilm(null); // Очищаем данные для создания нового фильма
         setIsModalOpen(true);
     };
 
     const handleSubmit = async (data) => {
         if (selectedFilm) {
-            await handleUpdateFilm(selectedFilm.id, data);
+            await handleUpdateFilm(selectedFilm.id, data); // Обновляем фильм
         } else {
-            await handleCreateFilm(data);
+            await handleCreateFilm(data); // Создаем новый фильм
         }
         setIsModalOpen(false);
     };
@@ -51,6 +51,14 @@ const AdminFilms = () => {
             setSelectedFilms(selectedFilms.filter(id => id !== filmId));
         } else {
             setSelectedFilms([...selectedFilms, filmId]);
+        }
+    };
+
+    const handleSelectAllFilms = () => {
+        if (selectedFilms.length === films.length) {
+            setSelectedFilms([]); // Снимаем выбор со всех фильмов
+        } else {
+            setSelectedFilms(films.map(film => film.id)); // Выбираем все фильмы
         }
     };
 
@@ -93,7 +101,7 @@ const AdminFilms = () => {
                                 colorScheme="accent"
                                 isChecked={selectedFilms.length === films.length && films.length > 0}
                                 isIndeterminate={selectedFilms.length > 0 && selectedFilms.length < films.length}
-                                onChange={handleDeleteSelectedFilms}
+                                onChange={handleSelectAllFilms}
                             />
                         </Th>
                         <Th>ID</Th>
@@ -109,8 +117,8 @@ const AdminFilms = () => {
                                 <Checkbox
                                     sx={{
                                         "span[data-checked]": {
-                                            bg: "accent.400", // Фон выбранного чекбокса
-                                            borderColor: "accent.400", // Цвет границы выбранного чекбокса
+                                            bg: "accent.400",
+                                            borderColor: "accent.400",
                                         },
                                     }}
                                     colorScheme="accent"
@@ -146,7 +154,10 @@ const AdminFilms = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
-                initialData={selectedFilm}
+                initialData={selectedFilm} // Передаем данные выбранного фильма
+                entity="film"
+                genres={genres}
+                actors={actors}
             />
         </Box>
     );

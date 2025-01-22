@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox, Link } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
-import ModalForm from "../ModalForm.jsx";
+import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const AdminActors = () => {
-    const { actors, fetchActors, deleteActor, handleMultiDeleteActors } = useAdmin();
+    const { actors, fetchActors, deleteActor, handleMultiDeleteActors, handleCreateActor, handleUpdateActor } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActor, setSelectedActor] = useState(null);
     const [selectedActors, setSelectedActors] = useState([]);
@@ -32,9 +32,9 @@ const AdminActors = () => {
 
     const handleSubmit = async (data) => {
         if (selectedActor) {
-            // Реализуйте обновление актера
+            await handleUpdateActor(selectedActor.actor_id, data);
         } else {
-            // Реализуйте создание актера
+            await handleCreateActor(data);
         }
         setIsModalOpen(false);
         fetchActors();
@@ -101,7 +101,6 @@ const AdminActors = () => {
                         <Th>ID</Th>
                         <Th>Name</Th>
                         <Th>Wiki URL</Th>
-                        <Th>Create Date</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
@@ -123,8 +122,7 @@ const AdminActors = () => {
                             </Td>
                             <Td>{actor.actor_id}</Td>
                             <Td>{actor.name}</Td>
-                            <Td><Link isExternal={true} href={actor.wiki_url}>{actor.wiki_url}</Link></Td>
-                            <Td>{new Date(actor.created_at).toLocaleDateString()}</Td>
+                            <Td>{actor.wiki_url}</Td>
                             <Td width="120px" textAlign="right">
                                 <IconButton
                                     aria-label="Edit"
@@ -151,6 +149,7 @@ const AdminActors = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={selectedActor}
+                entity="actor"
             />
         </Box>
     );

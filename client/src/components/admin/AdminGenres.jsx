@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton} from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
-import ModalForm from "../ModalForm.jsx";
-import {DeleteIcon, EditIcon} from "@chakra-ui/icons";
+import ModalForm from "../ModalForm";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const AdminGenres = () => {
-    const { genres, fetchGenres, deleteGenre } = useAdmin();
+    const { genres, fetchGenres, deleteGenre, handleMultiDeleteGenres, handleCreateGenre, handleUpdateGenre } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedGenre, setSelectedGenre] = useState(null);
+    const [selectedGenres, setSelectedGenres] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -31,12 +32,33 @@ const AdminGenres = () => {
 
     const handleSubmit = async (data) => {
         if (selectedGenre) {
-            // Реализуйте обновление жанра
+            await handleUpdateGenre(selectedGenre.genre_id, data);
         } else {
-            // Реализуйте создание жанра
+            await handleCreateGenre(data);
         }
         setIsModalOpen(false);
         fetchGenres();
+    };
+
+    const handleSelectGenre = (genreId) => {
+        if (selectedGenres.includes(genreId)) {
+            setSelectedGenres(selectedGenres.filter(id => id !== genreId));
+        } else {
+            setSelectedGenres([...selectedGenres, genreId]);
+        }
+    };
+
+    const handleSelectAllGenres = () => {
+        if (selectedGenres.length === genres.length) {
+            setSelectedGenres([]);
+        } else {
+            setSelectedGenres(genres.map(genre => genre.genre_id));
+        }
+    };
+
+    const handleDeleteSelectedGenres = async () => {
+        await handleMultiDeleteGenres(selectedGenres);
+        setSelectedGenres([]);
     };
 
     if (isLoading) {
@@ -49,24 +71,56 @@ const AdminGenres = () => {
 
     return (
         <Box>
-            <Button onClick={handleCreate} mb={4}>
-                Create Genre
-            </Button>
+            <Flex justify="space-between" mb={4}>
+                <Button onClick={handleCreate}>
+                    Create Genre
+                </Button>
+                {selectedGenres.length > 0 && (
+                    <Button onClick={handleDeleteSelectedGenres} colorScheme="red">
+                        Delete Selected Genres
+                    </Button>
+                )}
+            </Flex>
             <Table variant="simple">
                 <Thead>
                     <Tr>
+                        <Th>
+                            <Checkbox
+                                sx={{
+                                    "span[data-checked]": {
+                                        bg: "accent.400",
+                                        borderColor: "accent.400",
+                                    },
+                                }}
+                                colorScheme="accent"
+                                isChecked={selectedGenres.length === genres.length && genres.length > 0}
+                                isIndeterminate={selectedGenres.length > 0 && selectedGenres.length < genres.length}
+                                onChange={handleSelectAllGenres}
+                            />
+                        </Th>
                         <Th>ID</Th>
                         <Th>Name</Th>
-                        <Th>Create Date</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
                     {genres.map((genre) => (
-                        <Tr key={genre.id}>
+                        <Tr key={genre.genre_id}>
+                            <Td>
+                                <Checkbox
+                                    sx={{
+                                        "span[data-checked]": {
+                                            bg: "accent.400",
+                                            borderColor: "accent.400",
+                                        },
+                                    }}
+                                    colorScheme="accent"
+                                    isChecked={selectedGenres.includes(genre.genre_id)}
+                                    onChange={() => handleSelectGenre(genre.genre_id)}
+                                />
+                            </Td>
                             <Td>{genre.genre_id}</Td>
                             <Td>{genre.name}</Td>
-                            <Td>{new Date(genre.created_at).toLocaleDateString()}</Td>
                             <Td width="120px" textAlign="right">
                                 <IconButton
                                     aria-label="Edit"
@@ -79,7 +133,7 @@ const AdminGenres = () => {
                                 <IconButton
                                     aria-label="Delete"
                                     icon={<DeleteIcon />}
-                                    onClick={() => handleDelete(genre.id)}
+                                    onClick={() => handleDelete(genre.genre_id)}
                                     colorScheme="red"
                                     size="sm"
                                 />
@@ -93,6 +147,7 @@ const AdminGenres = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={selectedGenre}
+                entity="genre"
             />
         </Box>
     );

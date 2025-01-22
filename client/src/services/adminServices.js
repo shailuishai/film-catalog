@@ -3,24 +3,37 @@ import api from "./api.js";
 import Cookies from "js-cookie";
 
 // Films
-export const createFilm = async (filmData) => {
+
+export const createFilm = async (data) => {
+    const formData = new FormData();
     const token = Cookies.get("access_token");
-    const response = await api.post("/admin/films", filmData, {
+    formData.append("data", JSON.stringify(data));
+    if (data.poster) {
+        formData.append("poster", data.poster);
+    }
+    const response = await api.post("/admin/films", formData, {
         headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data.data;
+    return response.data;
 };
 
-export const updateFilm = async (id, filmData) => {
+export const updateFilm = async (id, data) => {
+    const formData = new FormData();
     const token = Cookies.get("access_token");
-    const response = await api.put(`/admin/films/${id}`, filmData, {
+    formData.append("data", JSON.stringify(data));
+    if (data.poster) {
+        formData.append("poster", data.poster);
+    }
+    const response = await api.put(`/admin/films/${id}`, formData, {
         headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data.data;
+    return response.data;
 };
 
 export const deleteFilm = async (id) => {
@@ -30,7 +43,7 @@ export const deleteFilm = async (id) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return response.data.data;
+    return response.data;
 };
 
 export const adminGetAllFilms = async () => {
@@ -57,9 +70,18 @@ export const adminMultiDeleteFilms = async (filmIds) => {
 // Actors
 export const createActor = async (actorData) => {
     const token = Cookies.get("access_token");
-    const response = await api.post("/admin/actors", actorData, {
+    const formData = new FormData();
+    formData.append("json", JSON.stringify(actorData));
+    if (actorData.avatarFile) {
+        formData.append("avatar", actorData.avatarFile);
+    }
+    const response = await api.post("/admin/actors", formData, {
         headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
+        },
+        params: {
+            reset_avatar: actorData.reset_avatar,
         },
     });
     return response.data.data;
@@ -67,8 +89,18 @@ export const createActor = async (actorData) => {
 
 export const updateActor = async (id, actorData) => {
     const token = Cookies.get("access_token");
-    const response = await api.put(`/admin/actors/${id}`, actorData, {
+    const formData = new FormData();
+    formData.append("name", actorData.name);
+    formData.append("wiki_url", actorData.wiki_url);
+    if (actorData.avatarFile) {
+        formData.append("avatar", actorData.avatarFile);
+    }
+    if (actorData.reset_avatar) {
+        formData.append("reset_avatar", true);
+    }
+    const response = await api.put(`/admin/actors/${id}`, formData, {
         headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
         },
     });

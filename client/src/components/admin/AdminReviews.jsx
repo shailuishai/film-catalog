@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton} from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
-import ModalForm from "../ModalForm.jsx";
-import {DeleteIcon, EditIcon} from "@chakra-ui/icons";
+import ModalForm from "../ModalForm";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const AdminReviews = () => {
-    const { reviews, fetchReviews, deleteReview } = useAdmin();
+    const { reviews, fetchReviews, deleteReview, handleMultiDeleteReviews, handleCreateReview, handleUpdateReview } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReview, setSelectedReview] = useState(null);
+    const [selectedReviews, setSelectedReviews] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -31,12 +32,33 @@ const AdminReviews = () => {
 
     const handleSubmit = async (data) => {
         if (selectedReview) {
-            // Реализуйте обновление отзыва
+            await handleUpdateReview(selectedReview.review_id, data);
         } else {
-            // Реализуйте создание отзыва
+            await handleCreateReview(data);
         }
         setIsModalOpen(false);
         fetchReviews();
+    };
+
+    const handleSelectReview = (reviewId) => {
+        if (selectedReviews.includes(reviewId)) {
+            setSelectedReviews(selectedReviews.filter(id => id !== reviewId));
+        } else {
+            setSelectedReviews([...selectedReviews, reviewId]);
+        }
+    };
+
+    const handleSelectAllReviews = () => {
+        if (selectedReviews.length === reviews.length) {
+            setSelectedReviews([]);
+        } else {
+            setSelectedReviews(reviews.map(review => review.review_id));
+        }
+    };
+
+    const handleDeleteSelectedReviews = async () => {
+        await handleMultiDeleteReviews(selectedReviews);
+        setSelectedReviews([]);
     };
 
     if (isLoading) {
@@ -49,26 +71,62 @@ const AdminReviews = () => {
 
     return (
         <Box>
-            <Button onClick={handleCreate} mb={4}>
-                Create Review
-            </Button>
+            <Flex justify="space-between" mb={4}>
+                <Button onClick={handleCreate}>
+                    Create Review
+                </Button>
+                {selectedReviews.length > 0 && (
+                    <Button onClick={handleDeleteSelectedReviews} colorScheme="red">
+                        Delete Selected Reviews
+                    </Button>
+                )}
+            </Flex>
             <Table variant="simple">
                 <Thead>
                     <Tr>
+                        <Th>
+                            <Checkbox
+                                sx={{
+                                    "span[data-checked]": {
+                                        bg: "accent.400",
+                                        borderColor: "accent.400",
+                                    },
+                                }}
+                                colorScheme="accent"
+                                isChecked={selectedReviews.length === reviews.length && reviews.length > 0}
+                                isIndeterminate={selectedReviews.length > 0 && selectedReviews.length < reviews.length}
+                                onChange={handleSelectAllReviews}
+                            />
+                        </Th>
+                        <Th>ID</Th>
                         <Th>Film ID</Th>
                         <Th>User ID</Th>
                         <Th>Rating</Th>
-                        <Th>Create Date</Th>
+                        <Th>Review Text</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
                     {reviews.map((review) => (
-                        <Tr key={review.id}>
+                        <Tr key={review.review_id}>
+                            <Td>
+                                <Checkbox
+                                    sx={{
+                                        "span[data-checked]": {
+                                            bg: "accent.400",
+                                            borderColor: "accent.400",
+                                        },
+                                    }}
+                                    colorScheme="accent"
+                                    isChecked={selectedReviews.includes(review.review_id)}
+                                    onChange={() => handleSelectReview(review.review_id)}
+                                />
+                            </Td>
+                            <Td>{review.review_id}</Td>
                             <Td>{review.film_id}</Td>
                             <Td>{review.user_id}</Td>
                             <Td>{review.rating}</Td>
-                            <Td>{new Date(review.created_at).toLocaleDateString()}</Td>
+                            <Td>{review.text}</Td>
                             <Td width="120px" textAlign="right">
                                 <IconButton
                                     aria-label="Edit"
@@ -81,7 +139,7 @@ const AdminReviews = () => {
                                 <IconButton
                                     aria-label="Delete"
                                     icon={<DeleteIcon />}
-                                    onClick={() => handleDelete(review.id)}
+                                    onClick={() => handleDelete(review.review_id)}
                                     colorScheme="red"
                                     size="sm"
                                 />
@@ -95,6 +153,7 @@ const AdminReviews = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={selectedReview}
+                entity="review"
             />
         </Box>
     );
