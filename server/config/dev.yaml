@@ -5,9 +5,9 @@ http_server:
   idle_timeout: 60s
 db:
   username: "user"
-  host: "dpg-cu0kkc3tq21c73csdjl0-a"
+  host: "dpg-cu8gvptumphs73c3g3ag-a"
   port: "5432"
-  dbname: "film_32q6"
+  dbname: "film_vuso"
   ssl_mode: "disable"
 cache:
   address: "red-cu0kic3v2p9s73dhu8ig:6379"
