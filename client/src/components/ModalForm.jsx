@@ -198,26 +198,30 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         focusBorderColor="accent.400"
                                     />
                                     <VStack align="start" spacing={2}>
-                                        {genres
-                                            .filter((genre) =>
-                                                genre.name.toLowerCase().includes(genreSearchQuery.toLowerCase())
-                                            )
-                                            .map((genre) => (
-                                                <Checkbox
-                                                    key={genre.genre_id}
-                                                    isChecked={formData.genre_ids?.includes(genre.genre_id)}
-                                                    onChange={() => handleGenreSelect(genre.genre_id)}
-                                                    colorScheme="accent"
-                                                    sx={{
-                                                        "span[data-checked]": {
-                                                            bg: "accent.400",
-                                                            borderColor: "accent.400",
-                                                        },
-                                                    }}
-                                                >
-                                                    {genre.name}
-                                                </Checkbox>
-                                            ))}
+                                        {genres?.length > 0 ? (
+                                            genres
+                                                .filter((genre) =>
+                                                    genre.name.toLowerCase().includes(genreSearchQuery.toLowerCase())
+                                                )
+                                                .map((genre) => (
+                                                    <Checkbox
+                                                        key={genre.genre_id}
+                                                        isChecked={formData.genre_ids?.includes(genre.genre_id)}
+                                                        onChange={() => handleGenreSelect(genre.genre_id)}
+                                                        colorScheme="accent"
+                                                        sx={{
+                                                            "span[data-checked]": {
+                                                                bg: "accent.400",
+                                                                borderColor: "accent.400",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {genre.name}
+                                                    </Checkbox>
+                                                ))
+                                        ) : (
+                                            <Text color="gray.500">Нет доступных жанров.</Text>
+                                        )}
                                     </VStack>
                                 </Box>
                             </Collapse>
@@ -245,26 +249,30 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         focusBorderColor="accent.400"
                                     />
                                     <VStack align="start" spacing={2}>
-                                        {actors
-                                            .filter((actor) =>
-                                                actor.name.toLowerCase().includes(actorSearchQuery.toLowerCase())
-                                            )
-                                            .map((actor) => (
-                                                <Checkbox
-                                                    key={actor.actor_id}
-                                                    isChecked={formData.actor_ids?.includes(actor.actor_id)}
-                                                    onChange={() => handleActorSelect(actor.actor_id)}
-                                                    colorScheme="accent"
-                                                    sx={{
-                                                        "span[data-checked]": {
-                                                            bg: "accent.400",
-                                                            borderColor: "accent.400",
-                                                        },
-                                                    }}
-                                                >
-                                                    {actor.name}
-                                                </Checkbox>
-                                            ))}
+                                        {actors?.length > 0 ? (
+                                            actors
+                                                .filter((actor) =>
+                                                    actor.name.toLowerCase().includes(actorSearchQuery.toLowerCase())
+                                                )
+                                                .map((actor) => (
+                                                    <Checkbox
+                                                        key={actor.actor_id}
+                                                        isChecked={formData.actor_ids?.includes(actor.actor_id)}
+                                                        onChange={() => handleActorSelect(actor.actor_id)}
+                                                        colorScheme="accent"
+                                                        sx={{
+                                                            "span[data-checked]": {
+                                                                bg: "accent.400",
+                                                                borderColor: "accent.400",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {actor.name}
+                                                    </Checkbox>
+                                                ))
+                                        ) : (
+                                            <Text color="gray.500">Нет доступных актеров.</Text>
+                                        )}
                                     </VStack>
                                 </Box>
                             </Collapse>

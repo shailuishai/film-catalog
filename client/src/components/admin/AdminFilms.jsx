@@ -12,6 +12,7 @@ import {
     Spinner,
     IconButton,
     Checkbox,
+    Text,
 } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
@@ -163,8 +164,8 @@ const AdminFilms = () => {
                 onSubmit={handleSubmit}
                 initialData={selectedFilm} // Передаем данные выбранного фильма
                 entity="film"
-                genres={genres}
-                actors={actors}
+                genres={genres || []}
+                actors={actors || []}
             />
         </Box>
     );

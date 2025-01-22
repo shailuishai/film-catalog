@@ -3,15 +3,16 @@ import { logout, OAuthCallback, signIn, signUp } from "../services/userServices/
 import { getProfile, updateProfile, deleteProfile } from "../services/userServices/profileSevices";
 import { getReviewsByFilmId, getReviewsByReviewerId, createReview, updateReview, deleteReview } from "../services/reviewServices.js";
 import Cookies from "js-cookie";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children, navigate }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [reviews, setReviews] = useState([]); // Состояние для отзывов
+    const [reviews, setReviews] = useState([]);
 
+    // Функция для проверки авторизации
     const checkAuth = async () => {
         setIsLoading(true);
         try {
@@ -19,10 +20,10 @@ export const AuthProvider = ({ children, navigate }) => {
             if (token) {
                 const profile = await getProfile();
                 const decoded = jwtDecode(token);
-                profile.data.user_id = decoded.user_id
-                profile.data.is_admin = decoded.is_admin
+                profile.data.user_id = decoded.user_id;
+                profile.data.is_admin = decoded.is_admin;
                 setUser(profile.data);
-                await fetchReviews();
+                await fetchReviews(); // Загружаем отзывы только если пользователь авторизован
             } else {
                 setUser(null);
             }
@@ -34,17 +35,19 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для загрузки отзывов
     const fetchReviews = async () => {
         try {
             const response = await getReviewsByReviewerId();
             if (response.status === "success") {
-                setReviews(response.data);
+                setReviews(response.data || []); // Убедимся, что data не null
             }
         } catch (error) {
             console.error("Ошибка при загрузке отзывов:", error);
         }
     };
 
+    // Функция для загрузки отзывов по ID фильма
     const fetchReviewsByFilmId = async (filmId) => {
         try {
             const response = await getReviewsByFilmId(filmId);
@@ -57,6 +60,7 @@ export const AuthProvider = ({ children, navigate }) => {
         return [];
     };
 
+    // Функция для создания отзыва
     const handleCreateReview = async (filmId, rating, reviewText) => {
         try {
             const reviewData = {
@@ -75,6 +79,7 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для обновления отзыва
     const handleUpdateReview = async (reviewId, rating, reviewText) => {
         try {
             const reviewData = {
@@ -93,6 +98,7 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для удаления отзыва
     const handleDeleteReview = async (reviewId) => {
         try {
             const response = await deleteReview(reviewId);
@@ -104,10 +110,12 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Проверка авторизации при монтировании компонента
     useEffect(() => {
         checkAuth();
-    }, []);
+    }, []); // Пустой массив зависимостей гарантирует, что checkAuth вызывается только один раз
 
+    // Функция для входа
     const handleSignIn = async (credentials) => {
         setIsLoading(true);
         try {
@@ -117,8 +125,12 @@ export const AuthProvider = ({ children, navigate }) => {
                 Cookies.set("access_token", access_token, { expires: 30 / (60 * 24), sameSite: "none", secure: true });
                 const profile = await getProfile();
                 setUser(profile.data);
-                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешного входа
-                navigate("/profile");
+                await fetchReviews(); // Загружаем отзывы после успешного входа
+
+                // Добавляем задержку перед перенаправлением
+                setTimeout(() => {
+                    navigate("/profile");
+                }, 100); // Задержка 100 мс
             }
         } catch (error) {
             throw error;
@@ -127,6 +139,32 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    const handleOAuthCallback = async (provider) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = Object.fromEntries(urlParams.entries());
+
+        try {
+            const response = await OAuthCallback(provider, params);
+            const { access_token } = response.data;
+            if (access_token) {
+                Cookies.set("access_token", access_token, { expires: 30 / (60 * 24), sameSite: "none", secure: true });
+                const profile = await getProfile();
+                setUser(profile.data);
+                await fetchReviews(); // Загружаем отзывы после успешной OAuth авторизации
+
+                // Добавляем задержку перед перенаправлением
+                setTimeout(() => {
+                    navigate("/profile");
+                }, 100); // Задержка 100 мс
+            }
+        } catch (error) {
+            setUser(null);
+            console.error("OAuth callback error:", error);
+            navigate("/auth");
+        }
+    };
+
+    // Функция для регистрации
     const handleSignUp = async (userData) => {
         setIsLoading(true);
         try {
@@ -139,6 +177,7 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для выхода
     const handleLogout = async () => {
         setIsLoading(true);
         try {
@@ -154,31 +193,12 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для OAuth авторизации
     const handleOAuth = (provider) => {
         window.location.href = `https://film-catalog-8re5.onrender.com/v1/auth/${provider}`;
     };
 
-    const handleOAuthCallback = async (provider) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const params = Object.fromEntries(urlParams.entries());
-
-        try {
-            const response = await OAuthCallback(provider, params);
-            const { access_token } = response.data;
-            if (access_token) {
-                Cookies.set("access_token", access_token, { expires: 30 / (60 * 24), sameSite: "none", secure: true });
-                const profile = await getProfile();
-                setUser(profile.data);
-                await fetchReviews(profile.data.user_id); // Загружаем отзывы после успешной OAuth авторизации
-                navigate("/profile");
-            }
-        } catch (error) {
-            setUser(null);
-            console.error("OAuth callback error:", error);
-            navigate("/auth");
-        }
-    };
-
+    // Функция для обновления профиля
     const handleUpdateProfile = async (data, avatarFile, resetAvatar) => {
         setIsLoading(true);
         try {
@@ -193,6 +213,7 @@ export const AuthProvider = ({ children, navigate }) => {
         }
     };
 
+    // Функция для удаления профиля
     const handleDeleteProfile = async () => {
         setIsLoading(true);
         try {

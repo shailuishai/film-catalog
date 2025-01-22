@@ -12,7 +12,7 @@ import {
     Spinner,
     IconButton,
     Checkbox,
-    Text
+    Text,
 } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
