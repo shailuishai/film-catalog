@@ -528,12 +528,7 @@ func (c *Controller) AdminGetAllFilms(w http.ResponseWriter, r *http.Request) {
 		pageSize = 10
 	}
 
-	filters := f.FilmFilters{
-		Page:     page,
-		PageSize: pageSize,
-	}
-
-	films, err := c.filmUseCase.GetFilms(filters, f.FilmSort{})
+	films, err := c.filmUseCase.GetAllFilmsWithDetails(page, pageSize)
 	if err != nil {
 		log.Error("failed to get films", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)

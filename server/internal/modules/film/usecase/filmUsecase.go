@@ -42,6 +42,50 @@ func (uc *FilmUseCase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 	return film, nil
 }
 
+func (uc *FilmUseCase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error) {
+	cacheKey := generateCacheKey(filters, sort)
+
+	if films, err := uc.rp.GetFilmsFromCache(cacheKey); err == nil {
+		return films, nil
+	}
+
+	films, err := uc.rp.GetFilms(filters, sort)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := uc.rp.SetFilmsToCache(cacheKey, films, time.Minute*5); err != nil {
+		uc.log.Error("failed to cache films", "error", err)
+	}
+
+	return films, nil
+}
+
+func (uc *FilmUseCase) SearchFilms(query string) ([]*f.FilmDTO, error) {
+	ids, err := uc.rp.SearchFilms(query)
+	if err != nil {
+		return nil, f.ErrFilmSearchFailed
+	}
+
+	// Если фильмы не найдены, возвращаем пустой список
+	if len(ids) == 0 {
+		return []*f.FilmDTO{}, nil
+	}
+
+	// Получаем полные данные фильмов по FilmId
+	films := make([]*f.FilmDTO, 0, len(ids))
+	for _, id := range ids {
+		film, err := uc.rp.GetFilmByID(id)
+		if err != nil {
+			uc.log.Error("Ошибка при получении фильма", slog.Uint64("id", uint64(id)), slog.Any("error", err))
+			continue
+		}
+		films = append(films, film)
+	}
+
+	return films, nil
+}
+
 func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error {
 	if film.PosterURL == "" {
 		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
@@ -76,6 +120,8 @@ func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error
 	if err := uc.rp.IndexFilm(film); err != nil {
 		uc.log.Error("failed to index film in Elasticsearch", "error", err)
 	}
+
+	_ = uc.rp.ClearAllFilmsFromCache()
 
 	return nil
 }
@@ -112,6 +158,8 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 		uc.log.Error("failed to delete film from cache", "error", err)
 	}
 
+	_ = uc.rp.ClearAllFilmsFromCache()
+
 	return nil
 }
 
@@ -133,51 +181,9 @@ func (uc *FilmUseCase) DeleteFilm(id uint) error {
 		uc.log.Error("failed to delete film from Elasticsearch index", "error", err)
 	}
 
+	_ = uc.rp.ClearAllFilmsFromCache()
+
 	return nil
-}
-
-func (uc *FilmUseCase) SearchFilms(query string) ([]*f.FilmDTO, error) {
-	ids, err := uc.rp.SearchFilms(query)
-	if err != nil {
-		return nil, f.ErrFilmSearchFailed
-	}
-
-	// Если фильмы не найдены, возвращаем пустой список
-	if len(ids) == 0 {
-		return []*f.FilmDTO{}, nil
-	}
-
-	// Получаем полные данные фильмов по FilmId
-	films := make([]*f.FilmDTO, 0, len(ids))
-	for _, id := range ids {
-		film, err := uc.rp.GetFilmByID(id)
-		if err != nil {
-			uc.log.Error("Ошибка при получении фильма", slog.Uint64("id", uint64(id)), slog.Any("error", err))
-			continue
-		}
-		films = append(films, film)
-	}
-
-	return films, nil
-}
-
-func (uc *FilmUseCase) GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error) {
-	cacheKey := generateCacheKey(filters, sort)
-
-	if films, err := uc.rp.GetFilmsFromCache(cacheKey); err == nil {
-		return films, nil
-	}
-
-	films, err := uc.rp.GetFilms(filters, sort)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := uc.rp.SetFilmsToCache(cacheKey, films, time.Minute*5); err != nil {
-		uc.log.Error("failed to cache films", "error", err)
-	}
-
-	return films, nil
 }
 
 func (uc *FilmUseCase) DeleteFilms(ids []uint) error {
@@ -199,7 +205,32 @@ func (uc *FilmUseCase) DeleteFilms(ids []uint) error {
 			uc.log.Error("failed to delete film from Elasticsearch index", "error", err)
 		}
 	}
+
+	_ = uc.rp.ClearAllFilmsFromCache()
+
 	return nil
+}
+
+func (uc *FilmUseCase) GetAllFilmsWithDetails(page, pageSize int) ([]*f.FilmDTO, error) {
+	cacheKey := fmt.Sprintf("films_all_details_page_%d_size_%d", page, pageSize)
+
+	// Попытка получить данные из кэша
+	if films, err := uc.rp.GetFilmsFromCache(cacheKey); err == nil {
+		return films, nil
+	}
+
+	// Если данных в кэше нет, запрашиваем из базы
+	films, err := uc.rp.GetAllFilmsWithDetails(page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// Кэшируем результат
+	if err := uc.rp.SetFilmsToCache(cacheKey, films, time.Minute*5); err != nil {
+		uc.log.Error("failed to cache films", "error", err)
+	}
+
+	return films, nil
 }
 
 func generateCacheKey(filters f.FilmFilters, sort f.FilmSort) string {

@@ -26,53 +26,6 @@ func NewActorUseCase(log *slog.Logger, rp act.Repo) *ActorUseCase {
 	}
 }
 
-func (uc *ActorUseCase) CreateActor(actor *act.ActorDTO, avatar *multipart.File) error {
-	log := uc.log.With("op", "usecase create actor")
-
-	if *avatar != nil {
-		_, avatar512x512, err := avatarManager.ParsingAvatarImage(avatar)
-		if err != nil {
-			log.Error("failed to parse avatar image", err)
-			switch {
-			case errors.Is(err, avatarManager.ErrInvalidTypeAvatar):
-				return act.ErrInvalidTypeAvatar
-			case errors.Is(err, avatarManager.ErrInvalidResolutionAvatar):
-				return act.ErrInvalidResolutionAvatar
-			default:
-				return act.ErrInternal
-			}
-		}
-
-		actorId, err := uc.rp.CreateActor(actor)
-		if err != nil {
-			return err
-		}
-
-		avatarUrl, err := uc.rp.UploadAvatar(avatar512x512, actor.Name, actorId)
-		if err != nil {
-			return act.ErrInternal
-		}
-
-		log.Info(*avatarUrl)
-		actor.ActorId = actorId
-		actor.AvatarUrl = avatarUrl
-
-		if err := uc.rp.UpdateActor(actor); err != nil {
-			return err
-		}
-
-		return nil
-	} else {
-		log.Info("file nil", "file", avatar)
-
-		if _, err := uc.rp.CreateActor(actor); err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
 func (uc *ActorUseCase) GetActor(actorId uint) (*act.ActorDTO, error) {
 	cacheKey := "actor_" + strconv.Itoa(int(actorId))
 	actorFromCache, err := uc.rp.GetActorFromCache(cacheKey)
@@ -142,7 +95,58 @@ func generateCacheKey(filter *act.GetActorsFilter) string {
 	hash.Write([]byte(keyString))
 	hashedKey := hash.Sum(nil)
 
-	return hex.EncodeToString(hashedKey)
+	return "actors:" + hex.EncodeToString(hashedKey)
+}
+
+func (uc *ActorUseCase) CreateActor(actor *act.ActorDTO, avatar *multipart.File) error {
+	log := uc.log.With("op", "usecase create actor")
+
+	if *avatar != nil {
+		_, avatar512x512, err := avatarManager.ParsingAvatarImage(avatar)
+		if err != nil {
+			log.Error("failed to parse avatar image", err)
+			switch {
+			case errors.Is(err, avatarManager.ErrInvalidTypeAvatar):
+				return act.ErrInvalidTypeAvatar
+			case errors.Is(err, avatarManager.ErrInvalidResolutionAvatar):
+				return act.ErrInvalidResolutionAvatar
+			default:
+				return act.ErrInternal
+			}
+		}
+
+		actorId, err := uc.rp.CreateActor(actor)
+		if err != nil {
+			return err
+		}
+
+		avatarUrl, err := uc.rp.UploadAvatar(avatar512x512, actor.Name, actorId)
+		if err != nil {
+			return act.ErrInternal
+		}
+
+		log.Info(*avatarUrl)
+		actor.ActorId = actorId
+		actor.AvatarUrl = avatarUrl
+
+		if err := uc.rp.UpdateActor(actor); err != nil {
+			return err
+		}
+
+		_ = uc.rp.ClearAllActorsFromCache()
+
+		return nil
+	} else {
+		log.Info("file nil", "file", avatar)
+
+		if _, err := uc.rp.CreateActor(actor); err != nil {
+			return err
+		}
+
+		_ = uc.rp.ClearAllActorsFromCache()
+
+		return nil
+	}
 }
 
 func (uc *ActorUseCase) UpdateActor(actor *act.ActorDTO, avatar *multipart.File) error {
@@ -200,6 +204,8 @@ func (uc *ActorUseCase) UpdateActor(actor *act.ActorDTO, avatar *multipart.File)
 	cacheKey := "actor_" + strconv.Itoa(int(actor.ActorId))
 	_ = uc.rp.DeleteActorFromCache(cacheKey)
 
+	_ = uc.rp.ClearAllActorsFromCache()
+
 	return nil
 }
 
@@ -224,6 +230,8 @@ func (uc *ActorUseCase) DeleteActor(actorId uint) error {
 	cacheKey := "actor_" + strconv.Itoa(int(actorId))
 	_ = uc.rp.DeleteActorFromCache(cacheKey)
 
+	_ = uc.rp.ClearAllActorsFromCache()
+
 	return nil
 }
 
@@ -236,5 +244,8 @@ func (uc *ActorUseCase) DeleteActors(ids []uint) error {
 		cacheKey := "actor_" + strconv.Itoa(int(id))
 		_ = uc.rp.DeleteActorFromCache(cacheKey)
 	}
+
+	_ = uc.rp.ClearAllActorsFromCache()
+
 	return nil
 }

@@ -59,3 +59,29 @@ func (c *ActorCahce) GetActorFromCache(key string) ([]*act.ActorDTO, error) {
 func (c *ActorCahce) DeleteActorFromCache(key string) error {
 	return c.ch.Client.Del(context.Background(), key).Err()
 }
+
+func (c *ActorCahce) ClearAllActorsFromCache() error {
+	var keys []string
+	var cursor uint64
+	var err error
+
+	for {
+		keys, cursor, err = c.ch.Client.Scan(context.Background(), cursor, "actors:*", 100).Result()
+		if err != nil {
+			return err
+		}
+
+		if len(keys) > 0 {
+			err = c.ch.Client.Del(context.Background(), keys...).Err()
+			if err != nil {
+				return err
+			}
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return nil
+}

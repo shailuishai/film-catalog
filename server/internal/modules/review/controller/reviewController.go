@@ -231,65 +231,6 @@ func (c *ReviewController) DeleteReview(w http.ResponseWriter, req *http.Request
 	render.JSON(w, req, resp.OK())
 }
 
-// GetReviewsByFilmID - Получение отзывов по FilmId фильма
-// @Summary Получение отзывов по FilmId фильма
-// @Description Возвращает список отзывов для указанного фильма
-// @Tags         review
-// @Produce      json
-// @Param        film_id query string true "FilmId фильма"
-// @Success 200 {array} response.Response
-// @Failure 400 {object} response.Response
-// @Failure 500 {object} response.Response
-// @Router /reviews/film/{film_id} [get]
-func (c *ReviewController) GetReviewsByFilmID(w http.ResponseWriter, req *http.Request) {
-	log := c.log.With("op", "GetReviewsByFilmID")
-
-	filmIDStr := chi.URLParam(req, "film_id")
-	filmID, err := strconv.ParseUint(filmIDStr, 10, 32)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, req, resp.Error("invalid film FilmId"))
-		return
-	}
-
-	reviews, err := c.uc.GetReviewsByFilmID(uint(filmID))
-	if err != nil {
-		log.Error("failed to get reviews by film FilmId", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	render.JSON(w, req, resp.Reviews(reviews))
-}
-
-// GetReviewsByReviewerID - Получение отзывов текущего пользователя
-// @Summary Получение отзывов текущего пользователя
-// @Description Возвращает список отзывов, оставленных текущим пользователем
-// @Tags         review
-// @Produce      json
-// @Success 200 {array} response.Response
-// @Failure 500 {object} response.Response
-// @Router /reviews/user [get]
-func (c *ReviewController) GetReviewsByReviewerID(w http.ResponseWriter, req *http.Request) {
-	log := c.log.With("op", "GetReviewsByReviewerID")
-
-	// Получаем userId из контекста
-	userID := req.Context().Value("userId").(uint)
-
-	reviews, err := c.uc.GetReviewsByReviewerID(userID)
-	if err != nil {
-		log.Error("failed to get reviews by reviewer FilmId", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	render.JSON(w, req, resp.Reviews(reviews))
-}
-
 // AdminCreateReview - Создание отзыва администратором
 // @Summary Создание отзыва администратором
 // @Description Создает отзыв от имени любого пользователя
@@ -436,7 +377,6 @@ func (c *ReviewController) AdminDeleteReview(w http.ResponseWriter, req *http.Re
 	render.JSON(w, req, resp.OK())
 }
 
-// reviewController.go
 func (c *ReviewController) AdminMultiDeleteReview(w http.ResponseWriter, req *http.Request) {
 	log := c.log.With("op", "AdminMultiDeleteReview")
 
@@ -462,6 +402,79 @@ func (c *ReviewController) AdminMultiDeleteReview(w http.ResponseWriter, req *ht
 	render.JSON(w, req, resp.OK())
 }
 
+// GetReviewsByFilmID - Получение отзывов по FilmId фильма
+// @Summary Получение отзывов по FilmId фильма
+// @Description Возвращает список отзывов для указанного фильма
+// @Tags         review
+// @Produce      json
+// @Param        film_id query string true "FilmId фильма"
+// @Success 200 {array} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /reviews/film/{film_id} [get]
+func (c *ReviewController) GetReviewsByFilmID(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "GetReviewsByFilmID")
+
+	filmIDStr := chi.URLParam(req, "film_id")
+	filmID, err := strconv.ParseUint(filmIDStr, 10, 32)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		render.JSON(w, req, resp.Error("invalid film FilmId"))
+		return
+	}
+
+	reviews, err := c.uc.GetReviewsByFilmID(uint(filmID))
+	if err != nil {
+		switch {
+		case errors.Is(err, r.ErrNoSuchReview):
+			// Возвращаем 200 с пустым списком, если отзывы не найдены
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, req, resp.Reviews([]*r.ReviewDTO{}))
+		default:
+			log.Error("failed to get reviews by film FilmId", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, req, resp.Reviews(reviews))
+}
+
+// GetReviewsByReviewerID - Получение отзывов текущего пользователя
+// @Summary Получение отзывов текущего пользователя
+// @Description Возвращает список отзывов, оставленных текущим пользователем
+// @Tags         review
+// @Produce      json
+// @Success 200 {array} response.Response
+// @Failure 500 {object} response.Response
+// @Router /reviews/user [get]
+func (c *ReviewController) GetReviewsByReviewerID(w http.ResponseWriter, req *http.Request) {
+	log := c.log.With("op", "GetReviewsByReviewerID")
+
+	// Получаем userId из контекста
+	userID := req.Context().Value("userId").(uint)
+
+	reviews, err := c.uc.GetReviewsByReviewerID(userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, r.ErrNoSuchReview):
+			// Возвращаем 200 с пустым списком, если отзывы не найдены
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, req, resp.Reviews([]*r.ReviewDTO{}))
+		default:
+			log.Error("failed to get reviews by reviewer FilmId", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, req, resp.Reviews(reviews))
+}
+
 // AdminGetAllReviews - Получение всех отзывов администратором
 // @Summary Получение всех отзывов администратором
 // @Description Возвращает все отзывы в системе
@@ -475,9 +488,16 @@ func (c *ReviewController) AdminGetAllReviews(w http.ResponseWriter, req *http.R
 
 	reviews, err := c.uc.GetAllReviews()
 	if err != nil {
-		log.Error("failed to get all reviews", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		switch {
+		case errors.Is(err, r.ErrNoSuchReview):
+			// Возвращаем 200 с пустым списком, если отзывы не найдены
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, req, resp.Reviews([]*r.ReviewDTO{}))
+		default:
+			log.Error("failed to get all reviews", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, req, resp.Error(r.ErrInternal.Error()))
+		}
 		return
 	}
 

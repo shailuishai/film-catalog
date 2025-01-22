@@ -23,6 +23,7 @@ type ActorCache interface {
 	CacheActor(key string, actor interface{}, ttl time.Duration) error
 	GetActorFromCache(key string) ([]*a.ActorDTO, error)
 	DeleteActorFromCache(key string) error
+	ClearAllActorsFromCache() error
 }
 
 type Repo struct {
@@ -81,4 +82,8 @@ func (r *Repo) DeleteActorFromCache(key string) error {
 
 func (r *Repo) RenameAvatar(oldName string, actorId uint, newName string) error {
 	return r.s3.RenameAvatar(oldName, actorId, newName)
+}
+
+func (r *Repo) ClearAllActorsFromCache() error {
+	return r.ch.ClearAllActorsFromCache()
 }

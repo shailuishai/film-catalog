@@ -73,6 +73,7 @@ type UseCase interface {
 	SearchFilms(query string) ([]*FilmDTO, error)
 	GetFilms(filters FilmFilters, sort FilmSort) ([]*FilmDTO, error)
 	DeleteFilms(ids []uint) error
+	GetAllFilmsWithDetails(page, pageSize int) ([]*FilmDTO, error)
 }
 
 type Repo interface {
@@ -82,6 +83,7 @@ type Repo interface {
 	UpdateFilm(film *FilmDTO) error
 	DeleteFilm(id uint) error
 	GetFilms(filters FilmFilters, sort FilmSort) ([]*FilmDTO, error)
+	GetAllFilmsWithDetails(page, pageSize int) ([]*FilmDTO, error)
 
 	//ES
 	SearchFilms(query string) ([]uint, error)
@@ -91,6 +93,7 @@ type Repo interface {
 	GetFilmsFromCache(key string) ([]*FilmDTO, error)
 	SetFilmsToCache(key string, films interface{}, ttl time.Duration) error
 	DeleteFilmFromCache(key string) error
+	ClearAllFilmsFromCache() error
 
 	//S3
 	UploadPoster(filmID uint, file []byte) (string, error)

@@ -19,28 +19,6 @@ func NewGenreUsecase(rp g.Repo, l *slog.Logger) *GenreUsecase {
 	}
 }
 
-func (uc *GenreUsecase) CreateGenre(name string) (uint, error) {
-	_ = uc.rp.DeleteCacheGenre("genres")
-	return uc.rp.CreateGenre(name)
-}
-
-func (uc *GenreUsecase) UpdateGenre(genreID uint, newName string) error {
-	genre := &g.GenreDTO{
-		Name:    newName,
-		GenreId: genreID,
-	}
-
-	err := uc.rp.UpdateGenre(genre)
-	if err != nil {
-		return err
-	}
-
-	cacheKey := "genre_" + strconv.Itoa(int(genreID))
-	_ = uc.rp.DeleteCacheGenre(cacheKey)
-
-	return nil
-}
-
 func (uc *GenreUsecase) GetGenre(genreID uint) (*g.GenreDTO, error) {
 	cacheKey := "genre_" + strconv.Itoa(int(genreID))
 	genreFromCache, err := uc.rp.GetCacheGenre(cacheKey)
@@ -82,6 +60,29 @@ func (uc *GenreUsecase) GetGenres() ([]*g.GenreDTO, error) {
 	return genres, nil
 }
 
+func (uc *GenreUsecase) CreateGenre(name string) (uint, error) {
+	_ = uc.rp.DeleteCacheGenre("genres")
+	return uc.rp.CreateGenre(name)
+}
+
+func (uc *GenreUsecase) UpdateGenre(genreID uint, newName string) error {
+	genre := &g.GenreDTO{
+		Name:    newName,
+		GenreId: genreID,
+	}
+
+	err := uc.rp.UpdateGenre(genre)
+	if err != nil {
+		return err
+	}
+
+	cacheKey := "genre_" + strconv.Itoa(int(genreID))
+	_ = uc.rp.DeleteCacheGenre(cacheKey)
+	_ = uc.rp.DeleteCacheGenre("genres")
+
+	return nil
+}
+
 func (uc *GenreUsecase) DeleteGenre(genreID uint) error {
 	err := uc.rp.DeleteGenre(genreID)
 	if err != nil {
@@ -90,13 +91,11 @@ func (uc *GenreUsecase) DeleteGenre(genreID uint) error {
 
 	cacheKey := "genre_" + strconv.Itoa(int(genreID))
 	_ = uc.rp.DeleteCacheGenre(cacheKey)
-
 	_ = uc.rp.DeleteCacheGenre("genres")
 
 	return nil
 }
 
-// genreUsecase.go
 func (uc *GenreUsecase) MultiDeleteGenre(genreIDs []uint) error {
 	for _, genreID := range genreIDs {
 		cacheKey := "genre_" + strconv.Itoa(int(genreID))

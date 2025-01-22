@@ -59,3 +59,29 @@ func (c *FilmCache) GetFilmsFromCache(key string) ([]*f.FilmDTO, error) {
 func (c *FilmCache) DeleteFilmFromCache(key string) error {
 	return c.ch.Client.Del(context.Background(), key).Err()
 }
+
+func (c *FilmCache) ClearAllFilmsFromCache() error {
+	var keys []string
+	var cursor uint64
+	var err error
+
+	for {
+		keys, cursor, err = c.ch.Client.Scan(context.Background(), cursor, "films:*", 100).Result()
+		if err != nil {
+			return err
+		}
+
+		if len(keys) > 0 {
+			err = c.ch.Client.Del(context.Background(), keys...).Err()
+			if err != nil {
+				return err
+			}
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return nil
+}

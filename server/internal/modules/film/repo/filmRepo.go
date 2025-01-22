@@ -11,12 +11,14 @@ type FilmDB interface {
 	UpdateFilm(film *f.FilmDTO) error
 	DeleteFilm(id uint) error
 	GetFilms(filters f.FilmFilters, sort f.FilmSort) ([]*f.FilmDTO, error)
+	GetAllFilmsWithDetails(page, pageSize int) ([]*f.FilmDTO, error)
 }
 
 type FilmCache interface {
 	GetFilmsFromCache(key string) ([]*f.FilmDTO, error)
 	SetFilmsToCache(key string, films interface{}, ttl time.Duration) error
 	DeleteFilmFromCache(key string) error
+	ClearAllFilmsFromCache() error
 }
 
 type FilmS3 interface {
@@ -96,4 +98,12 @@ func (r *Repo) UploadPoster(filmID uint, file []byte) (string, error) {
 
 func (r *Repo) DeletePoster(filmID uint) error {
 	return r.db.DeleteFilm(filmID)
+}
+
+func (r *Repo) ClearAllFilmsFromCache() error {
+	return r.ch.ClearAllFilmsFromCache()
+}
+
+func (r *Repo) GetAllFilmsWithDetails(page, pageSize int) ([]*f.FilmDTO, error) {
+	return r.db.GetAllFilmsWithDetails(page, pageSize)
 }

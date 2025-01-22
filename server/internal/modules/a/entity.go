@@ -59,4 +59,5 @@ type Repo interface {
 	CacheActor(key string, actor interface{}, ttl time.Duration) error
 	GetActorFromCache(key string) ([]*ActorDTO, error)
 	DeleteActorFromCache(key string) error
+	ClearAllActorsFromCache() error
 }
