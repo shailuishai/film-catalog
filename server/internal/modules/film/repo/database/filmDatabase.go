@@ -51,10 +51,20 @@ func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 		}
 	}()
 
-	// Debug: Log the film model before creation
-	db.log.Debug("film model before creation", "film", filmModel)
+	// Удаляем существующие связи с жанрами и актерами
+	if err := tx.Model(&filmModel).Association("Genres").Clear(); err != nil {
+		tx.Rollback()
+		db.log.Error("failed to clear genres associations", "error", err, "film", film)
+		return 0, f.ErrInternal
+	}
 
-	// Create the Film record with associations
+	if err := tx.Model(&filmModel).Association("Actors").Clear(); err != nil {
+		tx.Rollback()
+		db.log.Error("failed to clear actors associations", "error", err, "film", film)
+		return 0, f.ErrInternal
+	}
+
+	// Создаем фильм
 	if err := tx.Create(filmModel).Error; err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -64,8 +74,22 @@ func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 		return 0, f.ErrInternal
 	}
 
-	// Debug: Log the film model after creation
-	db.log.Debug("film model after creation", "filmID", filmModel.FilmId, "film", filmModel)
+	// Добавляем связи с жанрами и актерами
+	if len(filmModel.Genres) > 0 {
+		if err := tx.Model(&filmModel).Association("Genres").Append(filmModel.Genres); err != nil {
+			tx.Rollback()
+			db.log.Error("failed to add genres associations", "error", err, "film", film)
+			return 0, f.ErrInternal
+		}
+	}
+
+	if len(filmModel.Actors) > 0 {
+		if err := tx.Model(&filmModel).Association("Actors").Append(filmModel.Actors); err != nil {
+			tx.Rollback()
+			db.log.Error("failed to add actors associations", "error", err, "film", film)
+			return 0, f.ErrInternal
+		}
+	}
 
 	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
@@ -95,20 +119,32 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 		return f.ErrInternal
 	}
 
-	// Update Genres
+	// Очищаем существующие связи с жанрами
+	if err := tx.Model(&filmModel).Association("Genres").Clear(); err != nil {
+		tx.Rollback()
+		db.log.Error("failed to clear genres associations", "error", err, "filmID", film.ID)
+		return f.ErrInternal
+	}
+
+	// Добавляем новые связи с жанрами
 	if len(filmModel.Genres) > 0 {
-		// Replace existing genres for the film
-		if err := tx.Model(&filmModel).Association("Genres").Replace(filmModel.Genres); err != nil {
+		if err := tx.Model(&filmModel).Association("Genres").Append(filmModel.Genres); err != nil {
 			tx.Rollback()
 			db.log.Error("failed to update film genres", "error", err, "filmID", film.ID)
 			return f.ErrInternal
 		}
 	}
 
-	// Update Actors
+	// Очищаем существующие связи с актерами
+	if err := tx.Model(&filmModel).Association("Actors").Clear(); err != nil {
+		tx.Rollback()
+		db.log.Error("failed to clear actors associations", "error", err, "filmID", film.ID)
+		return f.ErrInternal
+	}
+
+	// Добавляем новые связи с актерами
 	if len(filmModel.Actors) > 0 {
-		// Replace existing actors for the film
-		if err := tx.Model(&filmModel).Association("Actors").Replace(filmModel.Actors); err != nil {
+		if err := tx.Model(&filmModel).Association("Actors").Append(filmModel.Actors); err != nil {
 			tx.Rollback()
 			db.log.Error("failed to update film actors", "error", err, "filmID", film.ID)
 			return f.ErrInternal

@@ -90,6 +90,7 @@ func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error
 	if film.PosterURL == "" {
 		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
 	}
+
 	id, err := uc.rp.CreateFilm(film)
 	if err != nil {
 		return err
@@ -99,22 +100,21 @@ func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error
 	if *poster != nil {
 		_, posterBytes, err := avatarManager.ParsingPosterImage(poster)
 		if err != nil {
+			_ = uc.rp.DeleteFilm(film.ID)
 			return err
 		}
+
 		posterUrl, err := uc.rp.UploadPoster(film.ID, posterBytes)
 		if err != nil {
+			_ = uc.rp.DeleteFilm(film.ID)
 			return f.ErrFilmPosterUploadFailed
 		}
+
 		film.PosterURL = posterUrl
-	}
-
-	if err := uc.rp.UpdateFilm(film); err != nil {
-		return err
-	}
-
-	film, err = uc.GetFilmByID(film.ID)
-	if err != nil {
-		return err
+		if err := uc.rp.UpdateFilm(film); err != nil {
+			_ = uc.rp.DeleteFilm(film.ID)
+			return err
+		}
 	}
 
 	if err := uc.rp.IndexFilm(film); err != nil {
@@ -131,6 +131,7 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 		if err := uc.rp.DeletePoster(film.ID); err != nil {
 			return f.ErrFilmPosterNotFound
 		}
+		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
 	}
 
 	if *poster != nil {
@@ -138,10 +139,12 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 		if err != nil {
 			return err
 		}
+
 		posterUrl, err := uc.rp.UploadPoster(film.ID, posterBytes)
 		if err != nil {
 			return f.ErrFilmPosterUploadFailed
 		}
+
 		film.PosterURL = posterUrl
 	}
 
