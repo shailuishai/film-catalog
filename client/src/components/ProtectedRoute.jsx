@@ -1,29 +1,26 @@
-import React, { useEffect, useState } from "react";
-import {Navigate, useNavigate} from "react-router-dom";
-import { Flex, Spinner, useToast } from "@chakra-ui/react";
-import { useAuth } from "../context/AuthContext"; // Используем useAuth из контекста
+import React, { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Flex, Spinner } from "@chakra-ui/react";
+import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true);
-    const { user, isLoading: authLoading, checkAuth } = useAuth();
+    const { user, isLoading } = useAuth();
 
     useEffect(() => {
-        try {
-            checkAuth()
-            if (adminOnly && !user.is_admin)
-            {
-                return <Navigate to="/" />;
-            }
-        } catch (error) {
-            setIsLoading(false);
-            navigate("/auth")
-        } finally {
-            setIsLoading(false);
+        // Если пользователь не авторизован и данные загружены, перенаправляем на страницу авторизации
+        if (!isLoading && !user) {
+            navigate("/auth");
         }
-    }, []);
 
-    if (isLoading || authLoading) {
+        // Если маршрут только для админов, а пользователь не админ, перенаправляем на главную
+        if (!isLoading && user && adminOnly && !user.is_admin) {
+            navigate("/");
+        }
+    }, [user, isLoading, adminOnly, navigate]);
+
+    // Если данные загружаются, показываем спиннер
+    if (isLoading) {
         return (
             <Flex w="100%" h="100vh" alignItems="center" justifyContent="center">
                 <Spinner size="xl" aria-label="Loading" />
@@ -31,7 +28,13 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
         );
     }
 
-    return children;
+    // Если пользователь авторизован и (если требуется админ, то он админ), показываем children
+    if (user && (!adminOnly || user.is_admin)) {
+        return children;
+    }
+
+    // Если пользователь не авторизован или не админ (если требуется), перенаправляем
+    return null; // Перенаправление уже обработано в useEffect
 };
 
 export default ProtectedRoute;

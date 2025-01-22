@@ -12,6 +12,7 @@ import {
     Spinner,
     IconButton,
     Checkbox,
+    Text,
 } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
@@ -25,7 +26,7 @@ const AdminFilms = () => {
 
     useEffect(() => {
         fetchFilms();
-    }, [fetchFilms]);
+    }, []);
 
     const handleEdit = (film) => {
         setSelectedFilm(film); // Устанавливаем данные фильма для редактирования
@@ -87,6 +88,12 @@ const AdminFilms = () => {
                     </Button>
                 )}
             </Flex>
+
+            {!films || films.length === 0 ? ( // Проверка на null и пустой массив
+                <Text textAlign="center" fontSize="lg" mt={4}>
+                    Пока нет фильмов. Хотите создать новый?
+                </Text>
+            ) : (
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -150,14 +157,15 @@ const AdminFilms = () => {
                     ))}
                 </Tbody>
             </Table>
+                )}
             <ModalForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={selectedFilm} // Передаем данные выбранного фильма
                 entity="film"
-                genres={genres}
-                actors={actors}
+                genres={genres || []}
+                actors={actors || []}
             />
         </Box>
     );

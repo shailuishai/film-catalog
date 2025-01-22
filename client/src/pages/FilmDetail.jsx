@@ -22,6 +22,7 @@ import ReviewCard from "../components/cards/ReviewCard";
 import Carousel from "../components/Carousel";
 import { useAuth } from "../context/AuthContext";
 import CreateReviewCard from "../components/cards/CreateReviewCard.jsx";
+import ActorCarousel from "../components/ActorCarousel.jsx";
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -65,9 +66,13 @@ const FilmDetail = () => {
     }, [id, fetchReviewsByFilmId]);
 
     const handleCreateReviewClick = () => {
+        console.log("Кнопка нажата, isCreatingReview будет true");
         setIsCreatingReview(true);
         if (carouselRef.current) {
-            carouselRef.current.resetIndex(); // Сбрасываем индекс карусели
+            console.log("Сброс индекса карусели");
+            carouselRef.current.resetIndex();
+        } else {
+            console.log("carouselRef.current отсутствует");
         }
     };
 
@@ -191,12 +196,6 @@ const FilmDetail = () => {
                             ))}
                         </Wrap>
                     </Box>
-
-                    {film.total_reviews > 0 && (
-                        <Text fontSize="md">
-                            <strong>Количество отзывов:</strong> {film.total_reviews}
-                        </Text>
-                    )}
                 </Flex>
             </Flex>
 
@@ -205,11 +204,7 @@ const FilmDetail = () => {
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <Carousel
-                    items={actors}
-                    renderItem={(actor) => <ActorCard actor={actor} />}
-                    itemsPerPage={1}
-                />
+                <ActorCarousel actors={actors} emptyMessage="В этом фильме снимались не известные нам актеры"/>
             </Box>
 
             {/* Диаграмма и карусель с отзывами в одном Flex */}
@@ -220,13 +215,13 @@ const FilmDetail = () => {
                 </Box>
 
                 {/* Карусель с отзывами */}
-                <Box flex={1}>
+                <Flex flex={1} flexDirection="column">
                     <Flex align="center" justify="space-between" mb={4}>
                         <Text fontSize="2xl" fontWeight="bold">
-                            Отзывы ({reviews.length})
+                            Отзывы ({reviews ? reviews.length : 0})
                         </Text>
                         {user ? (
-                            <Button colorScheme="teal" size="sm" onClick={handleCreateReviewClick}>
+                            <Button colorScheme="accent" size="sm" onClick={handleCreateReviewClick}>
                                 Оставить отзыв
                             </Button>
                         ) : (
@@ -235,19 +230,31 @@ const FilmDetail = () => {
                             </Text>
                         )}
                     </Flex>
-                    <Carousel
-                        ref={carouselRef} // Передаем ref в карусель
-                        items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
-                        renderItem={(item) => {
-                            if (item.type === "form") {
-                                return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
-                            }
-                            return <ReviewCard review={item} />;
-                        }}
-                        itemsPerPage={1}
-                        isDisabled={isCreatingReview}
-                    />
-                </Box>
+                    {reviews && reviews?.length > 0 || isCreatingReview ? (
+                        <Box flex={1} display="flex" flexDirection="column">
+                            <Carousel
+                                ref={carouselRef}
+                                items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews || []] : reviews || []}
+                                renderItem={(item) => {
+                                    if (item.type === "form") {
+                                        return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
+                                    }
+                                    return <ReviewCard review={item} />;
+                                }}
+                                itemsPerPage={1}
+                                isDisabled={isCreatingReview}
+                                flex={1}
+                                emptyMessage="Здесь пока нет отзывов. Будьте первым, кто оставит отзыв!"
+                            />
+                        </Box>
+                    ) : (
+                        <Flex flex={1} align="center" justify="center">
+                            <Text fontSize="md" color="gray.500" textAlign="center">
+                                Отзывы отсутствуют. Будьте первым, кто оставит отзыв!
+                            </Text>
+                        </Flex>
+                    )}
+                </Flex>
             </Flex>
         </Box>
     );

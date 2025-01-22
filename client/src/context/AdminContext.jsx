@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import {
     createFilm,
     updateFilm,
@@ -22,10 +22,12 @@ import {
     deleteGenre,
     getGenres,
 } from "../services/adminServices";
+import {useAuth} from "./AuthContext.jsx";
 
 const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
+    const { user } = useAuth();
     const [films, setFilms] = useState([]);
     const [actors, setActors] = useState([]);
     const [genres, setGenres] = useState([]);
@@ -243,14 +245,15 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // Загрузка данных при монтировании
-    useEffect(() => {
-        fetchFilms();
-        fetchActors();
-        fetchGenres();
-        fetchReviews();
-        fetchUsers();
-    }, []);
+    const fetchDataIfAdmin = async () => {
+        if (user?.is_admin) {
+            await fetchFilms();
+            await fetchActors();
+            await fetchGenres();
+            await fetchReviews();
+            await fetchUsers();
+        }
+    };
 
     return (
         <AdminContext.Provider
@@ -282,6 +285,7 @@ export const AdminProvider = ({ children }) => {
                 handleCreateGenre,
                 handleUpdateGenre,
                 handleDeleteGenre,
+                fetchDataIfAdmin,
             }}
         >
             {children}

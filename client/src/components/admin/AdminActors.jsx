@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
+import {
+    Box,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    Text,
+    Button,
+    Flex,
+    Spinner,
+    IconButton,
+    Checkbox,
+    Link,
+} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -13,7 +28,7 @@ const AdminActors = () => {
 
     useEffect(() => {
         fetchActors().then(() => setIsLoading(false));
-    }, [fetchActors]);
+    }, []);
 
     const handleDelete = async (id) => {
         await deleteActor(id);
@@ -81,6 +96,12 @@ const AdminActors = () => {
                     </Button>
                 )}
             </Flex>
+
+            {!actors || actors.length === 0 ? ( // Проверка на null и пустой массив
+                <Text textAlign="center" fontSize="xl" mt={4}>
+                    Пока нет актеров. Хотите создать нового?
+                </Text>
+            ) : (
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -122,7 +143,7 @@ const AdminActors = () => {
                             </Td>
                             <Td>{actor.actor_id}</Td>
                             <Td>{actor.name}</Td>
-                            <Td>{actor.wiki_url}</Td>
+                            <Td> <Link href={actor.wiki_url} isExternal><Text maxW="200px" isTruncated>{actor.wiki_url}</Text></Link></Td>
                             <Td width="120px" textAlign="right">
                                 <IconButton
                                     aria-label="Edit"
@@ -144,6 +165,7 @@ const AdminActors = () => {
                     ))}
                 </Tbody>
             </Table>
+                )}
             <ModalForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

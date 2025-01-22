@@ -23,11 +23,12 @@ import {
     Flex,
     useColorModeValue,
     FormErrorMessage,
+    Select,
 } from "@chakra-ui/react";
 import { useDropzone } from "react-dropzone";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 
-const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, actors }) => {
+const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, actors, users, films }) => {
     const [formData, setFormData] = useState({});
     const [posterFile, setPosterFile] = useState(null);
     const [avatarFile, setAvatarFile] = useState(null);
@@ -93,12 +94,17 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
             setRuntimeError("Формат должен быть: 2h 30m, 2h или 30m");
             return;
         }
-        const data = { ...formData };
+        const data = {
+            ...formData,
+            film_id: Number(formData.film_id), // Преобразуем в число
+            user_id: Number(formData.user_id), // Преобразуем в число
+            rating: Number(formData.rating),   // Преобразуем в число
+        };
         if (posterFile) {
-            data.posterFile = posterFile;
+            data.poster = posterFile;
         }
         if (avatarFile) {
-            data.avatarFile = avatarFile;
+            data.avatar = avatarFile;
         }
         if (resetAvatar) {
             data.reset_avatar = true;
@@ -108,19 +114,25 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
     };
 
     const handleClose = () => {
-        setAvatarFile(null); // Сбрасываем avatarFile
-        setResetAvatar(false); // Сбрасываем resetAvatar
-        onClose(); // Закрываем модальное окно
+        setAvatarFile(null);
+        setResetAvatar(false);
+        onClose();
     };
 
-    const onDrop = useCallback((acceptedFiles) => {
+    const onDropPoster = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             setPosterFile(acceptedFiles[0]);
+        }
+    }, []);
+
+    const onDropAvatar = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
             setAvatarFile(acceptedFiles[0]);
         }
     }, []);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+    const { getRootProps: getPosterRootProps, getInputProps: getPosterInputProps, isDragActive: isPosterDragActive } = useDropzone({ onDrop: onDropPoster });
+    const { getRootProps: getAvatarRootProps, getInputProps: getAvatarInputProps, isDragActive: isAvatarDragActive } = useDropzone({ onDrop: onDropAvatar });
 
     const renderFields = () => {
         switch (entity) {
@@ -198,26 +210,30 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         focusBorderColor="accent.400"
                                     />
                                     <VStack align="start" spacing={2}>
-                                        {genres
-                                            .filter((genre) =>
-                                                genre.name.toLowerCase().includes(genreSearchQuery.toLowerCase())
-                                            )
-                                            .map((genre) => (
-                                                <Checkbox
-                                                    key={genre.genre_id}
-                                                    isChecked={formData.genre_ids?.includes(genre.genre_id)}
-                                                    onChange={() => handleGenreSelect(genre.genre_id)}
-                                                    colorScheme="accent"
-                                                    sx={{
-                                                        "span[data-checked]": {
-                                                            bg: "accent.400",
-                                                            borderColor: "accent.400",
-                                                        },
-                                                    }}
-                                                >
-                                                    {genre.name}
-                                                </Checkbox>
-                                            ))}
+                                        {genres?.length > 0 ? (
+                                            genres
+                                                .filter((genre) =>
+                                                    genre.name.toLowerCase().includes(genreSearchQuery.toLowerCase())
+                                                )
+                                                .map((genre) => (
+                                                    <Checkbox
+                                                        key={genre.genre_id}
+                                                        isChecked={formData.genre_ids?.includes(genre.genre_id)}
+                                                        onChange={() => handleGenreSelect(genre.genre_id)}
+                                                        colorScheme="accent"
+                                                        sx={{
+                                                            "span[data-checked]": {
+                                                                bg: "accent.400",
+                                                                borderColor: "accent.400",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {genre.name}
+                                                    </Checkbox>
+                                                ))
+                                        ) : (
+                                            <Text color="gray.500">Нет доступных жанров.</Text>
+                                        )}
                                     </VStack>
                                 </Box>
                             </Collapse>
@@ -245,26 +261,30 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         focusBorderColor="accent.400"
                                     />
                                     <VStack align="start" spacing={2}>
-                                        {actors
-                                            .filter((actor) =>
-                                                actor.name.toLowerCase().includes(actorSearchQuery.toLowerCase())
-                                            )
-                                            .map((actor) => (
-                                                <Checkbox
-                                                    key={actor.actor_id}
-                                                    isChecked={formData.actor_ids?.includes(actor.actor_id)}
-                                                    onChange={() => handleActorSelect(actor.actor_id)}
-                                                    colorScheme="accent"
-                                                    sx={{
-                                                        "span[data-checked]": {
-                                                            bg: "accent.400",
-                                                            borderColor: "accent.400",
-                                                        },
-                                                    }}
-                                                >
-                                                    {actor.name}
-                                                </Checkbox>
-                                            ))}
+                                        {actors?.length > 0 ? (
+                                            actors
+                                                .filter((actor) =>
+                                                    actor.name.toLowerCase().includes(actorSearchQuery.toLowerCase())
+                                                )
+                                                .map((actor) => (
+                                                    <Checkbox
+                                                        key={actor.actor_id}
+                                                        isChecked={formData.actor_ids?.includes(actor.actor_id)}
+                                                        onChange={() => handleActorSelect(actor.actor_id)}
+                                                        colorScheme="accent"
+                                                        sx={{
+                                                            "span[data-checked]": {
+                                                                bg: "accent.400",
+                                                                borderColor: "accent.400",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {actor.name}
+                                                    </Checkbox>
+                                                ))
+                                        ) : (
+                                            <Text color="gray.500">Нет доступных актеров.</Text>
+                                        )}
                                     </VStack>
                                 </Box>
                             </Collapse>
@@ -274,15 +294,15 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                         <FormControl mt={4}>
                             <FormLabel>Poster</FormLabel>
                             <Box
-                                {...getRootProps()}
+                                {...getPosterRootProps()}
                                 p={4}
                                 border="2px dashed"
-                                borderColor={isDragActive ? "accent.400" : "gray.200"}
+                                borderColor={isPosterDragActive ? "accent.400" : "gray.200"}
                                 borderRadius="md"
                                 textAlign="center"
                                 cursor="pointer"
                             >
-                                <input {...getInputProps()} />
+                                <input {...getPosterInputProps()} />
                                 {posterFile ? (
                                     <VStack>
                                         <Image
@@ -293,7 +313,7 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         />
                                         <Text>{posterFile.name}</Text>
                                     </VStack>
-                                ) : isDragActive ? (
+                                ) : isPosterDragActive ? (
                                     <Text>Drop the poster here...</Text>
                                 ) : (
                                     <Text>Drag & drop a poster here, or click to select a file</Text>
@@ -333,15 +353,15 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                         <FormControl mt={4}>
                             <FormLabel>Avatar</FormLabel>
                             <Box
-                                {...getRootProps()}
+                                {...getAvatarRootProps()}
                                 p={4}
                                 border="2px dashed"
-                                borderColor={isDragActive ? "accent.400" : "gray.200"}
+                                borderColor={isAvatarDragActive ? "accent.400" : "gray.200"}
                                 borderRadius="md"
                                 textAlign="center"
                                 cursor="pointer"
                             >
-                                <input {...getInputProps()} />
+                                <input {...getAvatarInputProps()} />
                                 {avatarFile ? (
                                     <VStack>
                                         <Image
@@ -352,7 +372,7 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                                         />
                                         <Text>{avatarFile.name}</Text>
                                     </VStack>
-                                ) : isDragActive ? (
+                                ) : isAvatarDragActive ? (
                                     <Text>Drop the avatar here...</Text>
                                 ) : (
                                     <Text>Drag & drop an avatar here, or click to select a file</Text>
@@ -384,8 +404,39 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                     </FormControl>
                 );
             case "review":
+                console.log(formData, initialData)
                 return (
                     <>
+                        <FormControl mt={4} isRequired>
+                            <FormLabel>Film</FormLabel>
+                            <Select
+                                name="film_id"
+                                value={formData.film_id || ""}
+                                onChange={handleChange}
+                                placeholder="Select a film"
+                            >
+                                {films.map((film) => (
+                                    <option key={film.film_id} value={film.film_id}>
+                                        {film.title}
+                                    </option>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl mt={4} isRequired>
+                            <FormLabel>User</FormLabel>
+                            <Select
+                                name="user_id"
+                                value={formData.user_id || ""}
+                                onChange={handleChange}
+                                placeholder="Select a user"
+                            >
+                                {users.map((user) => (
+                                    <option key={user.user_id} value={user.user_id}>
+                                        {user.name} ({user.email})
+                                    </option>
+                                ))}
+                            </Select>
+                        </FormControl>
                         <FormControl isRequired>
                             <FormLabel>Rating</FormLabel>
                             <Input
@@ -400,8 +451,8 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
                         <FormControl mt={4} isRequired>
                             <FormLabel>Review Text</FormLabel>
                             <Textarea
-                                name="text"
-                                value={formData.text || ""}
+                                name="review_text"
+                                value={formData.review_text || ""}
                                 onChange={handleChange}
                             />
                         </FormControl>

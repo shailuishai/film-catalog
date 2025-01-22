@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Image, Text, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
+import {Box, Image, Text, Badge, Flex, useColorModeValue, Spacer} from "@chakra-ui/react";
 import { getAvatarUrl, getRatingColorScheme, formatReleaseDate } from "../../utils";
 
 const ReviewCard = ({ review }) => {
@@ -45,10 +45,11 @@ const ReviewCard = ({ review }) => {
                             maxHeight="100%"
                         />
                     </Box>
-                    <Text fontWeight="bold" fontSize="md" mr={2}>
+                    <Text fontWeight="bold" fontSize="md">
                         {review.user_login}
                     </Text>
-                    <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm" mb={2}>
+                    <Spacer></Spacer>
+                    <Badge colorScheme={getRatingColorScheme(review.rating)} fontSize="sm">
                         Rating: {review.rating}%
                     </Badge>
                 </Flex>

@@ -1,36 +1,32 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState } from "react";
 import { Flex, IconButton, Box, useColorModeValue, Text } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import ActorCard from "./cards/ActorCard";
 
 const MotionBox = motion(Box);
 
-const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled = false, emptyMessage = "Здесь пока нет данных" }, ref) => {
+const ActorCarousel = ({ actors, emptyMessage = "В этом фильме снимались не известные нам актеры" }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const itemsPerPage = 3; // Количество карточек, отображаемых одновременно
 
     const next = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + itemsPerPage) % items.length);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % actors.length);
     };
 
     const prev = () => {
-        setCurrentIndex((prevIndex) => (prevIndex - itemsPerPage + items.length) % items.length);
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + actors.length) % actors.length);
     };
 
-    useImperativeHandle(ref, () => ({
-        resetIndex: () => {
-            setCurrentIndex(0);
-        },
-    }));
-
-    const visibleItems = items?.slice(currentIndex, currentIndex + itemsPerPage);
+    const visibleItems = actors.slice(currentIndex, currentIndex + itemsPerPage);
 
     const bgColor = useColorModeValue("white", "brand.900");
     const borderColor = useColorModeValue("gray.200", "brand.800");
     const textColor = useColorModeValue("brand.900", "white");
     const accentColor = useColorModeValue("accent.400", "accent.400");
 
-    // Если items пустой, показываем сообщение
-    if (!items) {
+    // Если actors пустой, показываем сообщение
+    if (actors.length === 0) {
         return (
             <Flex align="center" justify="center" width="100%" height="100%">
                 <Text fontSize="lg" color={textColor}>
@@ -52,7 +48,7 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 position="absolute"
                 left={0}
                 zIndex={1}
-                isDisabled={isDisabled || currentIndex === 0}
+                isDisabled={currentIndex === 0}
                 height="100%"
                 border="2px solid"
                 borderColor={borderColor}
@@ -61,7 +57,7 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 _hover={{ bg: accentColor }}
             />
 
-            {/* Контейнер для карточек с отступом */}
+            {/* Контейнер для карточек */}
             <Flex
                 gap={4}
                 overflow="hidden"
@@ -72,20 +68,20 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 position="relative"
             >
                 <AnimatePresence mode="wait">
-                    {visibleItems.map((item, index) => (
+                    {visibleItems.map((actor, index) => (
                         <MotionBox
-                            key={item.id || index}
+                            key={actor.id || index}
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -50 }}
                             transition={{ duration: 0.3 }}
-                            width="100%"
+                            width="30%"
                             height="100%"
                             display="flex"
                             justifyContent="center"
                             alignItems="center"
                         >
-                            {renderItem(item)}
+                            <ActorCard actor={actor} />
                         </MotionBox>
                     ))}
                 </AnimatePresence>
@@ -101,7 +97,7 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 position="absolute"
                 right={0}
                 zIndex={1}
-                isDisabled={isDisabled || currentIndex + itemsPerPage >= items.length}
+                isDisabled={currentIndex + itemsPerPage >= actors.length}
                 height="100%"
                 border="2px solid"
                 borderColor={borderColor}
@@ -111,6 +107,6 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
             />
         </Flex>
     );
-});
+};
 
-export default Carousel;
+export default ActorCarousel;
