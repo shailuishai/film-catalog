@@ -137,8 +137,8 @@ func (c *GenreController) GetGenres(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, g.ErrNoSuchGenre):
-			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, resp.Error(g.ErrNoSuchGenre.Error()))
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, r, resp.Genres([]*g.GenreDTO{}))
 		default:
 			log.Error("failed to get genres", err)
 			w.WriteHeader(http.StatusInternalServerError)
