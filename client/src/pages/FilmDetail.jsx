@@ -66,9 +66,13 @@ const FilmDetail = () => {
     }, [id, fetchReviewsByFilmId]);
 
     const handleCreateReviewClick = () => {
+        console.log("Кнопка нажата, isCreatingReview будет true");
         setIsCreatingReview(true);
         if (carouselRef.current) {
-            carouselRef.current.resetIndex(); // Сбрасываем индекс карусели
+            console.log("Сброс индекса карусели");
+            carouselRef.current.resetIndex();
+        } else {
+            console.log("carouselRef.current отсутствует");
         }
     };
 
@@ -226,11 +230,11 @@ const FilmDetail = () => {
                             </Text>
                         )}
                     </Flex>
-                    {reviews && reviews.length > 0 ? (
+                    {reviews && reviews?.length > 0 || isCreatingReview ? (
                         <Box flex={1} display="flex" flexDirection="column">
                             <Carousel
                                 ref={carouselRef}
-                                items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
+                                items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews || []] : reviews || []}
                                 renderItem={(item) => {
                                     if (item.type === "form") {
                                         return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
@@ -239,7 +243,7 @@ const FilmDetail = () => {
                                 }}
                                 itemsPerPage={1}
                                 isDisabled={isCreatingReview}
-                                flex={1} // Растягиваем карусель на всю высоту
+                                flex={1}
                                 emptyMessage="Здесь пока нет отзывов. Будьте первым, кто оставит отзыв!"
                             />
                         </Box>

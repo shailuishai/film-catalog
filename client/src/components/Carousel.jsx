@@ -16,12 +16,10 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
         setCurrentIndex((prevIndex) => (prevIndex - itemsPerPage + items.length) % items.length);
     };
 
-    const resetIndex = () => {
-        setCurrentIndex(0);
-    };
-
     useImperativeHandle(ref, () => ({
-        resetIndex,
+        resetIndex: () => {
+            setCurrentIndex(0);
+        },
     }));
 
     const visibleItems = items?.slice(currentIndex, currentIndex + itemsPerPage);

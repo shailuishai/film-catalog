@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Text, Flex, Button, useColorModeValue, Grid, Spinner, Center } from "@chakra-ui/react"; // Импортируем Spinner и Center из Chakra UI
+import { Box, Heading, Text, Flex, Button, useColorModeValue, Spinner, Center } from "@chakra-ui/react";
 import Header from "../components/Header";
 import { Link as RouterLink } from "react-router-dom";
 import { getFilms } from "../services/filmServices";
 import { getActors } from "../services/actorServices";
-import FilmCard from "../components/cards/FilmCard.jsx";
-import ActorCard from "../components/cards/ActorCard.jsx";
+import FilmCard from "../components/cards/FilmCard";
+import ActorCard from "../components/cards/ActorCard";
 
 const Home = () => {
     const [popularFilms, setPopularFilms] = useState([]);
     const [popularActors, setPopularActors] = useState([]);
-    const [filmsLoading, setFilmsLoading] = useState(true); // Отдельное состояние для загрузки фильмов
-    const [actorsLoading, setActorsLoading] = useState(true); // Отдельное состояние для загрузки актеров
+    const [filmsLoading, setFilmsLoading] = useState(true);
+    const [actorsLoading, setActorsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ const Home = () => {
             } catch (err) {
                 setError(err.message);
             } finally {
-                setFilmsLoading(false); // Загрузка фильмов завершена
+                setFilmsLoading(false);
             }
         };
 
@@ -53,7 +53,7 @@ const Home = () => {
             } catch (err) {
                 setError(err.message);
             } finally {
-                setActorsLoading(false); // Загрузка актеров завершена
+                setActorsLoading(false);
             }
         };
 
@@ -87,12 +87,8 @@ const Home = () => {
                 <Heading as="h1" size="xl" mb={4}>
                     Популярные фильмы
                 </Heading>
-                <Flex
-                    gap={4}
-                    mb={4}
-                    justifyContent="space-between"
-                >
-                    {filmsLoading ? ( // Если фильмы загружаются, показываем спиннер
+                <Flex gap={4} mb={4} justifyContent="space-between">
+                    {filmsLoading ? (
                         <Center width="100%">
                             <Spinner size="xl" />
                         </Center>
@@ -106,12 +102,8 @@ const Home = () => {
                 <Heading as="h1" size="xl" mb={4}>
                     Популярные актеры
                 </Heading>
-                <Flex
-
-                    gap={4}
-                    justifyContent="space-between"
-                >
-                    {actorsLoading ? ( // Если актеры загружаются, показываем спиннер
+                <Flex gap={4} justifyContent="space-between">
+                    {actorsLoading ? (
                         <Center width="100%">
                             <Spinner size="xl" />
                         </Center>

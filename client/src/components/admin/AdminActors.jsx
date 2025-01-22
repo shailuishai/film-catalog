@@ -13,7 +13,7 @@ import {
     Spinner,
     IconButton,
     Checkbox,
-    Link
+    Link,
 } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
@@ -28,7 +28,7 @@ const AdminActors = () => {
 
     useEffect(() => {
         fetchActors().then(() => setIsLoading(false));
-    }, [fetchActors]);
+    }, []);
 
     const handleDelete = async (id) => {
         await deleteActor(id);
@@ -99,7 +99,7 @@ const AdminActors = () => {
 
             {!actors || actors.length === 0 ? ( // Проверка на null и пустой массив
                 <Text textAlign="center" fontSize="xl" mt={4}>
-                    Пока нет фильмов. Хотите создать новый?
+                    Пока нет актеров. Хотите создать нового?
                 </Text>
             ) : (
             <Table variant="simple">

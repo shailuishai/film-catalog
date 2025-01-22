@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Text, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -13,7 +13,7 @@ const AdminGenres = () => {
 
     useEffect(() => {
         fetchGenres().then(() => setIsLoading(false));
-    }, [fetchGenres]);
+    }, []);
 
     const handleDelete = async (id) => {
         await deleteGenre(id);
@@ -83,8 +83,8 @@ const AdminGenres = () => {
             </Flex>
 
             {!genres || genres.length === 0 ? ( // Проверка на null и пустой массив
-                <Text textAlign="center" fontSize="xl" mt={4}>
-                    Пока нет актеров. Хотите создать нового?
+                <Text textAlign="center" fontSize="2xl" mt={4}>
+                    Пока нет жанров. Хотите создать новый?
                 </Text>
             ) : (
             <Table variant="simple">

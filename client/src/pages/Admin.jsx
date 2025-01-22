@@ -12,7 +12,7 @@ const Admin = () => {
 
     useEffect(() => {
         fetchDataIfAdmin();
-    }, [fetchDataIfAdmin]);
+    }, []);
 
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");

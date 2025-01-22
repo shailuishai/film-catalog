@@ -26,7 +26,7 @@ const AdminFilms = () => {
 
     useEffect(() => {
         fetchFilms();
-    }, [fetchFilms]);
+    }, []);
 
     const handleEdit = (film) => {
         setSelectedFilm(film); // Устанавливаем данные фильма для редактирования
@@ -90,7 +90,7 @@ const AdminFilms = () => {
             </Flex>
 
             {!films || films.length === 0 ? ( // Проверка на null и пустой массив
-                <Text textAlign="center" fontSize="xl" mt={4}>
+                <Text textAlign="center" fontSize="lg" mt={4}>
                     Пока нет фильмов. Хотите создать новый?
                 </Text>
             ) : (
