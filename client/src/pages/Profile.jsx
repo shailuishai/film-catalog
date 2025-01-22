@@ -347,6 +347,7 @@ const Profile = () => {
                                         />
                                     )}
                                     itemsPerPage={1}
+                                    emptyMessage="Здесь пока нет данных"
                                 />
                             </Box>
                         </>

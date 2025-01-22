@@ -255,10 +255,6 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        fetchDataIfAdmin();
-    }, [user]);
-
     return (
         <AdminContext.Provider
             value={{
@@ -289,6 +285,7 @@ export const AdminProvider = ({ children }) => {
                 handleCreateGenre,
                 handleUpdateGenre,
                 handleDeleteGenre,
+                fetchDataIfAdmin,
             }}
         >
             {children}

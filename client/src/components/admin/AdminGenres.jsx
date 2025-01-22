@@ -81,6 +81,12 @@ const AdminGenres = () => {
                     </Button>
                 )}
             </Flex>
+
+            {!genres || genres.length === 0 ? ( // Проверка на null и пустой массив
+                <Text textAlign="center" fontSize="xl" mt={4}>
+                    Пока нет актеров. Хотите создать нового?
+                </Text>
+            ) : (
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -141,7 +147,7 @@ const AdminGenres = () => {
                         </Tr>
                     ))}
                 </Tbody>
-            </Table>
+            </Table>)}
             <ModalForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

@@ -22,6 +22,7 @@ import ReviewCard from "../components/cards/ReviewCard";
 import Carousel from "../components/Carousel";
 import { useAuth } from "../context/AuthContext";
 import CreateReviewCard from "../components/cards/CreateReviewCard.jsx";
+import ActorCarousel from "../components/ActorCarousel.jsx";
 
 const FilmDetail = () => {
     const { id } = useParams();
@@ -191,12 +192,6 @@ const FilmDetail = () => {
                             ))}
                         </Wrap>
                     </Box>
-
-                    {film.total_reviews > 0 && (
-                        <Text fontSize="md">
-                            <strong>Количество отзывов:</strong> {film.total_reviews}
-                        </Text>
-                    )}
                 </Flex>
             </Flex>
 
@@ -205,11 +200,7 @@ const FilmDetail = () => {
                 <Text fontSize="2xl" fontWeight="bold" mb={4}>
                     Актеры
                 </Text>
-                <Carousel
-                    items={actors}
-                    renderItem={(actor) => <ActorCard actor={actor} />}
-                    itemsPerPage={1}
-                />
+                <ActorCarousel actors={actors} emptyMessage="В этом фильме снимались не известные нам актеры"/>
             </Box>
 
             {/* Диаграмма и карусель с отзывами в одном Flex */}
@@ -226,7 +217,7 @@ const FilmDetail = () => {
                             Отзывы ({reviews ? reviews.length : 0})
                         </Text>
                         {user ? (
-                            <Button colorScheme="teal" size="sm" onClick={handleCreateReviewClick}>
+                            <Button colorScheme="accent" size="sm" onClick={handleCreateReviewClick}>
                                 Оставить отзыв
                             </Button>
                         ) : (
@@ -249,6 +240,7 @@ const FilmDetail = () => {
                                 itemsPerPage={1}
                                 isDisabled={isCreatingReview}
                                 flex={1} // Растягиваем карусель на всю высоту
+                                emptyMessage="Здесь пока нет отзывов. Будьте первым, кто оставит отзыв!"
                             />
                         </Box>
                     ) : (

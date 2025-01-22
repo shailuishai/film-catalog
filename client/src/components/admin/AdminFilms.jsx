@@ -87,6 +87,12 @@ const AdminFilms = () => {
                     </Button>
                 )}
             </Flex>
+
+            {!films || films.length === 0 ? ( // Проверка на null и пустой массив
+                <Text textAlign="center" fontSize="xl" mt={4}>
+                    Пока нет фильмов. Хотите создать новый?
+                </Text>
+            ) : (
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -150,6 +156,7 @@ const AdminFilms = () => {
                     ))}
                 </Tbody>
             </Table>
+                )}
             <ModalForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

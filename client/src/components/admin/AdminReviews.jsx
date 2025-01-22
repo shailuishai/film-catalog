@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
+import {
+    Box,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    Button,
+    Flex,
+    Spinner,
+    IconButton,
+    Checkbox,
+    Text
+} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -81,6 +95,12 @@ const AdminReviews = () => {
                     </Button>
                 )}
             </Flex>
+
+            {!reviews || reviews.length === 0 ? ( // Проверка на null и пустой массив
+                <Text textAlign="center" fontSize="xl" mt={4}>
+                    Пока нет фильмов. Хотите создать новый?
+                </Text>
+            ) : (
             <Table variant="simple">
                 <Thead>
                     <Tr>
@@ -147,7 +167,7 @@ const AdminReviews = () => {
                         </Tr>
                     ))}
                 </Tbody>
-            </Table>
+            </Table>)}
             <ModalForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

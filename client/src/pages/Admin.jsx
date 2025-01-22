@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { Box, Flex, Tab, TabList, TabPanel, TabPanels, Tabs, useColorModeValue } from "@chakra-ui/react";
 import { useAdmin } from "../context/AdminContext";
 import AdminFilms from "../components/admin/AdminFilms";
@@ -8,6 +8,12 @@ import AdminReviews from "../components/admin/AdminReviews";
 import AdminUsers from "../components/admin/AdminUsers";
 
 const Admin = () => {
+    const { fetchDataIfAdmin } = useAdmin();
+
+    useEffect(() => {
+        fetchDataIfAdmin();
+    }, [fetchDataIfAdmin]);
+
     const bgColor = useColorModeValue("white", "brand.900");
     const textColor = useColorModeValue("brand.900", "white");
 
