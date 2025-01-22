@@ -22,10 +22,12 @@ import {
     deleteGenre,
     getGenres,
 } from "../services/adminServices";
+import {useAuth} from "./AuthContext.jsx";
 
 const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
+    const { user } = useAuth();
     const [films, setFilms] = useState([]);
     const [actors, setActors] = useState([]);
     const [genres, setGenres] = useState([]);
@@ -243,14 +245,19 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // Загрузка данных при монтировании
+    const fetchDataIfAdmin = async () => {
+        if (user?.is_admin) {
+            await fetchFilms();
+            await fetchActors();
+            await fetchGenres();
+            await fetchReviews();
+            await fetchUsers();
+        }
+    };
+
     useEffect(() => {
-        fetchFilms();
-        fetchActors();
-        fetchGenres();
-        fetchReviews();
-        fetchUsers();
-    }, []);
+        fetchDataIfAdmin();
+    }, [user]);
 
     return (
         <AdminContext.Provider

@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Flex, IconButton, Box } from "@chakra-ui/react";
+import { Flex, IconButton, Box, useColorModeValue } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,6 +27,13 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
 
     const visibleItems = items.slice(currentIndex, currentIndex + itemsPerPage);
 
+    // Цвета в зависимости от темы
+    const bgColor = useColorModeValue("white", "brand.900");
+    const borderColor = useColorModeValue("gray.200", "brand.800");
+    const textColor = useColorModeValue("brand.900", "white");
+    const accentColor = useColorModeValue("accent.400", "accent.400");
+    const avatarPrefix = useColorModeValue("_Light", "_Dark");
+
     return (
         <Flex align="center" justify="center" position="relative" width="100%" height="auto">
             {/* Стрелка "Назад" */}
@@ -40,6 +47,12 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 left={0}
                 zIndex={1}
                 isDisabled={isDisabled || currentIndex === 0}
+                height="100%" // Кнопка на всю высоту
+                border="2px solid" // Обводка
+                borderColor={borderColor} // Цвет обводки
+                bg={bgColor} // Цвет фона
+                color={textColor} // Цвет иконки
+                _hover={{ bg: accentColor }} // Цвет фона при наведении
             />
 
             {/* Контейнер для карточек с отступом */}
@@ -76,6 +89,12 @@ const Carousel = forwardRef(({ items, renderItem, itemsPerPage = 1, isDisabled =
                 right={0}
                 zIndex={1}
                 isDisabled={isDisabled || currentIndex + itemsPerPage >= items.length}
+                height="100%" // Кнопка на всю высоту
+                border="2px solid" // Обводка
+                borderColor={borderColor} // Цвет обводки
+                bg={bgColor} // Цвет фона
+                color={textColor} // Цвет иконки
+                _hover={{ bg: accentColor }} // Цвет фона при наведении
             />
         </Flex>
     );
