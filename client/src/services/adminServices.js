@@ -72,8 +72,8 @@ export const createActor = async (actorData) => {
     const token = Cookies.get("access_token");
     const formData = new FormData();
     formData.append("json", JSON.stringify(actorData));
-    if (actorData.avatarFile) {
-        formData.append("avatar", actorData.avatarFile);
+    if (actorData.avatar) {
+        formData.append("avatar", actorData.avatar);
     }
     const response = await api.post("/admin/actors", formData, {
         headers: {
@@ -92,8 +92,8 @@ export const updateActor = async (id, actorData) => {
     const formData = new FormData();
     formData.append("name", actorData.name);
     formData.append("wiki_url", actorData.wiki_url);
-    if (actorData.avatarFile) {
-        formData.append("avatar", actorData.avatarFile);
+    if (actorData.avatar) {
+        formData.append("avatar", actorData.avatar);
     }
     if (actorData.reset_avatar) {
         formData.append("reset_avatar", true);

@@ -95,10 +95,10 @@ const ModalForm = ({ isOpen, onClose, onSubmit, initialData, entity, genres, act
         }
         const data = { ...formData };
         if (posterFile) {
-            data.posterFile = posterFile;
+            data.poster = posterFile;
         }
         if (avatarFile) {
-            data.avatarFile = avatarFile;
+            data.avatar = avatarFile;
         }
         if (resetAvatar) {
             data.reset_avatar = true;

@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Flex, Spinner, IconButton, Checkbox } from "@chakra-ui/react";
+import {
+    Box,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    Text,
+    Button,
+    Flex,
+    Spinner,
+    IconButton,
+    Checkbox,
+    Link
+} from "@chakra-ui/react";
 import { useAdmin } from "../../context/AdminContext";
 import ModalForm from "../ModalForm";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -122,7 +137,7 @@ const AdminActors = () => {
                             </Td>
                             <Td>{actor.actor_id}</Td>
                             <Td>{actor.name}</Td>
-                            <Td>{actor.wiki_url}</Td>
+                            <Td> <Link href={actor.wiki_url} isExternal><Text maxW="200px" isTruncated>{actor.wiki_url}</Text></Link></Td>
                             <Td width="120px" textAlign="right">
                                 <IconButton
                                     aria-label="Edit"

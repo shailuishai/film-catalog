@@ -220,10 +220,10 @@ const FilmDetail = () => {
                 </Box>
 
                 {/* Карусель с отзывами */}
-                <Box flex={1}>
+                <Flex flex={1} flexDirection="column">
                     <Flex align="center" justify="space-between" mb={4}>
                         <Text fontSize="2xl" fontWeight="bold">
-                            Отзывы ({reviews.length})
+                            Отзывы ({reviews ? reviews.length : 0})
                         </Text>
                         {user ? (
                             <Button colorScheme="teal" size="sm" onClick={handleCreateReviewClick}>
@@ -235,19 +235,30 @@ const FilmDetail = () => {
                             </Text>
                         )}
                     </Flex>
-                    <Carousel
-                        ref={carouselRef} // Передаем ref в карусель
-                        items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
-                        renderItem={(item) => {
-                            if (item.type === "form") {
-                                return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
-                            }
-                            return <ReviewCard review={item} />;
-                        }}
-                        itemsPerPage={1}
-                        isDisabled={isCreatingReview}
-                    />
-                </Box>
+                    {reviews && reviews.length > 0 ? (
+                        <Box flex={1} display="flex" flexDirection="column">
+                            <Carousel
+                                ref={carouselRef}
+                                items={isCreatingReview ? [{ id: "new-review", type: "form" }, ...reviews] : reviews}
+                                renderItem={(item) => {
+                                    if (item.type === "form") {
+                                        return <CreateReviewCard onSubmit={handleSubmitReview} filmId={id} />;
+                                    }
+                                    return <ReviewCard review={item} />;
+                                }}
+                                itemsPerPage={1}
+                                isDisabled={isCreatingReview}
+                                flex={1} // Растягиваем карусель на всю высоту
+                            />
+                        </Box>
+                    ) : (
+                        <Flex flex={1} align="center" justify="center">
+                            <Text fontSize="md" color="gray.500" textAlign="center">
+                                Отзывы отсутствуют. Будьте первым, кто оставит отзыв!
+                            </Text>
+                        </Flex>
+                    )}
+                </Flex>
             </Flex>
         </Box>
     );
