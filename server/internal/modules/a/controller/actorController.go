@@ -265,8 +265,8 @@ func (c *ActorController) GetActors(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, act.ErrActorNotFound):
-			w.WriteHeader(http.StatusNotFound)
-			render.JSON(w, r, resp.Error(act.ErrActorNotFound.Error()))
+			w.WriteHeader(http.StatusOK)
+			render.JSON(w, r, resp.Actors([]*act.ActorDTO{}))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 			render.JSON(w, r, resp.Error(act.ErrInternal.Error()))
