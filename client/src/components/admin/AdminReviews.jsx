@@ -180,8 +180,8 @@ const AdminReviews = () => {
                 onSubmit={handleSubmit}
                 initialData={selectedReview}
                 entity="review"
-                users={users}
-                films={films}
+                users={users || []}
+                films={films || []}
             />
         </Box>
     );
