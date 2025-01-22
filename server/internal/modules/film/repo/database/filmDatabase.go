@@ -43,30 +43,8 @@ func (db *FilmDatabase) GetFilmByID(id uint) (*f.FilmDTO, error) {
 func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 	filmModel, _ := film.ToModel()
 
-	// Start a transaction
-	tx := db.db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	// Удаляем существующие связи с жанрами и актерами
-	if err := tx.Model(&filmModel).Association("Genres").Clear(); err != nil {
-		tx.Rollback()
-		db.log.Error("failed to clear genres associations", "error", err, "film", film)
-		return 0, f.ErrInternal
-	}
-
-	if err := tx.Model(&filmModel).Association("Actors").Clear(); err != nil {
-		tx.Rollback()
-		db.log.Error("failed to clear actors associations", "error", err, "film", film)
-		return 0, f.ErrInternal
-	}
-
-	// Создаем фильм
-	if err := tx.Create(filmModel).Error; err != nil {
-		tx.Rollback()
+	// Сначала сохраняем фильм в базе данных
+	if err := db.db.Create(filmModel).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return 0, f.ErrFilmAlreadyExists
 		}
@@ -74,37 +52,36 @@ func (db *FilmDatabase) CreateFilm(film *f.FilmDTO) (uint, error) {
 		return 0, f.ErrInternal
 	}
 
-	// Добавляем связи с жанрами и актерами
+	// Теперь, когда фильм сохранен и имеет ID, обновляем ассоциации
+
+	// Обновляем связи с жанрами
 	if len(filmModel.Genres) > 0 {
-		if err := tx.Model(&filmModel).Association("Genres").Append(filmModel.Genres); err != nil {
-			tx.Rollback()
-			db.log.Error("failed to add genres associations", "error", err, "film", film)
+		if err := db.db.Model(&filmModel).Association("Genres").Append(filmModel.Genres); err != nil {
+			db.log.Error("failed to update film genres", "error", err, "filmID", filmModel.FilmId)
+			// Если не удалось обновить жанры, удаляем фильм из базы данных
+			_ = db.db.Delete(&filmModel).Error
 			return 0, f.ErrInternal
 		}
 	}
 
+	// Обновляем связи с актерами
 	if len(filmModel.Actors) > 0 {
-		if err := tx.Model(&filmModel).Association("Actors").Append(filmModel.Actors); err != nil {
-			tx.Rollback()
-			db.log.Error("failed to add actors associations", "error", err, "film", film)
+		if err := db.db.Model(&filmModel).Association("Actors").Append(filmModel.Actors); err != nil {
+			db.log.Error("failed to update film actors", "error", err, "filmID", filmModel.FilmId)
+			// Если не удалось обновить актеров, удаляем фильм из базы данных
+			_ = db.db.Delete(&filmModel).Error
 			return 0, f.ErrInternal
 		}
-	}
-
-	// Commit the transaction
-	if err := tx.Commit().Error; err != nil {
-		tx.Rollback()
-		db.log.Error("failed to commit transaction", "error", err, "film", film)
-		return 0, f.ErrInternal
 	}
 
 	return filmModel.FilmId, nil
 }
 
 func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
+	// Преобразуем DTO в модель
 	filmModel, _ := film.ToModel()
 
-	// Start a transaction
+	// Начинаем транзакцию
 	tx := db.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -112,15 +89,26 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 		}
 	}()
 
-	// Update the Film record
-	if err := tx.Model(&f.Film{}).Where("film_id = ?", film.ID).Updates(filmModel).Error; err != nil {
+	// Проверяем, существует ли фильм в базе данных
+	var existingFilm f.Film
+	if err := tx.First(&existingFilm, film.ID).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return f.ErrFilmNotFound
+		}
+		db.log.Error("failed to find film", "error", err, "filmID", film.ID)
+		return f.ErrInternal
+	}
+
+	// Обновляем основную информацию о фильме
+	if err := tx.Model(&existingFilm).Updates(filmModel).Error; err != nil {
 		tx.Rollback()
 		db.log.Error("failed to update film", "error", err, "film", film)
 		return f.ErrInternal
 	}
 
 	// Очищаем существующие связи с жанрами
-	if err := tx.Model(&filmModel).Association("Genres").Clear(); err != nil {
+	if err := tx.Model(&existingFilm).Association("Genres").Clear(); err != nil {
 		tx.Rollback()
 		db.log.Error("failed to clear genres associations", "error", err, "filmID", film.ID)
 		return f.ErrInternal
@@ -128,7 +116,7 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 
 	// Добавляем новые связи с жанрами
 	if len(filmModel.Genres) > 0 {
-		if err := tx.Model(&filmModel).Association("Genres").Append(filmModel.Genres); err != nil {
+		if err := tx.Model(&existingFilm).Association("Genres").Append(filmModel.Genres); err != nil {
 			tx.Rollback()
 			db.log.Error("failed to update film genres", "error", err, "filmID", film.ID)
 			return f.ErrInternal
@@ -136,7 +124,7 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 	}
 
 	// Очищаем существующие связи с актерами
-	if err := tx.Model(&filmModel).Association("Actors").Clear(); err != nil {
+	if err := tx.Model(&existingFilm).Association("Actors").Clear(); err != nil {
 		tx.Rollback()
 		db.log.Error("failed to clear actors associations", "error", err, "filmID", film.ID)
 		return f.ErrInternal
@@ -144,14 +132,14 @@ func (db *FilmDatabase) UpdateFilm(film *f.FilmDTO) error {
 
 	// Добавляем новые связи с актерами
 	if len(filmModel.Actors) > 0 {
-		if err := tx.Model(&filmModel).Association("Actors").Append(filmModel.Actors); err != nil {
+		if err := tx.Model(&existingFilm).Association("Actors").Append(filmModel.Actors); err != nil {
 			tx.Rollback()
 			db.log.Error("failed to update film actors", "error", err, "filmID", film.ID)
 			return f.ErrInternal
 		}
 	}
 
-	// Commit the transaction
+	// Завершаем транзакцию
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		db.log.Error("failed to commit transaction", "error", err, "film", film)

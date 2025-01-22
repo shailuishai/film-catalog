@@ -87,46 +87,57 @@ func (uc *FilmUseCase) SearchFilms(query string) ([]*f.FilmDTO, error) {
 }
 
 func (uc *FilmUseCase) CreateFilm(film *f.FilmDTO, poster *multipart.File) error {
+	// Устанавливаем дефолтный URL постера, если он не указан
 	if film.PosterURL == "" {
 		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
 	}
 
+	// Создаем фильм в базе данных
 	id, err := uc.rp.CreateFilm(film)
 	if err != nil {
 		return err
 	}
 	film.ID = id
 
+	// Если есть постер, загружаем его на S3
 	if *poster != nil {
 		_, posterBytes, err := avatarManager.ParsingPosterImage(poster)
 		if err != nil {
+			// Если загрузка постера не удалась, удаляем фильм из базы данных
 			_ = uc.rp.DeleteFilm(film.ID)
 			return err
 		}
 
 		posterUrl, err := uc.rp.UploadPoster(film.ID, posterBytes)
 		if err != nil {
+			// Если загрузка постера на S3 не удалась, удаляем фильм из базы данных
 			_ = uc.rp.DeleteFilm(film.ID)
 			return f.ErrFilmPosterUploadFailed
 		}
 
+		// Обновляем URL постера в базе данных
 		film.PosterURL = posterUrl
 		if err := uc.rp.UpdateFilm(film); err != nil {
+			// Если обновление не удалось, удаляем фильм из базы данных
 			_ = uc.rp.DeleteFilm(film.ID)
 			return err
 		}
 	}
 
+	// Индексируем фильм в Elasticsearch
 	if err := uc.rp.IndexFilm(film); err != nil {
 		uc.log.Error("failed to index film in Elasticsearch", "error", err)
+		// Если индексация не удалась, это не критическая ошибка, продолжаем
 	}
 
+	// Очищаем кэш
 	_ = uc.rp.ClearAllFilmsFromCache()
 
 	return nil
 }
 
 func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error {
+	// Если нужно удалить постер
 	if film.RemovePoster {
 		if err := uc.rp.DeletePoster(film.ID); err != nil {
 			return f.ErrFilmPosterNotFound
@@ -134,6 +145,7 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 		film.PosterURL = "https://filmposter.storage-173.s3hoster.by/default/800x1200.webp"
 	}
 
+	// Если есть новый постер, загружаем его на S3
 	if *poster != nil {
 		_, posterBytes, err := avatarManager.ParsingPosterImage(poster)
 		if err != nil {
@@ -145,22 +157,28 @@ func (uc *FilmUseCase) UpdateFilm(film *f.FilmDTO, poster *multipart.File) error
 			return f.ErrFilmPosterUploadFailed
 		}
 
+		// Обновляем URL постера в DTO
 		film.PosterURL = posterUrl
 	}
 
+	// Обновляем данные фильма в базе данных
 	if err := uc.rp.UpdateFilm(film); err != nil {
 		return err
 	}
 
+	// Индексируем фильм в Elasticsearch
 	if err := uc.rp.IndexFilm(film); err != nil {
 		uc.log.Error("failed to index film in Elasticsearch", "error", err)
+		// Если индексация не удалась, это не критическая ошибка, продолжаем
 	}
 
+	// Очищаем кэш для этого фильма
 	cacheKey := fmt.Sprintf("film:%d", film.ID)
 	if err := uc.rp.DeleteFilmFromCache(cacheKey); err != nil {
 		uc.log.Error("failed to delete film from cache", "error", err)
 	}
 
+	// Очищаем весь кэш фильмов
 	_ = uc.rp.ClearAllFilmsFromCache()
 
 	return nil

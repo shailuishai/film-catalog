@@ -95,7 +95,7 @@ func (f *Film) ToDTO(stats *FilmStatsModel) *FilmDTO {
 
 func (f *FilmDTO) ToModel() (*Film, *FilmStatsModel) {
 	film := &Film{
-		FilmId:      f.ID,
+		FilmId:      f.ID, // Убедитесь, что ID установлен
 		Title:       f.Title,
 		PosterURL:   f.PosterURL,
 		Synopsis:    f.Synopsis,
