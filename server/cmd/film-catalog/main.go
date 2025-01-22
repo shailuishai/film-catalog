@@ -167,7 +167,7 @@ func (app *App) SetupRoutes() {
 		middlelog.New(app.Log),
 		middleware.URLFormat,
 		cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"https://local.dev:5173", "https://192.168.0.107:5173", "https://192.168.43.193:5173", "https://film-catalog-lilac.vercel.app/"}, // Укажите домен вашего фронтенда
+			AllowedOrigins:   []string{"https://local.dev:5173", "https://192.168.0.107:5173", "https://192.168.43.193:5173", "https://film-catalog-lilac.vercel.app"}, // Укажите домен вашего фронтенда
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 			ExposedHeaders:   []string{"Link"},
