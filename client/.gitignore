@@ -25,4 +25,3 @@ dist-ssr
 *.sw?
 /certs/local.dev.pem
 /certs/local.dev-key.pem
-vercel.json
