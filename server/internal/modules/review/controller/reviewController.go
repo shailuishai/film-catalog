@@ -168,19 +168,31 @@ func (c *ReviewController) UpdateReview(w http.ResponseWriter, req *http.Request
 		return
 	}
 
+	// Получаем UserID из контекста
+	userID, ok := req.Context().Value("userId").(uint)
+	if !ok {
+		log.Error("failed to get userId from context")
+		w.WriteHeader(http.StatusUnauthorized)
+		render.JSON(w, req, resp.Error("unauthorized"))
+		return
+	}
+
+	// Создаем DTO для обновления отзыва
 	review := &r.ReviewDTO{
-		ReviewID:   uint(reviewID), // Используем ID из URL
-		UserID:     request.UserID,
-		FilmID:     request.FilmID,
+		ReviewID:   uint(reviewID),
 		Rating:     request.Rating,
 		ReviewText: request.ReviewText,
 	}
 
-	if err := c.uc.UpdateReview(review); err != nil {
+	// Вызываем UseCase для обновления отзыва, передавая UserID
+	if err := c.uc.UpdateReview(review, userID); err != nil {
 		switch {
 		case errors.Is(err, r.ErrNoSuchReview):
 			w.WriteHeader(http.StatusNotFound)
 			render.JSON(w, req, resp.Error(r.ErrNoSuchReview.Error()))
+		case errors.Is(err, r.ErrUnauthorized):
+			w.WriteHeader(http.StatusForbidden)
+			render.JSON(w, req, resp.Error("you can only edit your own reviews"))
 		default:
 			log.Error("failed to update review", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -314,15 +326,15 @@ func (c *ReviewController) AdminUpdateReview(w http.ResponseWriter, req *http.Re
 		return
 	}
 
+	// Создаем DTO для обновления отзыва
 	review := &r.ReviewDTO{
 		ReviewID:   request.ReviewID,
-		UserID:     request.UserID, // Администратор может обновить отзыв любого пользователя
-		FilmID:     request.FilmID,
 		Rating:     request.Rating,
 		ReviewText: request.ReviewText,
 	}
 
-	if err := c.uc.UpdateReview(review); err != nil {
+	// Вызываем UseCase для обновления отзыва (без проверки UserID)
+	if err := c.uc.UpdateReview(review, 0); err != nil {
 		switch {
 		case errors.Is(err, r.ErrNoSuchReview):
 			w.WriteHeader(http.StatusNotFound)

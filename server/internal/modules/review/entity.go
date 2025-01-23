@@ -37,7 +37,7 @@ type Controller interface {
 type UseCase interface {
 	CreateReview(review *ReviewDTO) error
 	GetReview(reviewID uint) (*ReviewDTO, error)
-	UpdateReview(review *ReviewDTO) error
+	UpdateReview(review *ReviewDTO, userId uint) error
 	DeleteReview(reviewID uint) error
 	GetReviewsByFilmID(filmID uint) ([]*ReviewDTO, error)
 	GetReviewsByReviewerID(reviewerID uint) ([]*ReviewDTO, error)
