@@ -70,7 +70,7 @@ const FilmCard = ({ key, film }) => {
                         Rating: {film.avg_rating}%
                     </Badge>
                     <Badge colorScheme="teal" fontSize="sm">
-                        Runtime: {film.runtime} min
+                        Runtime: {film.runtime}
                     </Badge>
                     <Badge colorScheme="purple" fontSize="sm">
                         Release: {formatReleaseDate(film.release_date)}
