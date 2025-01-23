@@ -9,16 +9,16 @@
       }
     }
   ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/dist/index.html"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/dist/index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/dist/index.html"
     }
   ]
 }
