@@ -124,7 +124,7 @@ var oauthConfigs = map[string]*oauth2.Config{
 	"yandex": &oauth2.Config{
 		ClientID:     os.Getenv("YANDEX_KEY"),
 		ClientSecret: os.Getenv("YANDEX_SECRET"),
-		RedirectURL:  "https://film-catalog-lilac.vercel.app/auth/yandex/callbackack",
+		RedirectURL:  "https://film-catalog-lilac.vercel.app/auth/yandex/callback",
 		Endpoint:     yandex.Endpoint,
 	},
 }
