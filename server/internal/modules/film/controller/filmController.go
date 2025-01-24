@@ -108,6 +108,8 @@ func (c *Controller) CreateFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.Sanitize()
+
 	if err := c.validate.Struct(req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		render.JSON(w, r, resp.ValidationError(err))
@@ -220,6 +222,8 @@ func (c *Controller) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, resp.Error("invalid JSON data"))
 		return
 	}
+
+	req.Sanitize()
 
 	if err := c.validate.Struct(req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)

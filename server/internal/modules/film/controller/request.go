@@ -25,3 +25,21 @@ func validateRuntimeFormat(fl validator.FieldLevel) bool {
 
 	return matched
 }
+
+func removeDuplicates(slice []uint) []uint {
+	encountered := map[uint]bool{}
+	result := []uint{}
+
+	for _, v := range slice {
+		if !encountered[v] {
+			encountered[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
+func (r *CreateFilmRequest) Sanitize() {
+	r.GenreIDs = removeDuplicates(r.GenreIDs)
+	r.ActorIDs = removeDuplicates(r.ActorIDs)
+}
